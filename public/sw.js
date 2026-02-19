@@ -1,4 +1,4 @@
-const CACHE_VERSION = "open-setlist-v1";
+const CACHE_VERSION = "open-setlist-v2";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -32,6 +32,21 @@ self.addEventListener("fetch", (event) => {
   // Skip chrome-extension and non-http(s) requests
   if (!request.url.startsWith("http")) return;
 
+  // Navigation requests (HTML pages): network-first so updates are always picked up
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_VERSION).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Assets (JS, CSS, images): cache-first with network fallback
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;

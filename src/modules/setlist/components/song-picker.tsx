@@ -1,4 +1,4 @@
-import { db } from "@db";
+import { useDb } from "@db/provider";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,8 +10,9 @@ interface SongPickerProps {
 
 export function SongPicker({ excludeIds, onPick }: SongPickerProps) {
   const { t } = useTranslation();
+  const db = useDb();
   const [search, setSearch] = useState("");
-  const songs = useLiveQuery(() => db.songs.orderBy("title").toArray());
+  const songs = useLiveQuery(() => db.songs.orderBy("title").toArray(), [db]);
 
   const filtered = useMemo(() => {
     if (!songs) return [];

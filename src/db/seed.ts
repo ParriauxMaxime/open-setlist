@@ -1,12 +1,11 @@
 import { parse } from "@domain/chordpro/parser";
-import noWomanNoCry from "../../fixtures/no-woman-no-cry.chopro";
-import redemptionSong from "../../fixtures/redemption-song.chopro";
-import threeLittleBirds from "../../fixtures/three-little-birds.chopro";
-import { db } from "./index";
+import type { AppDatabase } from ".";
 import type { Setlist } from "./setlist";
 import type { Song } from "./song";
 
-const FIXTURES = [noWomanNoCry, redemptionSong, threeLittleBirds];
+// Load all .chopro files from fixtures at build time
+const fixtureContext = require.context("../../fixtures", false, /\.chopro$/);
+const FIXTURES: string[] = fixtureContext.keys().map((key: string) => fixtureContext(key));
 
 function parseDuration(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -25,6 +24,10 @@ function buildSong(content: string): Song {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
+  const links: Record<string, string> = {};
+  if (metadata.youtube) links.youtube = metadata.youtube;
+  const hasLinks = Object.keys(links).length > 0;
+
   return {
     id: `seed-${slug}`,
     title: metadata.title ?? "Untitled",
@@ -34,6 +37,7 @@ function buildSong(content: string): Song {
     duration: parseDuration(metadata.duration),
     tags: metadata.tags ? metadata.tags.split(",").map((t) => t.trim()) : [],
     notes: metadata.notes,
+    links: hasLinks ? links : undefined,
     content,
     createdAt: now,
     updatedAt: now,
@@ -79,7 +83,7 @@ const SEED_SETLISTS: Setlist[] = [
   },
 ];
 
-export async function seedIfEmpty(): Promise<void> {
+export async function seedIfEmpty(db: AppDatabase): Promise<void> {
   const count = await db.songs.count();
   if (count > 0) return;
 

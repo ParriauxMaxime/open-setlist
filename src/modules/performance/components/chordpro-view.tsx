@@ -69,10 +69,11 @@ function SectionView({
                 // biome-ignore lint/suspicious/noArrayIndexKey: segments are static parsed output
                 <span key={si} className="inline-flex flex-col">
                   {seg.chord && (
-                    // biome-ignore lint/a11y/noStaticElementInteractions: chord tap in performance mode
-                    // biome-ignore lint/a11y/useKeyWithClickEvents: touch-first UI, no keyboard needed
+                    // biome-ignore lint/a11y/noStaticElementInteractions: role is conditionally "button" when interactive
                     <span
                       data-chord-tap={onChordTap ? "" : undefined}
+                      role={onChordTap ? "button" : undefined}
+                      tabIndex={onChordTap ? 0 : undefined}
                       className={`self-start text-perform-chord font-bold text-chord${onChordTap ? " cursor-pointer" : ""}`}
                       onClick={
                         onChordTap
@@ -83,6 +84,20 @@ function SectionView({
                                 chord: seg.chord as string,
                                 anchorRect: { x: r.x, y: r.y, width: r.width, height: r.height },
                               });
+                            }
+                          : undefined
+                      }
+                      onKeyDown={
+                        onChordTap
+                          ? (e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                const r = e.currentTarget.getBoundingClientRect();
+                                onChordTap({
+                                  chord: seg.chord as string,
+                                  anchorRect: { x: r.x, y: r.y, width: r.width, height: r.height },
+                                });
+                              }
                             }
                           : undefined
                       }

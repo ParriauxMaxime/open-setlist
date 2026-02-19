@@ -13,5 +13,31 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Recovery: if the app JS fails to load (stale SW serving old assets),
+      // unregister SW, clear caches, and reload once.
+      setTimeout(function () {
+        var root = document.getElementById("root");
+        if (root && root.children.length === 0 && "serviceWorker" in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function (regs) {
+            var tasks = regs.map(function (r) { return r.unregister(); });
+            if (caches && caches.keys) {
+              tasks.push(
+                caches.keys().then(function (keys) {
+                  return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+                })
+              );
+            }
+            Promise.all(tasks).then(function () {
+              // Only reload once to avoid infinite loop
+              if (!sessionStorage.getItem("sw-recovery")) {
+                sessionStorage.setItem("sw-recovery", "1");
+                location.reload();
+              }
+            });
+          });
+        }
+      }, 3000);
+    </script>
   </body>
 </html>

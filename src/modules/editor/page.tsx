@@ -1,4 +1,4 @@
-import { db } from "@db";
+import { useDb } from "@db/provider";
 import { MAJOR_KEYS, MINOR_KEYS } from "@domain/music";
 import {
   getSongOverrides,
@@ -7,6 +7,7 @@ import {
   type SongDisplayPrefs,
   setSongOverrides,
 } from "@domain/preferences";
+import { useActiveProfileId } from "@domain/profiles";
 import { type SongFormValues, songFormSchema } from "@domain/schemas/song";
 import { addTombstone } from "@domain/sync/tombstones";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +33,7 @@ const defaultValues: SongFormValues = {
   duration: undefined,
   tags: [],
   notes: "",
+  links: undefined,
   content: "",
 };
 
@@ -39,7 +41,9 @@ type EnrichmentStatus = "idle" | "enriching" | "done";
 
 export function EditSongPage({ songId }: EditSongPageProps) {
   const { t } = useTranslation();
-  const existing = useLiveQuery(() => (songId ? db.songs.get(songId) : undefined), [songId]);
+  const db = useDb();
+  const profileId = useActiveProfileId();
+  const existing = useLiveQuery(() => (songId ? db.songs.get(songId) : undefined), [songId, db]);
   const [songDbId] = useState(() => songId ?? crypto.randomUUID());
   const [tagInput, setTagInput] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -115,6 +119,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
         duration: existing.duration,
         tags: existing.tags,
         notes: existing.notes ?? "",
+        links: existing.links,
         content: existing.content,
       });
     }
@@ -147,11 +152,16 @@ export function EditSongPage({ songId }: EditSongPageProps) {
 
   const onSubmit = async (values: SongFormValues) => {
     const now = Date.now();
+    // Clean empty link strings
+    const links = values.links
+      ? Object.fromEntries(Object.entries(values.links).filter(([, v]) => v))
+      : undefined;
     const toSave = {
       ...values,
       artist: values.artist || undefined,
       key: values.key || undefined,
       notes: values.notes || undefined,
+      links: links && Object.keys(links).length > 0 ? links : undefined,
       id: songDbId,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
@@ -164,11 +174,11 @@ export function EditSongPage({ songId }: EditSongPageProps) {
 
   const deleteSong = useCallback(async () => {
     if (!songId) return;
-    addTombstone("song", songId);
+    addTombstone(profileId, "song", songId);
     removeSongOverrides(songId);
     await db.songs.delete(songId);
     Router.replace("Catalog");
-  }, [songId]);
+  }, [songId, profileId, db]);
 
   const enrichSong = useCallback(
     (title: string, artist: string) => {
@@ -238,17 +248,19 @@ export function EditSongPage({ songId }: EditSongPageProps) {
       </div>
 
       {/* Enrichment indicator */}
-      {enrichStatus === "enriching" && (
-        <div className="mb-3 flex items-center gap-2 rounded-md bg-bg-surface px-3 py-2 text-sm text-text-muted">
-          <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-          {enrichDetail || t("editor.enriching")}
-        </div>
-      )}
-      {enrichStatus === "done" && (
-        <div className="mb-3 rounded-md bg-bg-surface px-3 py-2 text-sm text-success">
-          {t("editor.done")}
-        </div>
-      )}
+      <div aria-live="polite">
+        {enrichStatus === "enriching" && (
+          <div className="mb-3 flex items-center gap-2 rounded-md bg-bg-surface px-3 py-2 text-sm text-text-muted">
+            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+            {enrichDetail || t("editor.enriching")}
+          </div>
+        )}
+        {enrichStatus === "done" && (
+          <div className="mb-3 rounded-md bg-bg-surface px-3 py-2 text-sm text-success">
+            {t("editor.done")}
+          </div>
+        )}
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         {/* Title */}
@@ -316,6 +328,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
                 <button
                   type="button"
                   onClick={() => removeTag(tag)}
+                  aria-label={`Remove ${tag}`}
                   className="ml-0.5 text-text-faint hover:text-danger"
                 >
                   x
@@ -352,6 +365,27 @@ export function EditSongPage({ songId }: EditSongPageProps) {
             className="resize-y"
           />
         </Field>
+
+        {/* Links */}
+        <details className="group rounded-md border border-border">
+          <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-text-muted select-none">
+            {t("editor.linksLabel")}
+          </summary>
+          <div className="flex flex-col gap-3 border-t border-border px-3 py-3">
+            <Field label="YouTube">
+              <Input {...register("links.youtube")} placeholder="https://youtube.com/watch?v=..." />
+            </Field>
+            <Field label="Spotify">
+              <Input
+                {...register("links.spotify")}
+                placeholder="https://open.spotify.com/track/..."
+              />
+            </Field>
+            <Field label="Deezer">
+              <Input {...register("links.deezer")} placeholder="https://deezer.com/track/..." />
+            </Field>
+          </div>
+        </details>
 
         {/* ChordPro content */}
         <Field label={t("editor.chordproLabel")} error={errors.content?.message}>

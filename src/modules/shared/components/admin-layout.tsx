@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
 import { getPerformReturn } from "../../performance/components/perform-sidebar";
 import { NavLink } from "./nav-link";
+import { ProfileSwitcher } from "./profile-switcher";
 import { SidebarNav } from "./sidebar-nav";
 import { SidebarPanel } from "./sidebar-panel";
 
@@ -72,13 +73,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       to={returnHref}
       className="mb-2 flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-accent hover:bg-accent-muted"
     >
-      <span className="text-lg">←</span>
+      <span className="text-lg" aria-hidden="true">
+        {"\u2190"}
+      </span>
       {returnLabel}
     </Link>
   ) : (
-    <div className="mb-4 px-3 py-2">
-      <span className="text-lg font-bold text-text">Open Setlist</span>
-    </div>
+    <ProfileSwitcher />
   );
 
   const playgroundFooter = isDev ? (
@@ -93,7 +94,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             : "text-text-muted hover:bg-bg-hover hover:text-text",
         ].join(" ")}
       >
-        <span className="text-lg">🧪</span>
+        <span className="text-lg" aria-hidden="true">
+          🧪
+        </span>
         <span className="flex-1 text-left">{t("nav.playground")}</span>
         <span className="text-xs text-text-faint">{playgroundOpen ? "▾" : "▸"}</span>
       </button>
@@ -114,8 +117,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="flex min-h-dvh flex-col md:flex-row">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-bg focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
       {/* Sidebar — always visible on desktop */}
-      <nav className="hidden w-56 shrink-0 flex-col gap-1 border-r border-border bg-bg-surface p-3 md:flex">
+      <nav className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col gap-1 overflow-y-auto border-r border-border bg-bg-surface p-3 md:flex">
         {sidebarContent}
       </nav>
 
@@ -138,7 +148,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       </SidebarPanel>
 
       {/* Content */}
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <main id="main-content" className="flex-1 overflow-y-auto">
+        {children}
+      </main>
     </div>
   );
 }

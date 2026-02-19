@@ -1,6 +1,8 @@
-import { db, type SetlistSet } from "@db";
+import type { SetlistSet } from "@db";
+import { useDb } from "@db/provider";
 import { closestCorners, DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useActiveProfileId } from "@domain/profiles";
 import { type SetlistFormValues, setlistFormSchema } from "@domain/schemas/setlist";
 import { addTombstone } from "@domain/sync/tombstones";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,7 +32,9 @@ const defaultValues: SetlistFormValues = {
 
 export function SetlistEditor({ setlistId }: SetlistEditorProps) {
   const { t } = useTranslation();
-  const existing = useLiveQuery(() => db.setlists.get(setlistId), [setlistId]);
+  const db = useDb();
+  const profileId = useActiveProfileId();
+  const existing = useLiveQuery(() => db.setlists.get(setlistId), [setlistId, db]);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const {
@@ -93,10 +97,10 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
   };
 
   const deleteSetlist = useCallback(async () => {
-    addTombstone("setlist", setlistId);
+    addTombstone(profileId, "setlist", setlistId);
     await db.setlists.delete(setlistId);
     Router.replace("Setlists");
-  }, [setlistId]);
+  }, [setlistId, profileId, db]);
 
   const sets = watch("sets");
   const totalSongs = sets.reduce((n, s) => n + s.songIds.length, 0);

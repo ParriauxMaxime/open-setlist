@@ -5,6 +5,8 @@ import { PerformPage } from "./modules/performance/page";
 import { SetlistPage } from "./modules/setlist/page";
 import { SettingsPage } from "./modules/settings/page";
 import { AdminLayout } from "./modules/shared/components/admin-layout";
+import { JoinPrompt } from "./modules/shared/components/join-prompt";
+import { PwaInstallPrompt } from "./modules/shared/components/pwa-install-prompt";
 import { SyncPage } from "./modules/sync/page";
 import { Router } from "./router";
 
@@ -38,9 +40,13 @@ export function App() {
 
   // Admin routes — wrapped in layout
   return (
-    <AdminLayout>
-      <AdminRoutes route={route} />
-    </AdminLayout>
+    <>
+      <PwaInstallPrompt />
+      <JoinPrompt />
+      <AdminLayout>
+        <AdminRoutes route={route} />
+      </AdminLayout>
+    </>
   );
 }
 

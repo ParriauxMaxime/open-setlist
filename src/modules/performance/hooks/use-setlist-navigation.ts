@@ -1,4 +1,5 @@
-import { db, type Song } from "@db";
+import type { Song } from "@db";
+import { useDb } from "@db/provider";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo, useState } from "react";
 
@@ -11,7 +12,8 @@ export interface FlatEntry {
 }
 
 export function useSetlistNavigation(setlistId: string) {
-  const setlist = useLiveQuery(() => db.setlists.get(setlistId), [setlistId]);
+  const db = useDb();
+  const setlist = useLiveQuery(() => db.setlists.get(setlistId), [setlistId, db]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const flatSongs = useMemo<FlatEntry[]>(() => {
@@ -41,7 +43,7 @@ export function useSetlistNavigation(setlistId: string) {
       if (s) map.set(s.id, s);
     }
     return map;
-  }, [allSongIds]);
+  }, [allSongIds, db]);
 
   const current = flatSongs[currentIndex];
   const currentSong = current && songs ? songs.get(current.songId) : undefined;

@@ -1,4 +1,5 @@
-import { db, type Song } from "@db";
+import type { Song } from "@db";
+import { useDb } from "@db/provider";
 import { MUSICAL_KEY_LIST } from "@domain/music";
 import { Link } from "@swan-io/chicane";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
@@ -27,7 +28,8 @@ function uniqueArtists(data: Song[]): string[] {
 
 export function CatalogPage() {
   const { t } = useTranslation();
-  const songs = useLiveQuery(() => db.songs.orderBy("title").toArray());
+  const db = useDb();
+  const songs = useLiveQuery(() => db.songs.orderBy("title").toArray(), [db]);
 
   const columns: ColumnDef<Song, unknown>[] = [
     col.accessor("title", {

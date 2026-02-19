@@ -29,16 +29,23 @@ export function PerformHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close menu on outside click
+  // Close menu on outside click or Escape
   useEffect(() => {
     if (!menuOpen) return;
-    const handler = (e: MouseEvent) => {
+    const handleClick = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
     };
-    window.addEventListener("click", handler, true);
-    return () => window.removeEventListener("click", handler, true);
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("click", handleClick, true);
+    window.addEventListener("keydown", handleKey);
+    return () => {
+      window.removeEventListener("click", handleClick, true);
+      window.removeEventListener("keydown", handleKey);
+    };
   }, [menuOpen]);
 
   return (
@@ -91,6 +98,8 @@ export function PerformHeader({
                 onClick={() => setMenuOpen((v) => !v)}
                 className="perform-btn"
                 aria-label="More options"
+                aria-expanded={menuOpen}
+                aria-haspopup="true"
               >
                 ⋮
               </button>

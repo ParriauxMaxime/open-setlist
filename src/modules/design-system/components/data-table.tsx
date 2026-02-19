@@ -75,6 +75,7 @@ export function DataTable<T>({
           placeholder={searchPlaceholder ?? t("common.search")}
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
+          aria-label={searchPlaceholder ?? t("common.search")}
           className="field"
         />
       )}
@@ -98,6 +99,15 @@ export function DataTable<T>({
                       .filter(Boolean)
                       .join(" ")}
                     style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
+                    aria-sort={
+                      header.column.getCanSort()
+                        ? header.column.getIsSorted() === "asc"
+                          ? "ascending"
+                          : header.column.getIsSorted() === "desc"
+                            ? "descending"
+                            : "none"
+                        : undefined
+                    }
                   >
                     {header.isPlaceholder ? null : (
                       <div className="flex flex-col gap-1">
@@ -188,12 +198,14 @@ function ColumnFilter<T>({ column, data }: { column: Column<T, unknown>; data: T
 
   // Text filter
   const value = (column.getFilterValue() as string) ?? "";
+  const columnName = typeof column.columnDef.header === "string" ? column.columnDef.header : "";
   return (
     <input
       type="text"
       value={value}
       onChange={(e) => column.setFilterValue(e.target.value || undefined)}
       placeholder={t("common.filter")}
+      aria-label={columnName ? `Filter ${columnName}` : t("common.filter")}
       className="field-sm"
     />
   );
@@ -203,6 +215,7 @@ function SelectFilter<T>({ column, data }: { column: Column<T, unknown>; data: T
   const { t } = useTranslation();
   const meta = column.columnDef.meta;
   const value = (column.getFilterValue() as string) ?? "";
+  const columnName = typeof column.columnDef.header === "string" ? column.columnDef.header : "";
 
   const options = useMemo(() => {
     if (!meta?.filterOptions) return [];
@@ -216,6 +229,7 @@ function SelectFilter<T>({ column, data }: { column: Column<T, unknown>; data: T
     <select
       value={value}
       onChange={(e) => column.setFilterValue(e.target.value || undefined)}
+      aria-label={columnName ? `Filter ${columnName}` : t("common.filter")}
       className="field-sm"
     >
       <option value="">{t("common.all")}</option>

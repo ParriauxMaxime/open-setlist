@@ -1,7 +1,7 @@
 import { getGuitarFingerings } from "@domain/chords/guitar";
 import { chordMidi, parseChordSuffix } from "@domain/chords/theory";
 import { arrow, autoPlacement, computePosition, offset, shift } from "@floating-ui/dom";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FretboardDiagram } from "../../chords/components/fretboard-diagram";
 import { KeyboardDiagram } from "../../chords/components/keyboard-diagram";
@@ -25,6 +25,15 @@ export function ChordPopover({ chord, anchorRect, instrument, onClose }: ChordPo
   const floatingRef = useRef<HTMLDivElement>(null);
   const arrowRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<Pos | null>(null);
+
+  // Close on Escape
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [onClose]);
 
   useLayoutEffect(() => {
     const floating = floatingRef.current;
@@ -86,13 +95,19 @@ export function ChordPopover({ chord, anchorRect, instrument, onClose }: ChordPo
 
   return createPortal(
     <>
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: dismiss-on-tap backdrop */}
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: touch-first UI */}
-      <div className="fixed inset-0 z-50" onClick={onClose} />
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: stop propagation on card */}
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: no keyboard needed */}
+      <button
+        type="button"
+        className="fixed inset-0 z-50"
+        onClick={onClose}
+        aria-label="Close"
+        tabIndex={-1}
+      />
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: onClick is only stopPropagation, not real interaction */}
       <div
         ref={floatingRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${chord} chord diagram`}
         className="z-50 rounded-lg border border-white/10 bg-bg-raised/80 p-3 shadow-lg backdrop-blur-xl"
         style={{
           position: "fixed",

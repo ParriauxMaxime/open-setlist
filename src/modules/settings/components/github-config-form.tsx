@@ -1,3 +1,5 @@
+import { buildInviteUrl, type InvitePayload } from "@domain/invite";
+import { loadProfiles } from "@domain/profiles";
 import { createGitHubAdapter } from "@domain/sync/adapters/github";
 import {
   clearSyncConfig,
@@ -17,12 +19,13 @@ type Status =
   | { type: "disconnected" };
 
 interface GitHubConfigFormProps {
+  profileId: string;
   defaultOpen?: boolean;
 }
 
-export function GitHubConfigForm({ defaultOpen = false }: GitHubConfigFormProps) {
+export function GitHubConfigForm({ profileId, defaultOpen = false }: GitHubConfigFormProps) {
   const { t } = useTranslation();
-  const existing = loadSyncConfig();
+  const existing = loadSyncConfig(profileId);
   const isConnected = existing?.adapter === "github";
 
   const [repoInput, setRepoInput] = useState(
@@ -64,20 +67,58 @@ export function GitHubConfigForm({ defaultOpen = false }: GitHubConfigFormProps)
     const adapter = createGitHubAdapter(config);
     try {
       const fullName = await adapter.testConnection();
-      saveSyncConfig(config);
+      saveSyncConfig(profileId, config);
       setStatus({ type: "connected", repo: fullName });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setStatus({ type: "error", message });
     }
-  }, [repoInput, tokenInput]);
+  }, [repoInput, tokenInput, profileId]);
 
   const handleDisconnect = useCallback(() => {
-    clearSyncConfig();
+    clearSyncConfig(profileId);
     setRepoInput("");
     setTokenInput("");
     setStatus({ type: "disconnected" });
-  }, []);
+  }, [profileId]);
+
+  const [inviteFeedback, setInviteFeedback] = useState<string | null>(null);
+
+  const handleInvite = useCallback(async () => {
+    const config = loadSyncConfig(profileId);
+    if (!config || config.adapter !== "github") return;
+
+    const profile = loadProfiles().find((p) => p.id === profileId);
+    const payload: InvitePayload = {
+      profile: { name: profile?.name ?? "Band", avatar: profile?.avatar },
+      sync: {
+        adapter: "github",
+        owner: config.owner,
+        repo: config.repo,
+        token: config.token,
+        path: config.path,
+      },
+    };
+
+    const url = buildInviteUrl(payload);
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setInviteFeedback(t("invite.linkCopied"));
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ url });
+        } catch {
+          // User cancelled share — link is still copied
+        }
+      }
+    } catch {
+      setInviteFeedback(t("invite.shareFailed"));
+    }
+
+    setTimeout(() => setInviteFeedback(null), 3000);
+  }, [profileId, t]);
 
   return (
     <details
@@ -150,19 +191,27 @@ export function GitHubConfigForm({ defaultOpen = false }: GitHubConfigFormProps)
           )}
         </div>
 
-        {status.type === "connected" && (
-          <p className="text-sm text-accent">
-            {t("settings.github.connected", { repo: status.repo })}
-          </p>
-        )}
-        {status.type === "error" && (
-          <p className="text-sm text-danger">
-            {t("settings.github.connectionFailed", { error: status.message })}
-          </p>
-        )}
-        {status.type === "disconnected" && (
-          <p className="text-sm text-text-muted">{t("settings.github.disconnected")}</p>
-        )}
+        <div aria-live="polite">
+          {status.type === "connected" && (
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-accent">
+                {t("settings.github.connected", { repo: status.repo })}
+              </p>
+              <button type="button" onClick={handleInvite} className="btn btn-outline self-start">
+                {t("invite.inviteMembers")}
+              </button>
+              {inviteFeedback && <p className="text-sm text-accent">{inviteFeedback}</p>}
+            </div>
+          )}
+          {status.type === "error" && (
+            <p className="text-sm text-danger">
+              {t("settings.github.connectionFailed", { error: status.message })}
+            </p>
+          )}
+          {status.type === "disconnected" && (
+            <p className="text-sm text-text-muted">{t("settings.github.disconnected")}</p>
+          )}
+        </div>
 
         <p className="text-xs text-text-faint">{t("settings.github.tokenHelp")}</p>
       </div>
