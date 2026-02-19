@@ -1,0 +1,240 @@
+{
+  "nav": {
+    "songs": "Songs",
+    "setlists": "Setlists",
+    "sync": "Sync",
+    "settings": "Settings",
+    "playground": "Playground",
+    "chords": "Chords"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "close": "Close",
+    "import": "Import",
+    "export": "Export",
+    "add": "Add",
+    "back": "Back",
+    "yes": "Yes",
+    "unknown": "Unknown",
+    "noResults": "No results match your filters.",
+    "noData": "No data.",
+    "all": "All",
+    "filter": "Filter...",
+    "search": "Search...",
+    "custom": "Custom"
+  },
+  "catalog": {
+    "title": "Songs",
+    "addSong": "+ Add song",
+    "searchPlaceholder": "Search by title or artist...",
+    "empty": "No songs yet. Add your first song.",
+    "colTitle": "Title",
+    "colArtist": "Artist",
+    "colKey": "Key",
+    "colBpm": "BPM",
+    "colTags": "Tags"
+  },
+  "editor": {
+    "newSong": "New Song",
+    "editSong": "Edit Song",
+    "findOnline": "Find online",
+    "preview": "Preview",
+    "backToCatalog": "Back to catalog",
+    "enriching": "Enriching...",
+    "fetchingChords": "Fetching chords...",
+    "done": "Done",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Song title",
+    "artistLabel": "Artist",
+    "artistPlaceholder": "Artist name",
+    "keyLabel": "Key",
+    "bpmLabel": "BPM",
+    "durationLabel": "Duration (s)",
+    "tagsLabel": "Tags",
+    "addTagPlaceholder": "Add tag...",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "Performance notes, capo position, etc.",
+    "chordproLabel": "ChordPro",
+    "deleteSongConfirm": "Delete this song?",
+    "yesDelete": "Yes, delete",
+    "majorGroup": "Major",
+    "minorGroup": "Minor",
+    "displayOverrides": "Display Overrides",
+    "enableDisplayOverrides": "Customize display for this song",
+    "displayOverridesDesc": "These overrides are personal and won't be shared when exporting the song.",
+    "resetToGlobal": "Reset to global"
+  },
+  "lookup": {
+    "title": "Find online",
+    "searchPlaceholder": "Search by title or artist...",
+    "searching": "Searching...",
+    "noResults": "No results found.",
+    "import": "Import"
+  },
+  "setlist": {
+    "title": "Setlists",
+    "newSetlist": "+ New setlist",
+    "empty": "No setlists yet. Create your first setlist.",
+    "colName": "Name",
+    "colVenue": "Venue",
+    "colDate": "Date",
+    "colSongs": "Songs",
+    "editSetlist": "Edit Setlist",
+    "backToSetlists": "Back to setlists",
+    "nameLabel": "Name",
+    "dateLabel": "Date",
+    "venueLabel": "Venue",
+    "venuePlaceholder": "Venue name",
+    "setsHeading": "Sets",
+    "songCount_one": "{{count}} song",
+    "songCount_other": "{{count}} songs",
+    "addSet": "+ Add set",
+    "perform": "Perform",
+    "deleteSetlistConfirm": "Delete setlist?",
+    "removeSet": "Remove set",
+    "noSongsInSet": "No songs in this set.",
+    "addSong": "+ Add song",
+    "searchSongsToAdd": "Search songs to add...",
+    "noCatalogSongs": "No songs in catalog yet.",
+    "noMatchingSongs": "No matching songs.",
+    "songCatalog": "Song Catalog",
+    "searchSongs": "Search songs...",
+    "noCatalogSongsShort": "No songs in catalog.",
+    "noAvailableSongs": "No available songs.",
+    "set": "Set",
+    "song": "Song"
+  },
+  "perform": {
+    "noSongsInSetlist": "This setlist has no songs.",
+    "editSetlist": "Edit setlist",
+    "editSong": "Edit song",
+    "displaySettings": "Display settings",
+    "deleteSong": "Delete song",
+    "exitToSetlist": "Exit to setlist",
+    "exitToSong": "Exit to song",
+    "exit": "Exit",
+    "backToSet": "Back to set",
+    "backToSong": "Back to song",
+    "noContent": "No content.",
+    "songNotFound": "Song not found."
+  },
+  "sync": {
+    "title": "Sync",
+    "description": "Export your songs and setlists as a JSON file, or import from a previously exported file.",
+    "songCount_one": "{{count}} song",
+    "songCount_other": "{{count}} songs",
+    "setlistCount_one": "{{count}} setlist",
+    "setlistCount_other": "{{count}} setlists",
+    "exportToFile": "Export to file",
+    "exporting": "Exporting...",
+    "importFile": "Import file",
+    "importing": "Importing...",
+    "replaceConfirm": "Replace all local data?",
+    "yesImport": "Yes, import",
+    "exportSuccess": "Exported successfully.",
+    "exportFailed": "Export failed.",
+    "importSuccess": "Imported {{songs}} songs and {{setlists}} setlists.",
+    "importFailed": "Import failed.",
+    "importNote": "Import replaces all local data. Export first to keep a backup.",
+    "github": {
+      "sync": "Sync with GitHub",
+      "syncing": "Syncing...",
+      "syncSuccess": "Synced {{songs}} songs and {{setlists}} setlists.",
+      "syncCreated": "First sync: pushed {{songs}} songs and {{setlists}} setlists.",
+      "syncFailed": "Sync failed: {{error}}",
+      "notConfigured": "GitHub sync not configured.",
+      "goToSettings": "Go to Settings",
+      "lastSync": "Last synced: {{time}}"
+    }
+  },
+  "chordLib": {
+    "title": "Chord Library",
+    "allRoots": "All roots"
+  },
+  "settings": {
+    "title": "Settings",
+    "autoSaveNote": "Changes apply immediately and are saved to your browser.",
+    "preferences": {
+      "heading": "Preferences",
+      "language": "Language",
+      "resetToDefaults": "Reset to defaults",
+      "exported": "Preferences exported.",
+      "imported": "Preferences imported.",
+      "reset": "Reset to defaults."
+    },
+    "scheme": {
+      "label": "Color Scheme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "forceDark": "Force dark mode during performance",
+      "forceDarkDesc": "Overrides your color scheme to dark when entering performance mode."
+    },
+    "accent": {
+      "label": "Accent Color",
+      "blue": "Blue",
+      "purple": "Purple",
+      "green": "Green",
+      "orange": "Orange",
+      "pink": "Pink"
+    },
+    "instrument": {
+      "label": "Favorite Instrument",
+      "guitar": "Guitar",
+      "piano": "Piano"
+    },
+    "display": {
+      "heading": "Display",
+      "desc": "Performance mode appearance — font sizes and section colors.",
+      "globalSize": "Global Size",
+      "scale": "Scale",
+      "scaleDesc": "Multiplies all font sizes — quick adjust for your device distance."
+    },
+    "sizes": {
+      "heading": "Font Sizes",
+      "lyrics": "Lyrics",
+      "chords": "Chords",
+      "sectionLabels": "Section labels"
+    },
+    "theme": {
+      "heading": "Color Theme",
+      "highContrast": "High Contrast",
+      "paper": "Paper"
+    },
+    "colors": {
+      "heading": "Colors",
+      "chords": "Chords",
+      "verse": "Verse section",
+      "chorus": "Chorus section",
+      "bridge": "Bridge section"
+    },
+    "sync": {
+      "heading": "Synchronization",
+      "desc": "Connect a remote storage provider to sync your data across devices."
+    },
+    "github": {
+      "heading": "GitHub Repository",
+      "desc": "Sync your data to a GitHub repository as a JSON file.",
+      "repo": "Repository",
+      "repoPlaceholder": "owner/repo",
+      "token": "Token",
+      "tokenPlaceholder": "ghp_...",
+      "testConnection": "Test connection",
+      "testing": "Testing...",
+      "connected": "Connected to {{repo}}",
+      "connectionFailed": "Connection failed: {{error}}",
+      "disconnect": "Disconnect",
+      "disconnected": "Disconnected.",
+      "tokenHelp": "Create a fine-grained token at GitHub > Settings > Developer settings with Contents read/write permission."
+    }
+  },
+  "validation": {
+    "titleRequired": "Title is required",
+    "setNameRequired": "Set name is required",
+    "nameRequired": "Name is required"
+  }
+}

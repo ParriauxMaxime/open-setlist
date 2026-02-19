@@ -1,0 +1,240 @@
+{
+  "nav": {
+    "songs": "Chansons",
+    "setlists": "Setlists",
+    "sync": "Synchro",
+    "settings": "Paramètres",
+    "playground": "Labo",
+    "chords": "Accords"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "close": "Fermer",
+    "import": "Importer",
+    "export": "Exporter",
+    "add": "Ajouter",
+    "back": "Retour",
+    "yes": "Oui",
+    "unknown": "Inconnu",
+    "noResults": "Aucun résultat ne correspond à vos filtres.",
+    "noData": "Aucune donnée.",
+    "all": "Tous",
+    "filter": "Filtrer...",
+    "search": "Rechercher...",
+    "custom": "Personnalisé"
+  },
+  "catalog": {
+    "title": "Chansons",
+    "addSong": "+ Ajouter",
+    "searchPlaceholder": "Rechercher par titre ou artiste...",
+    "empty": "Aucune chanson. Ajoutez votre première chanson.",
+    "colTitle": "Titre",
+    "colArtist": "Artiste",
+    "colKey": "Tonalité",
+    "colBpm": "BPM",
+    "colTags": "Tags"
+  },
+  "editor": {
+    "newSong": "Nouvelle chanson",
+    "editSong": "Modifier la chanson",
+    "findOnline": "Chercher en ligne",
+    "preview": "Aperçu",
+    "backToCatalog": "Retour au catalogue",
+    "enriching": "Enrichissement...",
+    "fetchingChords": "Récupération des accords...",
+    "done": "Terminé",
+    "titleLabel": "Titre",
+    "titlePlaceholder": "Titre de la chanson",
+    "artistLabel": "Artiste",
+    "artistPlaceholder": "Nom de l\u2019artiste",
+    "keyLabel": "Tonalité",
+    "bpmLabel": "BPM",
+    "durationLabel": "Durée (s)",
+    "tagsLabel": "Tags",
+    "addTagPlaceholder": "Ajouter un tag...",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "Notes de performance, capo, etc.",
+    "chordproLabel": "ChordPro",
+    "deleteSongConfirm": "Supprimer cette chanson\u00a0?",
+    "yesDelete": "Oui, supprimer",
+    "majorGroup": "Majeur",
+    "minorGroup": "Mineur",
+    "displayOverrides": "Affichage personnalisé",
+    "enableDisplayOverrides": "Personnaliser l'affichage pour ce morceau",
+    "displayOverridesDesc": "Ces réglages sont personnels et ne seront pas partagés lors de l'export du morceau.",
+    "resetToGlobal": "Revenir au global"
+  },
+  "lookup": {
+    "title": "Chercher en ligne",
+    "searchPlaceholder": "Rechercher par titre ou artiste...",
+    "searching": "Recherche...",
+    "noResults": "Aucun résultat.",
+    "import": "Importer"
+  },
+  "setlist": {
+    "title": "Setlists",
+    "newSetlist": "+ Nouvelle setlist",
+    "empty": "Aucune setlist. Créez votre première setlist.",
+    "colName": "Nom",
+    "colVenue": "Lieu",
+    "colDate": "Date",
+    "colSongs": "Chansons",
+    "editSetlist": "Modifier la setlist",
+    "backToSetlists": "Retour aux setlists",
+    "nameLabel": "Nom",
+    "dateLabel": "Date",
+    "venueLabel": "Lieu",
+    "venuePlaceholder": "Nom du lieu",
+    "setsHeading": "Sets",
+    "songCount_one": "{{count}} chanson",
+    "songCount_other": "{{count}} chansons",
+    "addSet": "+ Ajouter un set",
+    "perform": "Jouer",
+    "deleteSetlistConfirm": "Supprimer la setlist\u00a0?",
+    "removeSet": "Retirer le set",
+    "noSongsInSet": "Aucune chanson dans ce set.",
+    "addSong": "+ Ajouter une chanson",
+    "searchSongsToAdd": "Chercher des chansons...",
+    "noCatalogSongs": "Aucune chanson dans le catalogue.",
+    "noMatchingSongs": "Aucune chanson correspondante.",
+    "songCatalog": "Catalogue de chansons",
+    "searchSongs": "Chercher des chansons...",
+    "noCatalogSongsShort": "Aucune chanson dans le catalogue.",
+    "noAvailableSongs": "Aucune chanson disponible.",
+    "set": "Set",
+    "song": "Chanson"
+  },
+  "perform": {
+    "noSongsInSetlist": "Cette setlist ne contient aucune chanson.",
+    "editSetlist": "Modifier la setlist",
+    "editSong": "Modifier la chanson",
+    "displaySettings": "Paramètres d\u2019affichage",
+    "deleteSong": "Supprimer la chanson",
+    "exitToSetlist": "Retour à la setlist",
+    "exitToSong": "Retour à la chanson",
+    "exit": "Quitter",
+    "backToSet": "Retour au set",
+    "backToSong": "Retour à la chanson",
+    "noContent": "Aucun contenu.",
+    "songNotFound": "Chanson introuvable."
+  },
+  "sync": {
+    "title": "Synchro",
+    "description": "Exportez vos chansons et setlists en fichier JSON, ou importez depuis un fichier précédemment exporté.",
+    "songCount_one": "{{count}} chanson",
+    "songCount_other": "{{count}} chansons",
+    "setlistCount_one": "{{count}} setlist",
+    "setlistCount_other": "{{count}} setlists",
+    "exportToFile": "Exporter en fichier",
+    "exporting": "Export en cours...",
+    "importFile": "Importer un fichier",
+    "importing": "Import en cours...",
+    "replaceConfirm": "Remplacer toutes les données locales\u00a0?",
+    "yesImport": "Oui, importer",
+    "exportSuccess": "Exporté avec succès.",
+    "exportFailed": "Échec de l\u2019export.",
+    "importSuccess": "Importé {{songs}} chansons et {{setlists}} setlists.",
+    "importFailed": "Échec de l\u2019import.",
+    "importNote": "L\u2019import remplace toutes les données locales. Exportez d\u2019abord pour garder une sauvegarde.",
+    "github": {
+      "sync": "Synchroniser avec GitHub",
+      "syncing": "Synchronisation...",
+      "syncSuccess": "Synchronisé {{songs}} chansons et {{setlists}} setlists.",
+      "syncCreated": "Première synchro\u00a0: envoyé {{songs}} chansons et {{setlists}} setlists.",
+      "syncFailed": "Échec de la synchro\u00a0: {{error}}",
+      "notConfigured": "Synchronisation GitHub non configurée.",
+      "goToSettings": "Aller aux paramètres",
+      "lastSync": "Dernière synchro\u00a0: {{time}}"
+    }
+  },
+  "chordLib": {
+    "title": "Bibliothèque d\u2019accords",
+    "allRoots": "Toutes les notes"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "autoSaveNote": "Les modifications s\u2019appliquent immédiatement et sont sauvegardées dans votre navigateur.",
+    "preferences": {
+      "heading": "Préférences",
+      "language": "Langue",
+      "resetToDefaults": "Réinitialiser",
+      "exported": "Préférences exportées.",
+      "imported": "Préférences importées.",
+      "reset": "Réinitialisé aux valeurs par défaut."
+    },
+    "scheme": {
+      "label": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système",
+      "forceDark": "Forcer le mode sombre en performance",
+      "forceDarkDesc": "Remplace votre thème par le mode sombre en mode performance."
+    },
+    "accent": {
+      "label": "Couleur d\u2019accentuation",
+      "blue": "Bleu",
+      "purple": "Violet",
+      "green": "Vert",
+      "orange": "Orange",
+      "pink": "Rose"
+    },
+    "instrument": {
+      "label": "Instrument favori",
+      "guitar": "Guitare",
+      "piano": "Piano"
+    },
+    "display": {
+      "heading": "Affichage",
+      "desc": "Apparence du mode performance — tailles de police et couleurs de section.",
+      "globalSize": "Taille globale",
+      "scale": "Échelle",
+      "scaleDesc": "Multiplie toutes les tailles de police — ajustement rapide selon la distance."
+    },
+    "sizes": {
+      "heading": "Tailles de police",
+      "lyrics": "Paroles",
+      "chords": "Accords",
+      "sectionLabels": "Étiquettes de section"
+    },
+    "theme": {
+      "heading": "Thème de couleurs",
+      "highContrast": "Contraste élevé",
+      "paper": "Papier"
+    },
+    "colors": {
+      "heading": "Couleurs",
+      "chords": "Accords",
+      "verse": "Section couplet",
+      "chorus": "Section refrain",
+      "bridge": "Section pont"
+    },
+    "sync": {
+      "heading": "Synchronisation",
+      "desc": "Connectez un fournisseur de stockage distant pour synchroniser vos données entre appareils."
+    },
+    "github": {
+      "heading": "Dépôt GitHub",
+      "desc": "Synchronisez vos données vers un dépôt GitHub sous forme de fichier JSON.",
+      "repo": "Dépôt",
+      "repoPlaceholder": "propriétaire/dépôt",
+      "token": "Jeton",
+      "tokenPlaceholder": "ghp_...",
+      "testConnection": "Tester la connexion",
+      "testing": "Test en cours...",
+      "connected": "Connecté à {{repo}}",
+      "connectionFailed": "Échec de connexion\u00a0: {{error}}",
+      "disconnect": "Déconnecter",
+      "disconnected": "Déconnecté.",
+      "tokenHelp": "Créez un jeton à portée limitée dans GitHub > Settings > Developer settings avec la permission Contents en lecture/écriture."
+    }
+  },
+  "validation": {
+    "titleRequired": "Le titre est requis",
+    "setNameRequired": "Le nom du set est requis",
+    "nameRequired": "Le nom est requis"
+  }
+}
