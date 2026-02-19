@@ -58,6 +58,7 @@
     "addTagPlaceholder": "Ajouter un tag...",
     "notesLabel": "Notes",
     "notesPlaceholder": "Notes de performance, capo, etc.",
+    "linksLabel": "Liens (YouTube, Spotify, Deezer)",
     "chordproLabel": "ChordPro",
     "deleteSongConfirm": "Supprimer cette chanson\u00a0?",
     "yesDelete": "Oui, supprimer",
@@ -216,6 +217,11 @@
       "heading": "Synchronisation",
       "desc": "Connectez un fournisseur de stockage distant pour synchroniser vos données entre appareils."
     },
+    "install": {
+      "heading": "Installer l\u2019appli",
+      "desc": "Installez Open Setlist sur votre appareil pour un acc\u00e8s rapide et une utilisation hors ligne.",
+      "action": "Instructions d\u2019installation"
+    },
     "github": {
       "heading": "Dépôt GitHub",
       "desc": "Synchronisez vos données vers un dépôt GitHub sous forme de fichier JSON.",
@@ -231,6 +237,26 @@
       "disconnected": "Déconnecté.",
       "tokenHelp": "Créez un jeton à portée limitée dans GitHub > Settings > Developer settings avec la permission Contents en lecture/écriture."
     }
+  },
+  "pwa": {
+    "title": "Installer Open Setlist",
+    "androidChrome": "Pour une meilleure exp\u00e9rience, installez l\u2019appli\u00a0:",
+    "install": "Installer",
+    "iosSafari": "Pour installer, appuyez sur le bouton <strong>Partager</strong>, puis <strong>Sur l\u2019\u00e9cran d\u2019accueil</strong>.",
+    "iosOther": "Ouvrez ce lien dans Safari pour installer l\u2019appli\u00a0:",
+    "desktop": "Cliquez sur l\u2019ic\u00f4ne d\u2019installation dans la barre d\u2019adresse de votre navigateur.",
+    "dismiss": "Pas maintenant"
+  },
+  "invite": {
+    "inviteMembers": "Inviter des membres",
+    "linkCopied": "Lien d\u2019invitation copi\u00e9\u00a0!",
+    "shareFailed": "Impossible de partager le lien.",
+    "joinTitle": "Rejoindre {{name}}",
+    "joinMessage": "Ce groupe veut partager ses setlists avec vous.",
+    "join": "Rejoindre",
+    "joining": "Connexion...",
+    "joinSuccess": "Rejoint\u00a0! Synchronisation des setlists...",
+    "joinFailed": "Impossible de rejoindre\u00a0: {{error}}"
   },
   "validation": {
     "titleRequired": "Le titre est requis",

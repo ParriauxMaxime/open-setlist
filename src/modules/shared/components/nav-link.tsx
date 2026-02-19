@@ -17,6 +17,7 @@ export function NavLink({ to, params, label, icon, active, onClick }: NavLinkPro
     <Link
       to={(Router[to] as (params?: Record<string, string>) => string)(params)}
       onClick={onClick}
+      aria-current={active ? "page" : undefined}
       className={[
         "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
         active
@@ -24,7 +25,9 @@ export function NavLink({ to, params, label, icon, active, onClick }: NavLinkPro
           : "text-text-muted hover:bg-bg-hover hover:text-text",
       ].join(" ")}
     >
-      <span className="text-lg">{icon}</span>
+      <span className="text-lg" aria-hidden="true">
+        {icon}
+      </span>
       <span>{label}</span>
     </Link>
   );

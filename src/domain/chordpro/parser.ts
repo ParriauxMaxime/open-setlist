@@ -39,6 +39,40 @@ export interface Segment {
 const DIRECTIVE_RE = /^\{(\w+)(?::\s*(.+))?\}$/;
 const CHORD_RE = /\[([^\]]+)\]/g;
 
+/**
+ * Heuristic: detect bracket-based section labels like [Verse 1 :], [Intro 🎸:], [Solo], etc.
+ * These are NOT standard ChordPro but common in exported sheets. We recognize them when:
+ * - The line is ONLY a single bracket expression (possibly with trailing whitespace/colon)
+ *   OR the bracket content contains a known section keyword
+ * - The bracket content does NOT look like a chord (A-G root + optional #/b/m/7/etc.)
+ */
+const SECTION_KEYWORDS =
+  /^(verse|chorus|refrain|couplet|bridge|pont|intro|outro|solo|pre[- ]?chorus|interlude|instrumental|riff|fin|end|breakdown|hook|tag|outro)/i;
+
+const BRACKET_SECTION_RE = /^\[([^\]]+)\]\s*$/;
+
+function isBracketSection(line: string): { type: string; label: string } | null {
+  const m = line.match(BRACKET_SECTION_RE);
+  if (!m) return null;
+
+  const content = m[1].trim();
+  // Strip trailing colon for matching
+  const cleaned = content.replace(/\s*:\s*$/, "").trim();
+  const kwMatch = cleaned.match(SECTION_KEYWORDS);
+  if (!kwMatch) return null;
+
+  const keyword = kwMatch[1].toLowerCase().replace(/\s+/g, "-");
+
+  // Map keyword to section type
+  let type: string;
+  if (/^verse|^couplet/i.test(keyword)) type = "verse";
+  else if (/^chorus|^refrain/i.test(keyword)) type = "chorus";
+  else if (/^bridge|^pont/i.test(keyword)) type = "bridge";
+  else type = keyword;
+
+  return { type, label: cleaned };
+}
+
 const SECTION_START: Record<string, string> = {
   start_of_verse: "verse",
   sov: "verse",
@@ -74,6 +108,7 @@ const META_DIRECTIVES = new Set([
   "notes",
   "capo",
   "tempo",
+  "youtube",
 ]);
 
 const CORE_TYPES = new Set(["verse", "chorus", "bridge"]);
@@ -221,6 +256,22 @@ export function parse(source: string): ChordProSong {
         }
         // Other directives ignored for now
       }
+      continue;
+    }
+
+    // Heuristic: bracket-based section labels like [Verse 1 :], [Intro 🎸:]
+    const bracketSection = isBracketSection(line);
+    if (bracketSection) {
+      if (currentSection) {
+        sections.push(currentSection);
+      }
+      currentSection = {
+        type: bracketSection.type,
+        label: bracketSection.label,
+        renderMode: getRenderMode(bracketSection.type),
+        layer: getLayer(bracketSection.type),
+        lines: [],
+      };
       continue;
     }
 

@@ -1,4 +1,5 @@
-import { db, type Setlist } from "@db";
+import type { Setlist } from "@db";
+import { useDb } from "@db/provider";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
@@ -21,7 +22,8 @@ const col = createColumnHelper<Setlist>();
 
 function SetlistListPage() {
   const { t } = useTranslation();
-  const setlists = useLiveQuery(() => db.setlists.orderBy("updatedAt").reverse().toArray());
+  const db = useDb();
+  const setlists = useLiveQuery(() => db.setlists.orderBy("updatedAt").reverse().toArray(), [db]);
 
   const columns: ColumnDef<Setlist, unknown>[] = [
     col.accessor("name", {

@@ -12,10 +12,13 @@ import {
   savePreferences,
   saveSongOverrides,
 } from "@domain/preferences";
+import { useActiveProfileId } from "@domain/profiles";
+import { detectPlatform, requestPwaPrompt } from "@domain/pwa";
 import i18n from "i18next";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GitHubConfigForm } from "./components/github-config-form";
+import { ProfileManager } from "./components/profile-manager";
 
 export const SETTINGS_SCROLL_KEY = "settings-scroll-to";
 
@@ -50,6 +53,7 @@ const THEME_NAME_KEYS: Record<string, string> = {
 
 export function SettingsPage() {
   const { t } = useTranslation();
+  const profileId = useActiveProfileId();
   const [prefs, setPrefs] = useState(loadPreferences);
   const [status, setStatus] = useState<Status>({ type: "idle" });
 
@@ -276,6 +280,21 @@ export function SettingsPage() {
       </section>
 
       {/* ================================================================
+       * Section — Install the app (hidden when already standalone)
+       * ================================================================ */}
+      {detectPlatform() !== "standalone" && (
+        <section id="install" className="mb-8">
+          <h2 className="mb-4 border-b border-border pb-2 text-lg font-semibold">
+            {t("settings.install.heading")}
+          </h2>
+          <p className="mb-4 text-sm text-text-muted">{t("settings.install.desc")}</p>
+          <button type="button" onClick={requestPwaPrompt} className="btn btn-outline">
+            {t("settings.install.action")}
+          </button>
+        </section>
+      )}
+
+      {/* ================================================================
        * Section 2 — Display (performance mode)
        * ================================================================ */}
       <section id="display" className="mb-8">
@@ -406,7 +425,20 @@ export function SettingsPage() {
       </section>
 
       {/* ================================================================
-       * Section 3 — Synchronization
+       * Section 3 — Profiles
+       * ================================================================ */}
+      <section id="profiles" className="mb-8">
+        <h2 className="mb-4 border-b border-border pb-2 text-lg font-semibold">Profiles</h2>
+
+        <p className="mb-4 text-sm text-text-muted">
+          Each profile has its own songs, setlists, and sync configuration.
+        </p>
+
+        <ProfileManager />
+      </section>
+
+      {/* ================================================================
+       * Section 4 — Synchronization
        * ================================================================ */}
       <section id="sync" className="mb-8">
         <h2 className="mb-4 border-b border-border pb-2 text-lg font-semibold">
@@ -415,11 +447,13 @@ export function SettingsPage() {
 
         <p className="mb-4 text-sm text-text-muted">{t("settings.sync.desc")}</p>
 
-        <GitHubConfigForm defaultOpen={scrollTarget === "github"} />
+        <GitHubConfigForm profileId={profileId} defaultOpen={scrollTarget === "github"} />
       </section>
 
-      {status.type === "success" && <p className="mt-4 text-sm text-accent">{status.message}</p>}
-      {status.type === "error" && <p className="mt-4 text-sm text-danger">{status.message}</p>}
+      <div aria-live="polite">
+        {status.type === "success" && <p className="mt-4 text-sm text-accent">{status.message}</p>}
+        {status.type === "error" && <p className="mt-4 text-sm text-danger">{status.message}</p>}
+      </div>
     </div>
   );
 }

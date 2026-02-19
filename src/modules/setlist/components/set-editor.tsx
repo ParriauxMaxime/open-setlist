@@ -1,4 +1,5 @@
-import { db, type SetlistSet } from "@db";
+import type { SetlistSet } from "@db";
+import { useDb } from "@db/provider";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -38,12 +39,14 @@ export function SetEditor({
     data: { setName: set.name },
   });
 
+  const db = useDb();
+
   // Resolve song IDs to song objects for display
   const songs = useLiveQuery(async () => {
     if (set.songIds.length === 0) return [];
     const all = await db.songs.bulkGet(set.songIds);
     return all;
-  }, [set.songIds]);
+  }, [set.songIds, db]);
 
   const addSong = (songId: string) => {
     onUpdate({ ...set, songIds: [...set.songIds, songId] });

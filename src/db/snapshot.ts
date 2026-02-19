@@ -1,6 +1,6 @@
 import { snapshotSchema } from "@domain/schemas/snapshot";
 import { loadTombstones, type Tombstone } from "@domain/sync/tombstones";
-import { db } from ".";
+import type { AppDatabase } from ".";
 import type { Setlist } from "./setlist";
 import type { Song } from "./song";
 
@@ -14,9 +14,9 @@ export interface Snapshot {
   tombstones?: Tombstone[];
 }
 
-export async function exportSnapshot(): Promise<Snapshot> {
+export async function exportSnapshot(db: AppDatabase, profileId: string): Promise<Snapshot> {
   const [songs, setlists] = await Promise.all([db.songs.toArray(), db.setlists.toArray()]);
-  const tombstones = loadTombstones();
+  const tombstones = loadTombstones(profileId);
   return {
     version: SNAPSHOT_VERSION,
     exportedAt: Date.now(),
@@ -26,7 +26,7 @@ export async function exportSnapshot(): Promise<Snapshot> {
   };
 }
 
-export async function importSnapshot(data: unknown): Promise<void> {
+export async function importSnapshot(db: AppDatabase, data: unknown): Promise<void> {
   const snapshot = snapshotSchema.parse(data);
   await db.transaction("rw", db.songs, db.setlists, async () => {
     await db.songs.clear();

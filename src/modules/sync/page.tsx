@@ -1,9 +1,16 @@
-import { db } from "@db";
+import { useDb } from "@db/provider";
 import { exportSnapshot, importSnapshot } from "@db/snapshot";
+import { useActiveProfileId } from "@domain/profiles";
 import { fileAdapter } from "@domain/sync/adapters/file";
 import { createGitHubAdapter } from "@domain/sync/adapters/github";
 import { loadSyncConfig } from "@domain/sync/config";
-import { type SyncResult, sync } from "@domain/sync/orchestrator";
+import type { ChangeItem } from "@domain/sync/diff";
+import {
+  pullAndDiff,
+  pushSelected,
+  type SyncResult,
+  type SyncReviewContext,
+} from "@domain/sync/orchestrator";
 import { Link } from "@swan-io/chicane";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useState } from "react";
@@ -11,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
 import { GitHubIcon } from "../design-system/components/icons";
 import { SETTINGS_SCROLL_KEY } from "../settings/page";
+import { SyncReview } from "./components/sync-review";
 
 type Status =
   | { type: "idle" }
@@ -21,7 +29,9 @@ type Status =
 
 type GitHubStatus =
   | { type: "idle" }
-  | { type: "syncing" }
+  | { type: "pulling" }
+  | { type: "review"; ctx: SyncReviewContext }
+  | { type: "pushing" }
   | { type: "success"; result: SyncResult }
   | { type: "error"; message: string };
 
@@ -38,46 +48,72 @@ function formatTimeAgo(timestamp: number): string {
 
 export function SyncPage() {
   const { t } = useTranslation();
-  const songCount = useLiveQuery(() => db.songs.count()) ?? 0;
-  const setlistCount = useLiveQuery(() => db.setlists.count()) ?? 0;
+  const db = useDb();
+  const profileId = useActiveProfileId();
+  const songCount = useLiveQuery(() => db.songs.count(), [db]) ?? 0;
+  const setlistCount = useLiveQuery(() => db.setlists.count(), [db]) ?? 0;
   const [status, setStatus] = useState<Status>({ type: "idle" });
   const [confirmImport, setConfirmImport] = useState(false);
   const [ghStatus, setGhStatus] = useState<GitHubStatus>({ type: "idle" });
 
-  const syncConfig = loadSyncConfig();
+  const syncConfig = loadSyncConfig(profileId);
   const ghConfigured = syncConfig?.adapter === "github";
 
+  // Step 1: Pull + diff
   const handleGitHubSync = useCallback(async () => {
-    const config = loadSyncConfig();
+    const config = loadSyncConfig(profileId);
     if (!config || config.adapter !== "github") return;
-    setGhStatus({ type: "syncing" });
+    setGhStatus({ type: "pulling" });
     try {
       const adapter = createGitHubAdapter(config);
-      const result = await sync(adapter);
-      setGhStatus({ type: "success", result });
+      const result = await pullAndDiff(adapter, db, profileId);
+      if ("status" in result) {
+        setGhStatus({ type: "success", result });
+      } else {
+        setGhStatus({ type: "review", ctx: result });
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setGhStatus({ type: "error", message });
     }
-  }, []);
+  }, [db, profileId]);
+
+  // Step 2: Push selected
+  const handlePushSelected = useCallback(
+    async (selectedOutgoing: ChangeItem[]) => {
+      if (ghStatus.type !== "review") return;
+      const config = loadSyncConfig(profileId);
+      if (!config || config.adapter !== "github") return;
+      setGhStatus({ type: "pushing" });
+      try {
+        const adapter = createGitHubAdapter(config);
+        const result = await pushSelected(adapter, db, profileId, ghStatus.ctx, selectedOutgoing);
+        setGhStatus({ type: "success", result });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        setGhStatus({ type: "error", message });
+      }
+    },
+    [ghStatus, db, profileId],
+  );
 
   const handleExport = useCallback(async () => {
     setStatus({ type: "exporting" });
     try {
-      const snapshot = await exportSnapshot();
+      const snapshot = await exportSnapshot(db, profileId);
       await fileAdapter.push(snapshot);
       setStatus({ type: "success", message: t("sync.exportSuccess") });
     } catch {
       setStatus({ type: "error", message: t("sync.exportFailed") });
     }
-  }, [t]);
+  }, [t, db, profileId]);
 
   const handleImport = useCallback(async () => {
     setStatus({ type: "importing" });
     setConfirmImport(false);
     try {
       const snapshot = await fileAdapter.pull();
-      await importSnapshot(snapshot);
+      await importSnapshot(db, snapshot);
       setStatus({
         type: "success",
         message: t("sync.importSuccess", {
@@ -94,7 +130,7 @@ export function SyncPage() {
       const message = err instanceof Error ? err.message : t("sync.importFailed");
       setStatus({ type: "error", message });
     }
-  }, [t]);
+  }, [t, db]);
 
   const busy = status.type === "exporting" || status.type === "importing";
 
@@ -145,9 +181,10 @@ export function SyncPage() {
         )}
       </div>
 
-      {status.type === "success" && <p className="mt-4 text-sm text-accent">{status.message}</p>}
-
-      {status.type === "error" && <p className="mt-4 text-sm text-danger">{status.message}</p>}
+      <div aria-live="polite">
+        {status.type === "success" && <p className="mt-4 text-sm text-accent">{status.message}</p>}
+        {status.type === "error" && <p className="mt-4 text-sm text-danger">{status.message}</p>}
+      </div>
 
       <p className="mt-6 text-xs text-text-faint">{t("sync.importNote")}</p>
 
@@ -172,41 +209,61 @@ export function SyncPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={handleGitHubSync}
-              disabled={ghStatus.type === "syncing"}
-              className="btn btn-primary"
-            >
-              {ghStatus.type === "syncing" ? t("sync.github.syncing") : t("sync.github.sync")}
-            </button>
+          {/* Review mode */}
+          {ghStatus.type === "review" ? (
+            <SyncReview
+              diff={ghStatus.ctx.diff}
+              onConfirm={handlePushSelected}
+              onCancel={() => setGhStatus({ type: "idle" })}
+              busy={false}
+            />
+          ) : (
+            <>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleGitHubSync}
+                  disabled={ghStatus.type === "pulling" || ghStatus.type === "pushing"}
+                  className="btn btn-primary"
+                >
+                  {ghStatus.type === "pulling"
+                    ? "Pulling..."
+                    : ghStatus.type === "pushing"
+                      ? "Pushing..."
+                      : t("sync.github.sync")}
+                </button>
 
-            {syncConfig.lastSyncedAt && ghStatus.type === "idle" && (
-              <span className="text-sm text-text-muted">
-                {t("sync.github.lastSync", { time: formatTimeAgo(syncConfig.lastSyncedAt) })}
-              </span>
-            )}
-          </div>
+                {syncConfig.lastSyncedAt && ghStatus.type === "idle" && (
+                  <span className="text-sm text-text-muted">
+                    {t("sync.github.lastSync", { time: formatTimeAgo(syncConfig.lastSyncedAt) })}
+                  </span>
+                )}
+              </div>
 
-          {ghStatus.type === "success" && (
-            <p className="text-sm text-accent">
-              {ghStatus.result.status === "created"
-                ? t("sync.github.syncCreated", {
-                    songs: ghStatus.result.songCount,
-                    setlists: ghStatus.result.setlistCount,
-                  })
-                : t("sync.github.syncSuccess", {
-                    songs: ghStatus.result.songCount,
-                    setlists: ghStatus.result.setlistCount,
-                  })}
-            </p>
-          )}
+              <div aria-live="polite">
+                {ghStatus.type === "success" && (
+                  <p className="text-sm text-accent">
+                    {ghStatus.result.status === "created"
+                      ? t("sync.github.syncCreated", {
+                          songs: ghStatus.result.songCount,
+                          setlists: ghStatus.result.setlistCount,
+                        })
+                      : ghStatus.result.status === "up-to-date"
+                        ? "Everything is up to date."
+                        : t("sync.github.syncSuccess", {
+                            songs: ghStatus.result.songCount,
+                            setlists: ghStatus.result.setlistCount,
+                          })}
+                  </p>
+                )}
 
-          {ghStatus.type === "error" && (
-            <p className="text-sm text-danger">
-              {t("sync.github.syncFailed", { error: ghStatus.message })}
-            </p>
+                {ghStatus.type === "error" && (
+                  <p className="text-sm text-danger">
+                    {t("sync.github.syncFailed", { error: ghStatus.message })}
+                  </p>
+                )}
+              </div>
+            </>
           )}
         </div>
       )}

@@ -1,4 +1,12 @@
-import { type ComponentProps, forwardRef, type ReactNode } from "react";
+import {
+  Children,
+  type ComponentProps,
+  cloneElement,
+  forwardRef,
+  isValidElement,
+  type ReactNode,
+  useId,
+} from "react";
 import { useTranslation } from "react-i18next";
 
 /* ─── Zod message → i18n key mapping ───────────────────────────── */
@@ -19,13 +27,33 @@ interface FieldProps {
 
 export function Field({ label, error, children }: FieldProps) {
   const { t } = useTranslation();
+  const id = useId();
+  const errorId = `${id}-error`;
   const translated = error ? t(ZOD_KEYS[error] ?? error) : undefined;
+
+  const isSingleElement = Children.count(children) === 1 && isValidElement(children);
 
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-sm font-medium text-text-muted">{label}</span>
-      {children}
-      {translated && <span className="text-xs text-danger">{translated}</span>}
+      {isSingleElement ? (
+        <label htmlFor={id} className="text-sm font-medium text-text-muted">
+          {label}
+        </label>
+      ) : (
+        <span className="text-sm font-medium text-text-muted">{label}</span>
+      )}
+      {isSingleElement
+        ? cloneElement(children, {
+            id,
+            "aria-invalid": error ? true : undefined,
+            "aria-describedby": translated ? errorId : undefined,
+          } as Record<string, unknown>)
+        : children}
+      {translated && (
+        <span id={errorId} role="alert" className="text-xs text-danger">
+          {translated}
+        </span>
+      )}
     </div>
   );
 }

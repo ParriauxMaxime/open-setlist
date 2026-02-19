@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-const STORAGE_KEY = "open-setlist-sync-config";
+const STORAGE_KEY_PREFIX = "open-setlist-sync-config";
+
+function storageKey(profileId: string): string {
+  return `${STORAGE_KEY_PREFIX}-${profileId}`;
+}
 
 const githubConfigSchema = z.object({
   adapter: z.literal("github"),
@@ -17,9 +21,9 @@ const syncConfigSchema = z.discriminatedUnion("adapter", [githubConfigSchema]);
 export type GitHubConfig = z.infer<typeof githubConfigSchema>;
 export type SyncConfig = z.infer<typeof syncConfigSchema>;
 
-export function loadSyncConfig(): SyncConfig | null {
+export function loadSyncConfig(profileId: string): SyncConfig | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(profileId));
     if (!raw) return null;
     return syncConfigSchema.parse(JSON.parse(raw));
   } catch {
@@ -27,10 +31,20 @@ export function loadSyncConfig(): SyncConfig | null {
   }
 }
 
-export function saveSyncConfig(config: SyncConfig): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+export function saveSyncConfig(profileId: string, config: SyncConfig): void {
+  localStorage.setItem(storageKey(profileId), JSON.stringify(config));
 }
 
-export function clearSyncConfig(): void {
-  localStorage.removeItem(STORAGE_KEY);
+export function clearSyncConfig(profileId: string): void {
+  localStorage.removeItem(storageKey(profileId));
+}
+
+/** Migrate old un-keyed config to a profile-keyed one. Returns true if migration happened. */
+export function migrateUnkeyedConfig(profileId: string): boolean {
+  const OLD_KEY = "open-setlist-sync-config";
+  const raw = localStorage.getItem(OLD_KEY);
+  if (!raw) return false;
+  localStorage.setItem(storageKey(profileId), raw);
+  localStorage.removeItem(OLD_KEY);
+  return true;
 }

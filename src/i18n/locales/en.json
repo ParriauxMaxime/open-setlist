@@ -58,6 +58,7 @@
     "addTagPlaceholder": "Add tag...",
     "notesLabel": "Notes",
     "notesPlaceholder": "Performance notes, capo position, etc.",
+    "linksLabel": "Links (YouTube, Spotify, Deezer)",
     "chordproLabel": "ChordPro",
     "deleteSongConfirm": "Delete this song?",
     "yesDelete": "Yes, delete",
@@ -216,6 +217,11 @@
       "heading": "Synchronization",
       "desc": "Connect a remote storage provider to sync your data across devices."
     },
+    "install": {
+      "heading": "Install the App",
+      "desc": "Install Open Setlist on your device for quick access and offline use.",
+      "action": "Install instructions"
+    },
     "github": {
       "heading": "GitHub Repository",
       "desc": "Sync your data to a GitHub repository as a JSON file.",
@@ -231,6 +237,26 @@
       "disconnected": "Disconnected.",
       "tokenHelp": "Create a fine-grained token at GitHub > Settings > Developer settings with Contents read/write permission."
     }
+  },
+  "pwa": {
+    "title": "Install Open Setlist",
+    "androidChrome": "For the best experience, install the app:",
+    "install": "Install",
+    "iosSafari": "To install, tap the <strong>Share</strong> button, then <strong>Add to Home Screen</strong>.",
+    "iosOther": "Open this link in Safari to install the app:",
+    "desktop": "Click the install icon in your browser's address bar to install the app.",
+    "dismiss": "Not now"
+  },
+  "invite": {
+    "inviteMembers": "Invite band members",
+    "linkCopied": "Invite link copied!",
+    "shareFailed": "Could not share the link.",
+    "joinTitle": "Join {{name}}",
+    "joinMessage": "This band wants to share their setlists with you.",
+    "join": "Join",
+    "joining": "Joining...",
+    "joinSuccess": "Joined! Syncing setlists...",
+    "joinFailed": "Could not join: {{error}}"
   },
   "validation": {
     "titleRequired": "Title is required",

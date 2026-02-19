@@ -1,4 +1,5 @@
-import { db, type Song } from "@db";
+import type { Song } from "@db";
+import { useDb } from "@db/provider";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo, useState } from "react";
@@ -13,8 +14,9 @@ interface SongCatalogPanelProps {
 
 export function SongCatalogPanel({ usedSongIds }: SongCatalogPanelProps) {
   const { t } = useTranslation();
+  const db = useDb();
   const [search, setSearch] = useState("");
-  const songs = useLiveQuery(() => db.songs.orderBy("title").toArray());
+  const songs = useLiveQuery(() => db.songs.orderBy("title").toArray(), [db]);
 
   const available = useMemo(() => {
     if (!songs) return [];

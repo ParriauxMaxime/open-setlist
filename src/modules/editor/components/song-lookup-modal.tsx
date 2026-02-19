@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "../../design-system/components/form";
 import { type SongSearchResult, searchSongs } from "../../lookup";
+import { useFocusTrap } from "../../shared/hooks/use-focus-trap";
 
 interface SongLookupModalProps {
   onSelect: (values: Partial<SongFormValues>) => void;
@@ -16,6 +17,7 @@ export function SongLookupModal({ onSelect, onClose }: SongLookupModalProps) {
   const [searching, setSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const trapRef = useFocusTrap(true);
 
   // Autofocus search input
   useEffect(() => {
@@ -87,10 +89,18 @@ export function SongLookupModal({ onSelect, onClose }: SongLookupModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-bg">
+    <div
+      ref={trapRef as React.RefObject<HTMLDivElement>}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="lookup-title"
+      className="fixed inset-0 z-50 flex flex-col bg-bg"
+    >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border p-page">
-        <h2 className="text-lg font-bold">{t("lookup.title")}</h2>
+        <h2 id="lookup-title" className="text-lg font-bold">
+          {t("lookup.title")}
+        </h2>
         <button type="button" onClick={onClose} className="btn btn-ghost btn-sm">
           {t("common.close")}
         </button>

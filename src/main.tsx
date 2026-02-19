@@ -1,9 +1,10 @@
 import "@i18n";
-import { seedIfEmpty } from "@db/seed";
+import { migrateAndInit } from "@db/migration";
 import { applyPreferences, loadPreferences } from "@domain/preferences";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./app";
+import { DbProvider } from "./db/provider";
 import "./styles/global.css";
 
 // Apply display preferences before render to prevent flash of default styles
@@ -23,13 +24,15 @@ if ("serviceWorker" in navigator) {
   }
 }
 
-seedIfEmpty().then(() => {
+migrateAndInit().then(() => {
   const root = document.getElementById("root");
   if (!root) throw new Error("Missing #root element");
 
   createRoot(root).render(
     <StrictMode>
-      <App />
+      <DbProvider>
+        <App />
+      </DbProvider>
     </StrictMode>,
   );
 });

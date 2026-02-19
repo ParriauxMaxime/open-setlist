@@ -23,7 +23,7 @@
   /* Text */
   --color-text: #e8e8e8;
   --color-text-muted: #888;
-  --color-text-faint: #555;
+  --color-text-faint: #777;
 
   /* Accent — used sparingly: active states, links, primary actions */
   --color-accent: #4a9eff;
@@ -75,7 +75,7 @@
 
   --color-text: #e8e8e8;
   --color-text-muted: #888;
-  --color-text-faint: #555;
+  --color-text-faint: #777;
 
   --color-border: #2a2a2a;
   --color-border-focus: var(--color-accent);
@@ -93,7 +93,7 @@
 
   --color-text: #1a1a1a;
   --color-text-muted: #666666;
-  --color-text-faint: #999999;
+  --color-text-faint: #767676;
 
   --color-border: #d4d4d4;
   --color-border-focus: var(--color-accent);
@@ -240,7 +240,6 @@ body {
 
 .field:focus {
   border-color: var(--color-border-focus);
-  outline: none;
 }
 
 .field:disabled {
@@ -268,7 +267,19 @@ body {
 
 .field-sm:focus {
   border-color: var(--color-border-focus);
-  outline: none;
+}
+
+/* --- Focus indicators --- */
+
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.field:focus-visible,
+.field-sm:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -1px;
 }
 
 /* --- Buttons --- */

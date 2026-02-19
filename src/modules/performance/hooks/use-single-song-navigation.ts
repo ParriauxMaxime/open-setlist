@@ -1,10 +1,11 @@
-import { db } from "@db";
+import { useDb } from "@db/provider";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import type { FlatEntry } from "./use-setlist-navigation";
 
 export function useSingleSongNavigation(songId: string) {
-  const song = useLiveQuery(() => db.songs.get(songId), [songId]);
+  const db = useDb();
+  const song = useLiveQuery(() => db.songs.get(songId), [songId, db]);
   const [currentIndex] = useState(0);
 
   const current: FlatEntry = {
