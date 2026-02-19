@@ -1,0 +1,68 @@
+import { db, type Song } from "@db";
+import { useLiveQuery } from "dexie-react-hooks";
+import { useMemo, useState } from "react";
+
+export interface FlatEntry {
+  songId: string;
+  setName: string;
+  setIndex: number;
+  indexInSet: number;
+  setSize: number;
+}
+
+export function useSetlistNavigation(setlistId: string) {
+  const setlist = useLiveQuery(() => db.setlists.get(setlistId), [setlistId]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const flatSongs = useMemo<FlatEntry[]>(() => {
+    if (!setlist) return [];
+    const result: FlatEntry[] = [];
+    for (let si = 0; si < setlist.sets.length; si++) {
+      const set = setlist.sets[si];
+      for (let i = 0; i < set.songIds.length; i++) {
+        result.push({
+          songId: set.songIds[i],
+          setName: set.name,
+          setIndex: si,
+          indexInSet: i,
+          setSize: set.songIds.length,
+        });
+      }
+    }
+    return result;
+  }, [setlist]);
+
+  const allSongIds = useMemo(() => flatSongs.map((s) => s.songId), [flatSongs]);
+  const songs = useLiveQuery(async () => {
+    if (allSongIds.length === 0) return new Map<string, Song>();
+    const results = await db.songs.bulkGet(allSongIds);
+    const map = new Map<string, Song>();
+    for (const s of results) {
+      if (s) map.set(s.id, s);
+    }
+    return map;
+  }, [allSongIds]);
+
+  const current = flatSongs[currentIndex];
+  const currentSong = current && songs ? songs.get(current.songId) : undefined;
+  const prevEntry = flatSongs[currentIndex - 1];
+  const nextEntry = flatSongs[currentIndex + 1];
+  const prevSong = prevEntry && songs ? songs.get(prevEntry.songId) : undefined;
+  const nextSong = nextEntry && songs ? songs.get(nextEntry.songId) : undefined;
+
+  const isFirst = currentIndex === 0;
+  const isLast = currentIndex === flatSongs.length - 1;
+
+  return {
+    setlist,
+    flatSongs,
+    currentIndex,
+    setCurrentIndex,
+    current,
+    currentSong,
+    prevSong,
+    nextSong,
+    isFirst,
+    isLast,
+  };
+}

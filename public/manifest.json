@@ -1,0 +1,17 @@
+{
+  "name": "Open Setlist",
+  "short_name": "Setlist",
+  "description": "Open-source setlist manager for musicians",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "icons/icon-192.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

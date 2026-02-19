@@ -1,0 +1,45 @@
+{
+  "name": "open-setlist",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open-source setlist manager for musicians",
+  "scripts": {
+    "dev": "rspack serve --mode development",
+    "build": "rspack build --mode production",
+    "preview": "npx serve dist",
+    "format": "biome check --fix .",
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@floating-ui/react": "^0.27.18",
+    "@hookform/resolvers": "^5.2.2",
+    "@swan-io/chicane": "^3.0.0",
+    "@tanstack/react-table": "^8.21.3",
+    "dexie": "^4.0.0",
+    "dexie-react-hooks": "^1.1.0",
+    "i18next": "^25.8.11",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.71.1",
+    "react-i18next": "^16.5.4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.2",
+    "@rspack/cli": "^1.0.0",
+    "@rspack/core": "^1.0.0",
+    "@rspack/plugin-react-refresh": "^1.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "postcss": "^8.5.0",
+    "postcss-loader": "^8.1.0",
+    "react-refresh": "^0.14.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}

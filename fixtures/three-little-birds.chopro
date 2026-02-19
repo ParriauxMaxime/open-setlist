@@ -1,0 +1,60 @@
+{title: Three Little Birds}
+{artist: Bob Marley & The Wailers}
+{key: A}
+{bpm: 74}
+{time: 4/4}
+{duration: 2:58}
+{tags: reggae, classic, feel-good, opener}
+{notes: Only 3 chords. Reggae off-beat strum is everything — mute on 1 and 3, strum on the and of 2 and 4.}
+
+{start_of_chorus: Chorus}
+[A]Don't worry about a thing
+[D]'Cause every little thing gonna [A]be all right
+[A]Singin' don't worry about a thing
+[D]'Cause every little thing gonna [A]be all right
+{end_of_chorus}
+
+{start_of_verse: Verse}
+[A]Rise up this mornin', smiled with the [E]risin' sun
+[A]Three little birds pitch by [D]my doorstep
+[A]Singin' sweet songs of [E]melodies pure and true
+[D]Sayin', "This is my message to [A]you-ou-ou"
+{end_of_verse}
+
+{chorus}
+
+{start_of_verse: Verse}
+[A]Rise up this mornin', smiled with the [E]risin' sun
+[A]Three little birds pitch by [D]my doorstep
+[A]Singin' sweet songs of [E]melodies pure and true
+[D]Sayin', "This is my message to [A]you-ou-ou"
+{end_of_verse}
+
+{chorus}
+
+{start_of_verse: Verse}
+[A]Rise up this mornin', smiled with the [E]risin' sun
+[A]Three little birds pitch by [D]my doorstep
+[A]Singin' sweet songs of [E]melodies pure and true
+[D]Sayin', "This is my message to [A]you-ou-ou"
+{end_of_verse}
+
+{chorus}
+
+{comment: Repeat chorus to fade, keep it joyful}
+
+{start_of_note: Strum Pattern, for=guitar}
+Down on beat 2-and, down-up on beat 4-and.
+Mute the strings on beats 1 and 3 for the classic reggae chop.
+
+    1  +  2  +  3  +  4  +
+    x     D     x     D  U
+{end_of_note}
+
+{start_of_note: Bass Line, for=bass}
+Root note on beat 1, fifth on beat 3.
+Keep it simple and locked with the kick drum.
+A section: A(1) - E(3)
+D section: D(1) - A(3)
+E section: E(1) - B(3)
+{end_of_note}
