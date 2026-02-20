@@ -2,12 +2,14 @@ import { CatalogPage } from "./modules/catalog/page";
 import { ChordsPage } from "./modules/chords/page";
 import { EditSongPage } from "./modules/editor/page";
 import { PerformPage } from "./modules/performance/page";
+import { QualityPage } from "./modules/quality/page";
 import { SetlistPage } from "./modules/setlist/page";
 import { SettingsPage } from "./modules/settings/page";
 import { AdminLayout } from "./modules/shared/components/admin-layout";
 import { JoinPrompt } from "./modules/shared/components/join-prompt";
 import { PwaInstallPrompt } from "./modules/shared/components/pwa-install-prompt";
 import { SyncPage } from "./modules/sync/page";
+import { TunerPage } from "./modules/tuner/page";
 import { Router } from "./router";
 
 export function App() {
@@ -21,8 +23,10 @@ export function App() {
     "Perform",
     "PerformSong",
     "Chords",
+    "Tuner",
     "Sync",
     "Settings",
+    "Quality",
   ]);
 
   if (!route) {
@@ -63,8 +67,10 @@ function AdminRoutes({
         | "Setlists"
         | "SetlistEdit"
         | "Chords"
+        | "Tuner"
         | "Sync"
         | "Settings"
+        | "Quality"
       >
     >
   >;
@@ -85,9 +91,13 @@ function AdminRoutes({
       return <SetlistPage setlistId={route.params.setlistId} />;
     case "Chords":
       return <ChordsPage />;
+    case "Tuner":
+      return <TunerPage />;
     case "Sync":
       return <SyncPage />;
     case "Settings":
       return <SettingsPage />;
+    case "Quality":
+      return <QualityPage />;
   }
 }

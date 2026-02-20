@@ -16,9 +16,20 @@ const githubConfigSchema = z.object({
   lastSyncedAt: z.number().nullable(),
 });
 
-const syncConfigSchema = z.discriminatedUnion("adapter", [githubConfigSchema]);
+const googleDriveConfigSchema = z.object({
+  adapter: z.literal("google-drive"),
+  fileId: z.string().min(1),
+  lastVersionToken: z.string().nullable(),
+  lastSyncedAt: z.number().nullable(),
+});
+
+const syncConfigSchema = z.discriminatedUnion("adapter", [
+  githubConfigSchema,
+  googleDriveConfigSchema,
+]);
 
 export type GitHubConfig = z.infer<typeof githubConfigSchema>;
+export type GoogleDriveConfig = z.infer<typeof googleDriveConfigSchema>;
 export type SyncConfig = z.infer<typeof syncConfigSchema>;
 
 export function loadSyncConfig(profileId: string): SyncConfig | null {

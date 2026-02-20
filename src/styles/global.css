@@ -372,3 +372,43 @@ body {
 .link-accent:hover {
   color: var(--color-accent-hover);
 }
+
+/* --- Accordion (animated <details>) --- */
+
+.accordion > summary {
+  list-style: none;
+}
+
+.accordion > summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion > summary::after {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: auto;
+  border-right: 2px solid var(--color-text-muted);
+  border-bottom: 2px solid var(--color-text-muted);
+  transform: rotate(-45deg);
+  transition: transform 0.2s ease-out;
+}
+
+.accordion[open] > summary::after {
+  transform: rotate(45deg);
+}
+
+.accordion .accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s ease-out;
+}
+
+.accordion[open] .accordion-content {
+  grid-template-rows: 1fr;
+}
+
+.accordion .accordion-inner {
+  overflow: hidden;
+}

@@ -10,7 +10,7 @@ import { SidebarPanel } from "./sidebar-panel";
 
 const isDev = process.env.NODE_ENV !== "production";
 
-const PLAYGROUND_ROUTES = ["Chords"] as const;
+const PLAYGROUND_ROUTES = ["Chords", "Tuner", "Quality"] as const;
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -26,6 +26,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     "Setlists",
     "SetlistEdit",
     "Chords",
+    "Tuner",
+    "Quality",
     "Sync",
     "Settings",
   ]);
@@ -103,6 +105,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {playgroundOpen && (
         <div className="ml-4 flex flex-col gap-0.5">
           <NavLink to="Chords" label={t("nav.chords")} icon="♯" active={route?.name === "Chords"} />
+          <NavLink to="Tuner" label={t("nav.tuner")} icon="🎵" active={route?.name === "Tuner"} />
+          <NavLink
+            to="Quality"
+            label={t("nav.quality")}
+            icon="✓"
+            active={route?.name === "Quality"}
+          />
         </div>
       )}
     </div>

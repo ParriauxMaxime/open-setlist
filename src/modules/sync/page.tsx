@@ -1,8 +1,10 @@
 import { useDb } from "@db/provider";
 import { exportSnapshot, importSnapshot } from "@db/snapshot";
+import { isGoogleDriveAvailable, requestAccessToken } from "@domain/google-auth";
 import { useActiveProfileId } from "@domain/profiles";
 import { fileAdapter } from "@domain/sync/adapters/file";
 import { createGitHubAdapter } from "@domain/sync/adapters/github";
+import { createGoogleDriveAdapter } from "@domain/sync/adapters/google-drive";
 import { loadSyncConfig } from "@domain/sync/config";
 import type { ChangeItem } from "@domain/sync/diff";
 import {
@@ -16,7 +18,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
-import { GitHubIcon } from "../design-system/components/icons";
+import { GitHubIcon, GoogleDriveIcon } from "../design-system/components/icons";
 import { SETTINGS_SCROLL_KEY } from "../settings/page";
 import { SyncReview } from "./components/sync-review";
 
@@ -29,6 +31,15 @@ type Status =
 
 type GitHubStatus =
   | { type: "idle" }
+  | { type: "pulling" }
+  | { type: "review"; ctx: SyncReviewContext }
+  | { type: "pushing" }
+  | { type: "success"; result: SyncResult }
+  | { type: "error"; message: string };
+
+type GoogleDriveStatus =
+  | { type: "idle" }
+  | { type: "authenticating" }
   | { type: "pulling" }
   | { type: "review"; ctx: SyncReviewContext }
   | { type: "pushing" }
@@ -55,9 +66,11 @@ export function SyncPage() {
   const [status, setStatus] = useState<Status>({ type: "idle" });
   const [confirmImport, setConfirmImport] = useState(false);
   const [ghStatus, setGhStatus] = useState<GitHubStatus>({ type: "idle" });
+  const [gdStatus, setGdStatus] = useState<GoogleDriveStatus>({ type: "idle" });
 
   const syncConfig = loadSyncConfig(profileId);
   const ghConfigured = syncConfig?.adapter === "github";
+  const gdConfigured = syncConfig?.adapter === "google-drive";
 
   // Step 1: Pull + diff
   const handleGitHubSync = useCallback(async () => {
@@ -95,6 +108,46 @@ export function SyncPage() {
       }
     },
     [ghStatus, db, profileId],
+  );
+
+  // Google Drive: Step 1 — authenticate + pull + diff
+  const handleGoogleDriveSync = useCallback(async () => {
+    const config = loadSyncConfig(profileId);
+    if (!config || config.adapter !== "google-drive") return;
+    setGdStatus({ type: "authenticating" });
+    try {
+      await requestAccessToken();
+      setGdStatus({ type: "pulling" });
+      const adapter = createGoogleDriveAdapter(config);
+      const result = await pullAndDiff(adapter, db, profileId);
+      if ("status" in result) {
+        setGdStatus({ type: "success", result });
+      } else {
+        setGdStatus({ type: "review", ctx: result });
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setGdStatus({ type: "error", message });
+    }
+  }, [db, profileId]);
+
+  // Google Drive: Step 2 — push selected
+  const handleGdPushSelected = useCallback(
+    async (selectedOutgoing: ChangeItem[]) => {
+      if (gdStatus.type !== "review") return;
+      const config = loadSyncConfig(profileId);
+      if (!config || config.adapter !== "google-drive") return;
+      setGdStatus({ type: "pushing" });
+      try {
+        const adapter = createGoogleDriveAdapter(config);
+        const result = await pushSelected(adapter, db, profileId, gdStatus.ctx, selectedOutgoing);
+        setGdStatus({ type: "success", result });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        setGdStatus({ type: "error", message });
+      }
+    },
+    [gdStatus, db, profileId],
   );
 
   const handleExport = useCallback(async () => {
@@ -266,6 +319,97 @@ export function SyncPage() {
             </>
           )}
         </div>
+      )}
+
+      {/* Google Drive sync section */}
+      {isGoogleDriveAvailable() && (
+        <>
+          <hr className="my-6 border-border" />
+
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+            <GoogleDriveIcon className="h-5 w-5" />
+            Google Drive
+          </h2>
+
+          {!gdConfigured ? (
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-text-muted">{t("sync.googleDrive.notConfigured")}</p>
+              <Link
+                to={Router.Settings()}
+                onClick={() => sessionStorage.setItem(SETTINGS_SCROLL_KEY, "google-drive")}
+                className="link-accent text-sm"
+              >
+                {t("sync.googleDrive.goToSettings")}
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {gdStatus.type === "review" ? (
+                <SyncReview
+                  diff={gdStatus.ctx.diff}
+                  onConfirm={handleGdPushSelected}
+                  onCancel={() => setGdStatus({ type: "idle" })}
+                  busy={false}
+                />
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleGoogleDriveSync}
+                      disabled={
+                        gdStatus.type === "authenticating" ||
+                        gdStatus.type === "pulling" ||
+                        gdStatus.type === "pushing"
+                      }
+                      className="btn btn-primary"
+                    >
+                      {gdStatus.type === "authenticating"
+                        ? t("sync.googleDrive.authenticating")
+                        : gdStatus.type === "pulling"
+                          ? "Pulling..."
+                          : gdStatus.type === "pushing"
+                            ? "Pushing..."
+                            : t("sync.googleDrive.sync")}
+                    </button>
+
+                    {syncConfig.lastSyncedAt && gdStatus.type === "idle" && (
+                      <span className="text-sm text-text-muted">
+                        {t("sync.googleDrive.lastSync", {
+                          time: formatTimeAgo(syncConfig.lastSyncedAt),
+                        })}
+                      </span>
+                    )}
+                  </div>
+
+                  <div aria-live="polite">
+                    {gdStatus.type === "success" && (
+                      <p className="text-sm text-accent">
+                        {gdStatus.result.status === "created"
+                          ? t("sync.googleDrive.syncCreated", {
+                              songs: gdStatus.result.songCount,
+                              setlists: gdStatus.result.setlistCount,
+                            })
+                          : gdStatus.result.status === "up-to-date"
+                            ? t("sync.googleDrive.upToDate")
+                            : t("sync.googleDrive.syncSuccess", {
+                                songs: gdStatus.result.songCount,
+                                setlists: gdStatus.result.setlistCount,
+                              })}
+                      </p>
+                    )}
+
+                    {gdStatus.type === "error" && (
+                      <p className="text-sm text-danger">
+                        {t("sync.googleDrive.syncFailed", { error: gdStatus.message })}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

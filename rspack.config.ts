@@ -2,6 +2,9 @@ import path from "node:path";
 import { defineConfig } from "@rspack/cli";
 import { rspack } from "@rspack/core";
 import RefreshPlugin from "@rspack/plugin-react-refresh";
+import { config as loadEnv } from "dotenv";
+
+loadEnv();
 
 export default defineConfig((_env, argv) => {
   const isDev = argv.mode === "development" || process.env.NODE_ENV === "development";
@@ -66,6 +69,7 @@ export default defineConfig((_env, argv) => {
       }),
       new rspack.DefinePlugin({
         __BASE_PATH__: JSON.stringify(process.env.BASE_PATH || "/"),
+        __GOOGLE_CLIENT_ID__: JSON.stringify(process.env.GOOGLE_CLIENT_ID || ""),
       }),
       isDev && new RefreshPlugin(),
     ].filter(Boolean),

@@ -13,8 +13,10 @@ export const Router = createRouter(
     Perform: "/perform/:setlistId",
     PerformSong: "/perform-song/:songId",
     Chords: "/chords",
+    Tuner: "/tuner",
     Sync: "/sync",
     Settings: "/settings",
+    Quality: "/quality",
   },
   { basePath },
 );

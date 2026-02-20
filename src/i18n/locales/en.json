@@ -5,7 +5,9 @@
     "sync": "Sync",
     "settings": "Settings",
     "playground": "Playground",
-    "chords": "Chords"
+    "chords": "Chords",
+    "tuner": "Tuner",
+    "quality": "Quality"
   },
   "common": {
     "loading": "Loading...",
@@ -150,7 +152,28 @@
       "notConfigured": "GitHub sync not configured.",
       "goToSettings": "Go to Settings",
       "lastSync": "Last synced: {{time}}"
+    },
+    "googleDrive": {
+      "sync": "Sync with Google Drive",
+      "authenticating": "Authenticating...",
+      "syncSuccess": "Synced {{songs}} songs and {{setlists}} setlists.",
+      "syncCreated": "First sync: pushed {{songs}} songs and {{setlists}} setlists.",
+      "syncFailed": "Sync failed: {{error}}",
+      "upToDate": "Everything is up to date.",
+      "notConfigured": "Google Drive sync not configured.",
+      "goToSettings": "Go to Settings",
+      "lastSync": "Last synced: {{time}}"
     }
+  },
+  "tuner": {
+    "title": "Guitar Tuner",
+    "start": "Start",
+    "stop": "Stop",
+    "cents": "cents",
+    "hz": "Hz",
+    "micDenied": "Microphone access was denied. Please allow microphone access in your browser settings.",
+    "micUnsupported": "Your browser does not support microphone access.",
+    "micError": "Could not access the microphone."
   },
   "chordLib": {
     "title": "Chord Library",
@@ -236,6 +259,19 @@
       "disconnect": "Disconnect",
       "disconnected": "Disconnected.",
       "tokenHelp": "Create a fine-grained token at GitHub > Settings > Developer settings with Contents read/write permission."
+    },
+    "googleDrive": {
+      "heading": "Google Drive",
+      "desc": "Sync your data to a file in your Google Drive.",
+      "connect": "Connect with Google",
+      "connecting": "Connecting...",
+      "testConnection": "Test connection",
+      "connected": "Connected",
+      "connectedFile": "Connected to {{file}}",
+      "connectionFailed": "Connection failed: {{error}}",
+      "disconnect": "Disconnect",
+      "disconnected": "Disconnected.",
+      "help": "Your data is stored as open-setlist.json in your Google Drive. Share the file with band members via Google Drive, then use the invite button."
     }
   },
   "pwa": {

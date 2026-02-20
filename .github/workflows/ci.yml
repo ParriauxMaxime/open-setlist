@@ -50,6 +50,20 @@ jobs:
           key: node-modules-${{ hashFiles('yarn.lock') }}
       - run: yarn lint
 
+  test:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/cache/restore@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('yarn.lock') }}
+      - run: yarn test
+
   build:
     needs: install
     runs-on: ubuntu-latest
@@ -65,13 +79,14 @@ jobs:
       - run: yarn build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
       - run: cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
-    needs: [typecheck, lint, build]
+    needs: [typecheck, lint, test, build]
     runs-on: ubuntu-latest
     permissions:
       pages: write

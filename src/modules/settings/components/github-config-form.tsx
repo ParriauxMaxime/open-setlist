@@ -124,96 +124,108 @@ export function GitHubConfigForm({ profileId, defaultOpen = false }: GitHubConfi
     <details
       id="github"
       open={defaultOpen || undefined}
-      className="group rounded-md border border-border"
+      className="accordion group rounded-md border border-border"
     >
       <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-semibold select-none">
         <GitHubIcon className="h-4 w-4" />
         {t("settings.github.heading")}
         {isConnected && (
-          <span className="ml-auto rounded-full bg-accent-muted px-2 py-0.5 text-xs text-accent">
+          <span className="mr-2 rounded-full bg-accent-muted px-2 py-0.5 text-xs text-accent">
             {t("settings.github.connected", { repo: `${existing.owner}/${existing.repo}` })}
           </span>
         )}
       </summary>
 
-      <div className="flex flex-col gap-4 border-t border-border px-4 py-4">
-        <p className="text-sm text-text-muted">{t("settings.github.desc")}</p>
+      <div className="accordion-content">
+        <div className="accordion-inner">
+          <div className="flex flex-col gap-4 border-t border-border px-4 py-4">
+            <p className="text-sm text-text-muted">{t("settings.github.desc")}</p>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm text-text">{t("settings.github.repo")}</span>
-          <input
-            type="text"
-            value={repoInput}
-            onChange={(e) => setRepoInput(e.target.value)}
-            placeholder={t("settings.github.repoPlaceholder")}
-            className="field"
-            disabled={status.type === "testing"}
-          />
-        </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-sm text-text">{t("settings.github.repo")}</span>
+              <input
+                type="text"
+                value={repoInput}
+                onChange={(e) => setRepoInput(e.target.value)}
+                placeholder={t("settings.github.repoPlaceholder")}
+                className="field"
+                disabled={status.type === "testing"}
+              />
+            </label>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm text-text">{t("settings.github.token")}</span>
-          <div className="flex gap-2">
-            <input
-              type={showToken ? "text" : "password"}
-              value={tokenInput}
-              onChange={(e) => setTokenInput(e.target.value)}
-              placeholder={t("settings.github.tokenPlaceholder")}
-              className="field flex-1"
-              disabled={status.type === "testing"}
-            />
-            <button
-              type="button"
-              onClick={() => setShowToken((s) => !s)}
-              className="btn btn-ghost text-xs"
-            >
-              {showToken ? "Hide" : "Show"}
-            </button>
-          </div>
-        </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-sm text-text">{t("settings.github.token")}</span>
+              <div className="flex gap-2">
+                <input
+                  type={showToken ? "text" : "password"}
+                  value={tokenInput}
+                  onChange={(e) => setTokenInput(e.target.value)}
+                  placeholder={t("settings.github.tokenPlaceholder")}
+                  className="field flex-1"
+                  disabled={status.type === "testing"}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowToken((s) => !s)}
+                  className="btn btn-ghost text-xs"
+                >
+                  {showToken ? "Hide" : "Show"}
+                </button>
+              </div>
+            </label>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={handleTest}
-            disabled={status.type === "testing"}
-            className="btn btn-outline"
-          >
-            {status.type === "testing"
-              ? t("settings.github.testing")
-              : t("settings.github.testConnection")}
-          </button>
-
-          {status.type === "connected" && (
-            <button type="button" onClick={handleDisconnect} className="btn btn-ghost text-danger">
-              {t("settings.github.disconnect")}
-            </button>
-          )}
-        </div>
-
-        <div aria-live="polite">
-          {status.type === "connected" && (
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-accent">
-                {t("settings.github.connected", { repo: status.repo })}
-              </p>
-              <button type="button" onClick={handleInvite} className="btn btn-outline self-start">
-                {t("invite.inviteMembers")}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleTest}
+                disabled={status.type === "testing"}
+                className="btn btn-outline"
+              >
+                {status.type === "testing"
+                  ? t("settings.github.testing")
+                  : t("settings.github.testConnection")}
               </button>
-              {inviteFeedback && <p className="text-sm text-accent">{inviteFeedback}</p>}
             </div>
-          )}
-          {status.type === "error" && (
-            <p className="text-sm text-danger">
-              {t("settings.github.connectionFailed", { error: status.message })}
-            </p>
-          )}
-          {status.type === "disconnected" && (
-            <p className="text-sm text-text-muted">{t("settings.github.disconnected")}</p>
-          )}
-        </div>
 
-        <p className="text-xs text-text-faint">{t("settings.github.tokenHelp")}</p>
+            <div aria-live="polite">
+              {status.type === "connected" && (
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-accent">
+                    {t("settings.github.connected", { repo: status.repo })}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleInvite}
+                    className="btn btn-outline self-start"
+                  >
+                    {t("invite.inviteMembers")}
+                  </button>
+                  {inviteFeedback && <p className="text-sm text-accent">{inviteFeedback}</p>}
+                </div>
+              )}
+              {status.type === "error" && (
+                <p className="text-sm text-danger">
+                  {t("settings.github.connectionFailed", { error: status.message })}
+                </p>
+              )}
+              {status.type === "disconnected" && (
+                <p className="text-sm text-text-muted">{t("settings.github.disconnected")}</p>
+              )}
+            </div>
+
+            <p className="text-xs text-text-faint">{t("settings.github.tokenHelp")}</p>
+
+            {status.type === "connected" && (
+              <button
+                type="button"
+                onClick={handleDisconnect}
+                className="btn btn-danger self-start"
+              >
+                {t("settings.github.disconnect")}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </details>
   );
