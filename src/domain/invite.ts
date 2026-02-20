@@ -1,5 +1,5 @@
 import { addProfile, loadProfiles, type Profile, setActiveProfileId } from "./profiles";
-import { type GitHubConfig, saveSyncConfig } from "./sync/config";
+import { type GitHubConfig, type GoogleDriveConfig, saveSyncConfig } from "./sync/config";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -7,7 +7,9 @@ import { type GitHubConfig, saveSyncConfig } from "./sync/config";
 
 export interface InvitePayload {
   profile: { name: string; avatar?: string };
-  sync: { adapter: "github"; owner: string; repo: string; token: string; path: string };
+  sync:
+    | { adapter: "github"; owner: string; repo: string; token: string; path: string }
+    | { adapter: "google-drive"; fileId: string };
 }
 
 // ---------------------------------------------------------------------------
@@ -77,15 +79,26 @@ export function applyInvite(payload: InvitePayload): string {
     profileId = newProfile.id;
   }
 
-  const syncConfig: GitHubConfig = {
-    adapter: "github",
-    owner: payload.sync.owner,
-    repo: payload.sync.repo,
-    token: payload.sync.token,
-    path: payload.sync.path,
-    lastVersionToken: null,
-    lastSyncedAt: null,
-  };
+  let syncConfig: GitHubConfig | GoogleDriveConfig;
+
+  if (payload.sync.adapter === "github") {
+    syncConfig = {
+      adapter: "github",
+      owner: payload.sync.owner,
+      repo: payload.sync.repo,
+      token: payload.sync.token,
+      path: payload.sync.path,
+      lastVersionToken: null,
+      lastSyncedAt: null,
+    };
+  } else {
+    syncConfig = {
+      adapter: "google-drive",
+      fileId: payload.sync.fileId,
+      lastVersionToken: null,
+      lastSyncedAt: null,
+    };
+  }
 
   saveSyncConfig(profileId, syncConfig);
   setActiveProfileId(profileId);

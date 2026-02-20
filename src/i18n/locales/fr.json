@@ -5,7 +5,9 @@
     "sync": "Synchro",
     "settings": "Paramètres",
     "playground": "Labo",
-    "chords": "Accords"
+    "chords": "Accords",
+    "tuner": "Accordeur",
+    "quality": "Qualité"
   },
   "common": {
     "loading": "Chargement...",
@@ -150,7 +152,28 @@
       "notConfigured": "Synchronisation GitHub non configurée.",
       "goToSettings": "Aller aux paramètres",
       "lastSync": "Dernière synchro\u00a0: {{time}}"
+    },
+    "googleDrive": {
+      "sync": "Synchroniser avec Google Drive",
+      "authenticating": "Authentification...",
+      "syncSuccess": "Synchronisé {{songs}} chansons et {{setlists}} setlists.",
+      "syncCreated": "Première synchro\u00a0: envoyé {{songs}} chansons et {{setlists}} setlists.",
+      "syncFailed": "Échec de la synchro\u00a0: {{error}}",
+      "upToDate": "Tout est à jour.",
+      "notConfigured": "Synchronisation Google Drive non configurée.",
+      "goToSettings": "Aller aux paramètres",
+      "lastSync": "Dernière synchro\u00a0: {{time}}"
     }
+  },
+  "tuner": {
+    "title": "Accordeur guitare",
+    "start": "Démarrer",
+    "stop": "Arrêter",
+    "cents": "cents",
+    "hz": "Hz",
+    "micDenied": "L'accès au microphone a été refusé. Veuillez autoriser le microphone dans les paramètres de votre navigateur.",
+    "micUnsupported": "Votre navigateur ne supporte pas l'accès au microphone.",
+    "micError": "Impossible d'accéder au microphone."
   },
   "chordLib": {
     "title": "Bibliothèque d\u2019accords",
@@ -236,6 +259,19 @@
       "disconnect": "Déconnecter",
       "disconnected": "Déconnecté.",
       "tokenHelp": "Créez un jeton à portée limitée dans GitHub > Settings > Developer settings avec la permission Contents en lecture/écriture."
+    },
+    "googleDrive": {
+      "heading": "Google Drive",
+      "desc": "Synchronisez vos données vers un fichier dans votre Google Drive.",
+      "connect": "Se connecter avec Google",
+      "connecting": "Connexion...",
+      "testConnection": "Tester la connexion",
+      "connected": "Connecté",
+      "connectedFile": "Connecté à {{file}}",
+      "connectionFailed": "Échec de connexion\u00a0: {{error}}",
+      "disconnect": "Déconnecter",
+      "disconnected": "Déconnecté.",
+      "help": "Vos données sont stockées dans le fichier open-setlist.json de votre Google Drive. Partagez le fichier avec les membres du groupe via Google Drive, puis utilisez le bouton d'invitation."
     }
   },
   "pwa": {

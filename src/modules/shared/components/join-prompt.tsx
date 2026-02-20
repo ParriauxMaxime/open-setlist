@@ -1,4 +1,5 @@
 import { openProfileDb } from "@db";
+import { requestAccessToken } from "@domain/google-auth";
 import {
   applyInvite,
   clearInviteParam,
@@ -7,6 +8,7 @@ import {
   type InvitePayload,
 } from "@domain/invite";
 import { createGitHubAdapter } from "@domain/sync/adapters/github";
+import { createGoogleDriveAdapter } from "@domain/sync/adapters/google-drive";
 import { loadSyncConfig } from "@domain/sync/config";
 import { sync } from "@domain/sync/orchestrator";
 import { useCallback, useEffect, useState } from "react";
@@ -21,18 +23,19 @@ type Status =
 
 export function JoinPrompt() {
   const { t } = useTranslation();
-  const [status, setStatus] = useState<Status | null>(null);
 
-  useEffect(() => {
+  // Extract invite param eagerly during render (before the Home→Catalog
+  // redirect strips the query string).
+  const [status, setStatus] = useState<Status | null>(() => {
     const encoded = extractInviteParam();
-    if (!encoded) return;
+    if (!encoded) return null;
     const payload = decodeInvite(encoded);
     if (!payload) {
       clearInviteParam();
-      return;
+      return null;
     }
-    setStatus({ type: "idle", payload });
-  }, []);
+    return { type: "idle", payload };
+  });
 
   const handleJoin = useCallback(async () => {
     if (!status || status.type !== "idle") return;
@@ -45,10 +48,16 @@ export function JoinPrompt() {
 
       // Trigger first sync
       const config = loadSyncConfig(profileId);
-      if (config && config.adapter === "github") {
+      if (config) {
         const db = openProfileDb(profileId);
-        const adapter = createGitHubAdapter(config);
-        await sync(adapter, db, profileId);
+        if (config.adapter === "github") {
+          const adapter = createGitHubAdapter(config);
+          await sync(adapter, db, profileId);
+        } else if (config.adapter === "google-drive") {
+          await requestAccessToken();
+          const adapter = createGoogleDriveAdapter(config);
+          await sync(adapter, db, profileId);
+        }
       }
 
       setStatus({ type: "success" });

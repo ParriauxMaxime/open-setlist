@@ -18,6 +18,7 @@ import i18n from "i18next";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GitHubConfigForm } from "./components/github-config-form";
+import { GoogleDriveConfigForm } from "./components/google-drive-config-form";
 import { ProfileManager } from "./components/profile-manager";
 
 export const SETTINGS_SCROLL_KEY = "settings-scroll-to";
@@ -447,7 +448,13 @@ export function SettingsPage() {
 
         <p className="mb-4 text-sm text-text-muted">{t("settings.sync.desc")}</p>
 
-        <GitHubConfigForm profileId={profileId} defaultOpen={scrollTarget === "github"} />
+        <div className="flex flex-col gap-3">
+          <GitHubConfigForm profileId={profileId} defaultOpen={scrollTarget === "github"} />
+          <GoogleDriveConfigForm
+            profileId={profileId}
+            defaultOpen={scrollTarget === "google-drive"}
+          />
+        </div>
       </section>
 
       <div aria-live="polite">

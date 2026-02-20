@@ -40,6 +40,29 @@ const DIRECTIVE_RE = /^\{(\w+)(?::\s*(.+))?\}$/;
 const CHORD_RE = /\[([^\]]+)\]/g;
 
 /**
+ * Matches a single chord token: root (A-G) + optional accidental (#/b)
+ * + optional suffix (m, 7, maj7, sus4, dim, aug, add9, etc.)
+ */
+const CHORD_TOKEN_RE = /^[A-G][#b]?(?:m(?:aj|in)?|dim|aug|sus|add)?[0-9]?(?:\/[A-G][#b]?)?$/;
+
+/**
+ * Expand brackets containing multiple space-separated chords.
+ * "[Dm F Am G]" → "[Dm] [F] [Am] [G]"
+ * Only expands when ALL space-separated tokens look like valid chords.
+ * Leaves single chords and non-chord brackets (like "[x4]") untouched.
+ */
+function expandMultiChordBrackets(line: string): string {
+  return line.replace(CHORD_RE, (full, content: string) => {
+    const tokens = content.trim().split(/\s+/);
+    if (tokens.length < 2) return full;
+    if (tokens.every((t) => CHORD_TOKEN_RE.test(t))) {
+      return tokens.map((t) => `[${t}]`).join(" ");
+    }
+    return full;
+  });
+}
+
+/**
  * Heuristic: detect bracket-based section labels like [Verse 1 :], [Intro 🎸:], [Solo], etc.
  * These are NOT standard ChordPro but common in exported sheets. We recognize them when:
  * - The line is ONLY a single bracket expression (possibly with trailing whitespace/colon)
@@ -298,7 +321,8 @@ export function parse(source: string): ChordProSong {
   return { metadata, sections };
 }
 
-function parseLine(line: string): Line {
+function parseLine(raw: string): Line {
+  const line = expandMultiChordBrackets(raw);
   const segments: Segment[] = [];
   let lastIndex = 0;
 

@@ -30,6 +30,55 @@ export function ChordProView({ content, onChordTap }: ChordProViewProps) {
   );
 }
 
+function ChordToken({
+  chord,
+  onChordTap,
+  className,
+}: {
+  chord: string;
+  onChordTap?: (info: ChordTapInfo) => void;
+  className?: string;
+}) {
+  const base = `text-perform-chord font-bold text-chord${onChordTap ? " cursor-pointer" : ""}`;
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: role is conditionally "button" when interactive
+    <span
+      data-chord-tap={onChordTap ? "" : undefined}
+      role={onChordTap ? "button" : undefined}
+      tabIndex={onChordTap ? 0 : undefined}
+      className={className ? `${base} ${className}` : base}
+      onClick={
+        onChordTap
+          ? (e) => {
+              e.stopPropagation();
+              const r = e.currentTarget.getBoundingClientRect();
+              onChordTap({
+                chord,
+                anchorRect: { x: r.x, y: r.y, width: r.width, height: r.height },
+              });
+            }
+          : undefined
+      }
+      onKeyDown={
+        onChordTap
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                const r = e.currentTarget.getBoundingClientRect();
+                onChordTap({
+                  chord,
+                  anchorRect: { x: r.x, y: r.y, width: r.width, height: r.height },
+                });
+              }
+            }
+          : undefined
+      }
+    >
+      {chord}
+    </span>
+  );
+}
+
 function SectionView({
   section,
   onChordTap,
@@ -63,47 +112,37 @@ function SectionView({
         <div key={li} className="leading-relaxed">
           {line.segments.every((s) => s.text === "" && !s.chord) ? (
             <div className="h-3" />
-          ) : (
-            <div className="flex flex-wrap">
+          ) : line.segments.every((s) => !s.text.trim()) ? (
+            <div className="text-perform-chord font-bold text-chord whitespace-pre-wrap">
               {line.segments.map((seg, si) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: segments are static parsed output
-                <span key={si} className="inline-flex flex-col">
+                <span key={si}>
+                  {seg.chord && <ChordToken chord={seg.chord} onChordTap={onChordTap} />}
+                  {seg.text}
+                </span>
+              ))}
+            </div>
+          ) : line.segments.some((s) => s.chord) &&
+            line.segments.filter((s) => s.chord).every((s) => !s.text.trim()) ? (
+            <div className="text-perform-lyrics whitespace-pre-wrap">
+              {line.segments.map((seg, si) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: segments are static parsed output
+                <span key={si}>
+                  {seg.chord && <ChordToken chord={seg.chord} onChordTap={onChordTap} />}
+                  {seg.text}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <div>
+              {line.segments.map((seg, si) => (
+                <span
+                  // biome-ignore lint/suspicious/noArrayIndexKey: segments are static parsed output
+                  key={si}
+                  className={`inline-flex max-w-full flex-col align-bottom${seg.chord ? " mr-1" : ""}`}
+                >
                   {seg.chord && (
-                    // biome-ignore lint/a11y/noStaticElementInteractions: role is conditionally "button" when interactive
-                    <span
-                      data-chord-tap={onChordTap ? "" : undefined}
-                      role={onChordTap ? "button" : undefined}
-                      tabIndex={onChordTap ? 0 : undefined}
-                      className={`self-start text-perform-chord font-bold text-chord${onChordTap ? " cursor-pointer" : ""}`}
-                      onClick={
-                        onChordTap
-                          ? (e) => {
-                              e.stopPropagation();
-                              const r = e.currentTarget.getBoundingClientRect();
-                              onChordTap({
-                                chord: seg.chord as string,
-                                anchorRect: { x: r.x, y: r.y, width: r.width, height: r.height },
-                              });
-                            }
-                          : undefined
-                      }
-                      onKeyDown={
-                        onChordTap
-                          ? (e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                const r = e.currentTarget.getBoundingClientRect();
-                                onChordTap({
-                                  chord: seg.chord as string,
-                                  anchorRect: { x: r.x, y: r.y, width: r.width, height: r.height },
-                                });
-                              }
-                            }
-                          : undefined
-                      }
-                    >
-                      {seg.chord}
-                    </span>
+                    <ChordToken chord={seg.chord} onChordTap={onChordTap} className="self-start" />
                   )}
                   <span className="text-perform-lyrics whitespace-pre-wrap">{seg.text}</span>
                 </span>

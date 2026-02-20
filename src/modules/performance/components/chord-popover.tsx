@@ -1,6 +1,6 @@
 import { getGuitarFingerings } from "@domain/chords/guitar";
 import { chordMidi, parseChordSuffix } from "@domain/chords/theory";
-import { arrow, autoPlacement, computePosition, offset, shift } from "@floating-ui/dom";
+import { arrow, computePosition, flip, offset, shift } from "@floating-ui/dom";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FretboardDiagram } from "../../chords/components/fretboard-diagram";
@@ -54,10 +54,11 @@ export function ChordPopover({ chord, anchorRect, instrument, onClose }: ChordPo
     };
 
     computePosition(virtualEl, floating, {
+      placement: "top",
       strategy: "fixed",
       middleware: [
         offset(8),
-        autoPlacement({ allowedPlacements: ["top", "bottom", "right", "left"] }),
+        flip({ fallbackPlacements: ["bottom", "right", "left"] }),
         shift({ padding: 8 }),
         arrow({ element: arrowEl }),
       ],
