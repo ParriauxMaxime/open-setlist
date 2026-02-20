@@ -196,7 +196,9 @@
       "dark": "Sombre",
       "system": "Système",
       "forceDark": "Forcer le mode sombre en performance",
-      "forceDarkDesc": "Remplace votre thème par le mode sombre en mode performance."
+      "forceDarkDesc": "Remplace votre thème par le mode sombre en mode performance.",
+      "doubleTapScale": "Double-tap pour redimensionner le texte",
+      "doubleTapScaleDesc": "Double-tapez en haut à gauche ou à droite de la chanson pour diminuer ou augmenter la taille du texte."
     },
     "accent": {
       "label": "Couleur d\u2019accentuation",

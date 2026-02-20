@@ -7,10 +7,20 @@ interface UseSwipeStripOptions {
   totalItems: number;
   onToggleChrome: () => void;
   enabled: boolean;
+  onDoubleTapScale?: (direction: "up" | "down") => void;
+  doubleTapScaleEnabled?: boolean;
 }
 
 export function useSwipeStrip(options: UseSwipeStripOptions) {
-  const { currentIndex, setCurrentIndex, totalItems, onToggleChrome, enabled } = options;
+  const {
+    currentIndex,
+    setCurrentIndex,
+    totalItems,
+    onToggleChrome,
+    enabled,
+    onDoubleTapScale,
+    doubleTapScaleEnabled,
+  } = options;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -30,6 +40,12 @@ export function useSwipeStrip(options: UseSwipeStripOptions) {
   totalItemsRef.current = totalItems;
   const onToggleChromeRef = useRef(onToggleChrome);
   onToggleChromeRef.current = onToggleChrome;
+  const onDoubleTapScaleRef = useRef(onDoubleTapScale);
+  onDoubleTapScaleRef.current = onDoubleTapScale;
+  const doubleTapScaleEnabledRef = useRef(doubleTapScaleEnabled);
+  doubleTapScaleEnabledRef.current = doubleTapScaleEnabled;
+  const lastTapRef = useRef<{ time: number; zone: "left" | "right" | "other" } | null>(null);
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Animate strip to target, then commit index change
   const commitSlide = useCallback(
@@ -172,7 +188,32 @@ export function useSwipeStrip(options: UseSwipeStripOptions) {
       } else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
         const target = e.target as HTMLElement;
         if (!target.closest("[data-chord-tap]")) {
-          onToggleChromeRef.current();
+          const rect = el.getBoundingClientRect();
+          const isUpper = t.clientY - rect.top < rect.height * 0.15;
+          const zone: "left" | "right" | "other" = isUpper
+            ? t.clientX < rect.left + rect.width / 2
+              ? "left"
+              : "right"
+            : "other";
+
+          if (doubleTapScaleEnabledRef.current && (zone === "left" || zone === "right")) {
+            const now = Date.now();
+            const prev = lastTapRef.current;
+            if (prev && now - prev.time < 300 && prev.zone === zone) {
+              if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+              onDoubleTapScaleRef.current?.(zone === "right" ? "up" : "down");
+              lastTapRef.current = null;
+            } else {
+              lastTapRef.current = { time: now, zone };
+              if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+              tapTimerRef.current = setTimeout(() => {
+                onToggleChromeRef.current();
+                lastTapRef.current = null;
+              }, 300);
+            }
+          } else {
+            onToggleChromeRef.current();
+          }
         }
       }
 
@@ -186,6 +227,7 @@ export function useSwipeStrip(options: UseSwipeStripOptions) {
       el.removeEventListener("touchstart", onStart);
       el.removeEventListener("touchmove", onMove);
       el.removeEventListener("touchend", onEnd);
+      if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
     };
   }, [enabled]);
 

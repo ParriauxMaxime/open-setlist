@@ -1,6 +1,7 @@
 {title: Sara perche ti amo}
 {artist: RICCHI E POVERI}
 
+[Verse 1]
 [E]Che confusione, sarà perché ti amo
 [C#m]è un emozione, che cresce piano piano
 [A]stringimi forte e stammi più vicino
@@ -9,8 +10,8 @@
 [C#m]è primavera, sarà perché ti amo
 [A]cade una stella, ma dimmi dove siamo
 [B]che te ne frega, sarà perché ti amo
- 
-[Chorus]
+
+{soc}
 [E]E vola vola si sa, sempre più in alto si va
 [C#m]e vola vola con me, il mondo è matto perché
 [A]e se l'amore non c'è
@@ -19,7 +20,8 @@ basta una sola can[B]zone, per far confusione fuori e dentro di te.
 [C#m]e vola vola con me, il mondo è matto perché
 [A]e se l'amore non c'è
 basta una sola can[B]zone, per far confusione fuori e dentro di te.
- 
+{eoc}
+
 [Verse 2]
 [E]Ma dopo tutto, che cosa c'è di strano
 [C#m]è una canzone, sarà perché ti amo
@@ -29,11 +31,11 @@ basta una sola can[B]zone, per far confusione fuori e dentro di te.
 [C#m]e così bello che non mi sembra vero
 [A]se il mondo è matto che cosa c'è di strano
 [B]matto per matto, almeno noi ci amiamo.
- 
- 
-[Chorus]
 
-[Chorus]
+{soc}
+{eoc}
+
+{soc}
 [E]E vola vola si sa, sempre più in alto si va
 [C#m]e vola vola con me, il mondo è matto perché
 [A]e se l'amore non c'è
@@ -43,3 +45,4 @@ basta una sola can[B]zone, per far confusione fuori e dentro di te.
 [C#m]e vola vola con me e stammi più vicino
 [A]e se l'amore non c'è ma dimmi dove siamo
 [B]che confusione, sarà perché ti amo
+{eoc}
