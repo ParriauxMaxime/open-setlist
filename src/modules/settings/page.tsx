@@ -209,6 +209,22 @@ export function SettingsPage() {
           <p className="mt-1 pl-7 text-xs text-text-faint">{t("settings.scheme.forceDarkDesc")}</p>
         </fieldset>
 
+        {/* Double-tap to scale text */}
+        <fieldset className="mb-5">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={prefs.performDoubleTapScale}
+              onChange={(e) => update({ performDoubleTapScale: e.target.checked })}
+              className="h-4 w-4 rounded accent-[var(--color-accent)]"
+            />
+            <span className="text-sm text-text">{t("settings.scheme.doubleTapScale")}</span>
+          </label>
+          <p className="mt-1 pl-7 text-xs text-text-faint">
+            {t("settings.scheme.doubleTapScaleDesc")}
+          </p>
+        </fieldset>
+
         {/* Accent color */}
         <fieldset className="mb-5">
           <legend className="mb-2 text-sm font-semibold uppercase tracking-wide text-text-muted">

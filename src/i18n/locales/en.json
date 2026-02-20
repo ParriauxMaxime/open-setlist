@@ -196,7 +196,9 @@
       "dark": "Dark",
       "system": "System",
       "forceDark": "Force dark mode during performance",
-      "forceDarkDesc": "Overrides your color scheme to dark when entering performance mode."
+      "forceDarkDesc": "Overrides your color scheme to dark when entering performance mode.",
+      "doubleTapScale": "Double-tap to scale text",
+      "doubleTapScaleDesc": "Double-tap the top-left or top-right of the song to decrease or increase text size."
     },
     "accent": {
       "label": "Accent Color",

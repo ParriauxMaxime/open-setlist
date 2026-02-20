@@ -1,4 +1,10 @@
-import { loadPreferences, resolveSongDisplayPrefs, songDisplayCssVars } from "@domain/preferences";
+import {
+  getSongOverrides,
+  loadPreferences,
+  resolveSongDisplayPrefs,
+  setSongOverrides,
+  songDisplayCssVars,
+} from "@domain/preferences";
 import { Link } from "@swan-io/chicane";
 import type { CSSProperties } from "react";
 import { useCallback, useMemo, useState } from "react";
@@ -35,6 +41,21 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
   const globalPrefs = useMemo(() => loadPreferences(), []);
   const forceDark = globalPrefs.performForceDark;
 
+  // Bump to force CSS-var recomputation after a per-song override change
+  const [overrideVersion, setOverrideVersion] = useState(0);
+  const handleDoubleTapScale = useCallback(
+    (dir: "up" | "down") => {
+      const id = nav.currentSong?.id;
+      if (!id) return;
+      const current = getSongOverrides(id).globalScale ?? globalPrefs.globalScale;
+      const next =
+        Math.round(Math.max(0.5, Math.min(3, current + (dir === "up" ? 0.1 : -0.1))) * 10) / 10;
+      setSongOverrides(id, { globalScale: next });
+      setOverrideVersion((v) => v + 1);
+    },
+    [nav.currentSong?.id, globalPrefs.globalScale],
+  );
+
   // Clear return marker — we're back in perform mode
   clearPerformReturn();
 
@@ -46,25 +67,30 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
     totalItems: nav.flatSongs.length,
     onToggleChrome: toggleChrome,
     enabled: loaded && nav.flatSongs.length > 0,
+    onDoubleTapScale: handleDoubleTapScale,
+    doubleTapScaleEnabled: globalPrefs.performDoubleTapScale,
   });
 
   // Compute per-song CSS custom-property overrides
+  // biome-ignore lint/correctness/useExhaustiveDependencies: overrideVersion forces recomputation after double-tap scale change
   const prevSongStyle = useMemo(
     () =>
       songDisplayCssVars(resolveSongDisplayPrefs(globalPrefs, nav.prevSong?.id)) as CSSProperties,
-    [globalPrefs, nav.prevSong?.id],
+    [globalPrefs, nav.prevSong?.id, overrideVersion],
   );
+  // biome-ignore lint/correctness/useExhaustiveDependencies: overrideVersion forces recomputation after double-tap scale change
   const currentSongStyle = useMemo(
     () =>
       songDisplayCssVars(
         resolveSongDisplayPrefs(globalPrefs, nav.currentSong?.id),
       ) as CSSProperties,
-    [globalPrefs, nav.currentSong?.id],
+    [globalPrefs, nav.currentSong?.id, overrideVersion],
   );
+  // biome-ignore lint/correctness/useExhaustiveDependencies: overrideVersion forces recomputation after double-tap scale change
   const nextSongStyle = useMemo(
     () =>
       songDisplayCssVars(resolveSongDisplayPrefs(globalPrefs, nav.nextSong?.id)) as CSSProperties,
-    [globalPrefs, nav.nextSong?.id],
+    [globalPrefs, nav.nextSong?.id, overrideVersion],
   );
 
   const themeAttr = forceDark ? "dark" : undefined;

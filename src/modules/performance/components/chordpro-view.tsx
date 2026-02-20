@@ -134,17 +134,36 @@ function SectionView({
               ))}
             </div>
           ) : (
-            <div>
+            <div
+              className={`text-perform-lyrics whitespace-pre-wrap${
+                line.segments.some((s) => s.chord) ? " relative pt-[var(--text-perform-chord)]" : ""
+              }`}
+            >
               {line.segments.map((seg, si) => (
                 <span
                   // biome-ignore lint/suspicious/noArrayIndexKey: segments are static parsed output
                   key={si}
-                  className={`inline-flex max-w-full flex-col align-bottom${seg.chord ? " mr-1" : ""}`}
+                  className={
+                    seg.chord
+                      ? seg.text.length < seg.chord.length + 2
+                        ? "relative inline-block align-bottom"
+                        : "relative"
+                      : undefined
+                  }
+                  style={
+                    seg.chord && seg.text.length < seg.chord.length + 2
+                      ? { minWidth: `${seg.chord.length + 1}ch` }
+                      : undefined
+                  }
                 >
                   {seg.chord && (
-                    <ChordToken chord={seg.chord} onChordTap={onChordTap} className="self-start" />
+                    <ChordToken
+                      chord={seg.chord}
+                      onChordTap={onChordTap}
+                      className="absolute bottom-full left-0 leading-none"
+                    />
                   )}
-                  <span className="text-perform-lyrics whitespace-pre-wrap">{seg.text}</span>
+                  {seg.text}
                 </span>
               ))}
             </div>

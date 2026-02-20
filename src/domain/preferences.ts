@@ -11,6 +11,7 @@ export const appPreferencesSchema = z.object({
   locale: z.enum(["en", "fr"]).default("en"),
   colorScheme: z.enum(["light", "dark", "system"]).default("dark"),
   performForceDark: z.boolean().default(true),
+  performDoubleTapScale: z.boolean().default(true),
   accentColor: hexColor.default("#4a9eff"),
   favoriteInstrument: z.enum(["guitar", "piano"]).default("guitar"),
 
@@ -139,6 +140,7 @@ export const DEFAULT_PREFERENCES: AppPreferences = {
   locale: "en",
   colorScheme: "dark",
   performForceDark: true,
+  performDoubleTapScale: true,
   accentColor: "#4a9eff",
   favoriteInstrument: "guitar",
   globalScale: 1,
