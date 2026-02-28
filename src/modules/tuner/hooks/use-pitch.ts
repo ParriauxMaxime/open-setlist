@@ -27,7 +27,7 @@ function detectPitch(buffer: Float32Array, sampleRate: number): number | null {
 
   // Normalized autocorrelation
   const minLag = Math.floor(sampleRate / 1200); // ~1200 Hz upper bound
-  const maxLag = Math.ceil(sampleRate / 60); // ~60 Hz lower bound
+  const maxLag = Math.ceil(sampleRate / 30); // ~30 Hz lower bound (covers bass E1 = 41 Hz)
   const corr = new Float32Array(maxLag + 1);
 
   for (let lag = minLag; lag <= maxLag; lag++) {

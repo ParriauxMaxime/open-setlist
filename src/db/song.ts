@@ -13,7 +13,9 @@ export interface Song {
   duration?: number; // seconds
   tags: string[];
   notes?: string;
+  techNotes?: string;
   links?: SongLinks;
+  transposition?: number; // semitones to transpose chords at render time
   content: string; // raw ChordPro body
   createdAt: number;
   updatedAt: number;

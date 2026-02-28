@@ -55,7 +55,11 @@ export function DataTable<T>({
     onColumnFiltersChange: setColumnFilters,
     globalFilterFn: (row, _columnId, filterValue) => {
       if (!globalSearchFields || !filterValue) return true;
-      const values = globalSearchFields.map((f) => row.getValue(f as string) as string | undefined);
+      const values = globalSearchFields.flatMap((f) => {
+        const v = row.getValue(f as string);
+        if (Array.isArray(v)) return v as string[];
+        return [v as string | undefined];
+      });
       return fuzzyMatchAny(values, filterValue as string);
     },
     getCoreRowModel: getCoreRowModel(),
@@ -115,7 +119,10 @@ export function DataTable<T>({
                           <button
                             type="button"
                             onClick={header.column.getToggleSortingHandler()}
-                            className="inline-flex items-center gap-1 hover:text-text"
+                            className={[
+                              "inline-flex cursor-pointer items-center gap-1 transition-colors hover:text-text",
+                              header.column.getIsSorted() ? "text-accent" : "",
+                            ].join(" ")}
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
                             <SortIndicator direction={header.column.getIsSorted()} />

@@ -1,3 +1,4 @@
+import { useDb } from "@db/provider";
 import {
   getSongOverrides,
   loadPreferences,
@@ -14,6 +15,7 @@ import { ChordPopover } from "./components/chord-popover";
 import type { ChordTapInfo } from "./components/chordpro-view";
 import { PerformFooter } from "./components/perform-footer";
 import { PerformHeader } from "./components/perform-header";
+import { PerformHints } from "./components/perform-hints";
 import { clearPerformReturn, PerformSidebar } from "./components/perform-sidebar";
 import { SongStrip } from "./components/song-strip";
 import { useSetlistNavigation } from "./hooks/use-setlist-navigation";
@@ -27,6 +29,7 @@ interface PerformPageProps {
 
 export function PerformPage({ setlistId, songId }: PerformPageProps) {
   const { t } = useTranslation();
+  const db = useDb();
   const setlistNav = useSetlistNavigation(setlistId ?? "");
   const singleNav = useSingleSongNavigation(songId ?? "");
   const nav = setlistId ? setlistNav : singleNav;
@@ -34,8 +37,24 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
   const [chromeVisible, setChromeVisible] = useState(true);
   const toggleChrome = useCallback(() => setChromeVisible((v) => !v), []);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [transposeOpen, setTransposeOpen] = useState(false);
+  const toggleTranspose = useCallback(() => setTransposeOpen((v) => !v), []);
   const [activeChord, setActiveChord] = useState<ChordTapInfo | null>(null);
   const handleChordTap = useCallback((info: ChordTapInfo) => setActiveChord(info), []);
+
+  const handleTranspose = useCallback(
+    async (delta: number) => {
+      const song = nav.currentSong;
+      if (!song) return;
+      const raw = (song.transposition ?? 0) + delta;
+      const transposition = raw === 12 || raw === -12 ? 0 : raw;
+      await db.songs.update(song.id, {
+        transposition,
+        updatedAt: Date.now(),
+      });
+    },
+    [nav.currentSong, db],
+  );
 
   // Load global prefs once
   const globalPrefs = useMemo(() => loadPreferences(), []);
@@ -134,6 +153,10 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         isFirst={nav.isFirst}
         isLast={nav.isLast}
         setlistId={setlistId}
+        transposition={nav.currentSong?.transposition ?? 0}
+        transposeOpen={transposeOpen}
+        onTranspose={handleTranspose}
+        onToggleTranspose={toggleTranspose}
         onPrev={swipe.goPrev}
         onNext={swipe.goNext}
         onOpenSidebar={() => setSidebarOpen(true)}
@@ -146,6 +169,9 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         prevSong={nav.prevSong}
         currentSong={nav.currentSong}
         nextSong={nav.nextSong}
+        prevTransposition={nav.prevSong?.transposition}
+        currentTransposition={nav.currentSong?.transposition}
+        nextTransposition={nav.nextSong?.transposition}
         prevSongStyle={prevSongStyle}
         currentSongStyle={currentSongStyle}
         nextSongStyle={nextSongStyle}
@@ -165,6 +191,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         prevSong={nav.prevSong}
         nextSong={nav.nextSong}
       />
+      <PerformHints />
     </div>
   );
 }

@@ -1,0 +1,37 @@
+{title: Twist and Shout}
+{artist: The Beatles}
+{key: D}
+{bpm: 125}
+{time: 4/4}
+{duration: 2:33}
+{tags: rock-n-roll, classic, crowd-pleaser, upbeat}
+
+{start_of_chorus: Chorus}
+Well [D]shake it up [G]baby now, [A]twist and [A7]shout
+[D]Come on, come on, [G]come on, come on, [A]baby now [A7]
+Come on and [D]work it on [G]out [A] [A7]
+{end_of_chorus}
+
+{start_of_verse: Verse 1}
+Well [D]work it on [G]out [A]honey [A7]
+You [D]know you look so [G]good [A] [A7]
+You [D]know you got me [G]goin' now [A] [A7]
+Just like I [D]knew you [G]would [A] [A7]
+{end_of_verse}
+
+{chorus}
+
+{start_of_verse: Verse 2}
+You [D]know you twist little [G]girl [A] [A7]
+You [D]know you twist so [G]fine [A] [A7]
+[D]Come on and twist a little [G]closer now [A] [A7]
+And let me [D]know that you're [G]mine [A] [A7]
+{end_of_verse}
+
+{chorus}
+
+{comment: "Aaaaaah" section — build and scream!}
+
+{chorus}
+
+{comment: Repeat, build to frenzy, end big on D}

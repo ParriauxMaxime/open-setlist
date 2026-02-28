@@ -5,6 +5,7 @@ export interface Setlist {
   venue?: string;
   sets: SetlistSet[];
   notes?: string;
+  expectedDuration?: number; // seconds
   createdAt: number;
   updatedAt: number;
 }

@@ -7,6 +7,7 @@
     "playground": "Playground",
     "chords": "Chords",
     "tuner": "Tuner",
+    "tools": "Tools",
     "quality": "Quality"
   },
   "common": {
@@ -27,7 +28,9 @@
     "all": "All",
     "filter": "Filter...",
     "search": "Search...",
-    "custom": "Custom"
+    "custom": "Custom",
+    "confirm": "Confirm",
+    "sortBy": "Sort by"
   },
   "catalog": {
     "title": "Songs",
@@ -62,14 +65,23 @@
     "notesPlaceholder": "Performance notes, capo position, etc.",
     "linksLabel": "Links (YouTube, Spotify, Deezer)",
     "chordproLabel": "ChordPro",
+    "chordproHelp": "ChordPro Format Reference",
     "deleteSongConfirm": "Delete this song?",
     "yesDelete": "Yes, delete",
     "majorGroup": "Major",
     "minorGroup": "Minor",
+    "transpositionLabel": "Transposition",
     "displayOverrides": "Display Overrides",
     "enableDisplayOverrides": "Customize display for this song",
     "displayOverridesDesc": "These overrides are personal and won't be shared when exporting the song.",
-    "resetToGlobal": "Reset to global"
+    "resetToGlobal": "Reset to global",
+    "resetChanges": "Reset changes",
+    "deleteConfirmTitle": "Delete song?",
+    "deleteConfirmMessage": "This action cannot be undone.",
+    "techNotesLabel": "Tech Notes",
+    "techNotesPlaceholder": "Lighting, sound cues, effects...",
+    "metadata": "Metadata",
+    "toggleMetadata": "Toggle metadata panel"
   },
   "lookup": {
     "title": "Find online",
@@ -97,7 +109,11 @@
     "songCount_other": "{{count}} songs",
     "addSet": "+ Add set",
     "perform": "Perform",
+    "techSheet": "Tech Sheet",
     "deleteSetlistConfirm": "Delete setlist?",
+    "deleteConfirmTitle": "Delete setlist?",
+    "deleteConfirmMessage": "This action cannot be undone.",
+    "resetChanges": "Reset changes",
     "removeSet": "Remove set",
     "noSongsInSet": "No songs in this set.",
     "addSong": "+ Add song",
@@ -109,7 +125,12 @@
     "noCatalogSongsShort": "No songs in catalog.",
     "noAvailableSongs": "No available songs.",
     "set": "Set",
-    "song": "Song"
+    "song": "Song",
+    "expectedDuration": "Expected duration (min)",
+    "unknownDuration_one": "{{count}} without duration",
+    "unknownDuration_other": "{{count}} without duration",
+    "suggested": "Suggested",
+    "allSongs": "All songs"
   },
   "perform": {
     "noSongsInSetlist": "This setlist has no songs.",
@@ -123,7 +144,17 @@
     "backToSet": "Back to set",
     "backToSong": "Back to song",
     "noContent": "No content.",
-    "songNotFound": "Song not found."
+    "songNotFound": "Song not found.",
+    "transpose": "Transpose",
+    "transposeDown": "Transpose down",
+    "transposeUp": "Transpose up",
+    "hints": {
+      "tap": "Tap to show or hide controls",
+      "swipe": "Swipe left or right to change song",
+      "doubleTapLeft": "Double-tap to zoom out",
+      "doubleTapRight": "Double-tap to zoom in",
+      "dismiss": "Tap anywhere to dismiss"
+    }
   },
   "sync": {
     "title": "Sync",
@@ -136,6 +167,8 @@
     "exporting": "Exporting...",
     "importFile": "Import file",
     "importing": "Importing...",
+    "importConfirmTitle": "Replace all local data?",
+    "importConfirmMessage": "Import replaces all existing songs and setlists. Export first to keep a backup.",
     "replaceConfirm": "Replace all local data?",
     "yesImport": "Yes, import",
     "exportSuccess": "Exported successfully.",
@@ -143,6 +176,8 @@
     "importSuccess": "Imported {{songs}} songs and {{setlists}} setlists.",
     "importFailed": "Import failed.",
     "importNote": "Import replaces all local data. Export first to keep a backup.",
+    "transpositionChanged": "Transposition changed during sync",
+    "transpositionDetail": "{{title}}: {{from}} → {{to}}",
     "github": {
       "sync": "Sync with GitHub",
       "syncing": "Syncing...",
@@ -166,14 +201,26 @@
     }
   },
   "tuner": {
-    "title": "Guitar Tuner",
+    "title": "Tuner",
     "start": "Start",
     "stop": "Stop",
     "cents": "cents",
     "hz": "Hz",
     "micDenied": "Microphone access was denied. Please allow microphone access in your browser settings.",
     "micUnsupported": "Your browser does not support microphone access.",
-    "micError": "Could not access the microphone."
+    "micError": "Could not access the microphone.",
+    "instruments": {
+      "heading": "Instrument",
+      "none": "Chromatic",
+      "guitar": "Guitar",
+      "bass": "Bass",
+      "ukulele": "Ukulele",
+      "violin": "Violin",
+      "banjo": "Banjo"
+    },
+    "strings": {
+      "inTune": "In tune"
+    }
   },
   "chordLib": {
     "title": "Chord Library",
@@ -242,10 +289,11 @@
       "heading": "Synchronization",
       "desc": "Connect a remote storage provider to sync your data across devices."
     },
-    "install": {
-      "heading": "Install the App",
-      "desc": "Install Open Setlist on your device for quick access and offline use.",
-      "action": "Install instructions"
+    "profile": {
+      "add": "+ Add profile",
+      "newName": "New profile",
+      "deleteConfirmTitle": "Delete profile?",
+      "deleteConfirmMessage": "This will permanently delete the profile and all its data."
     },
     "github": {
       "heading": "GitHub Repository",
@@ -276,14 +324,42 @@
       "help": "Your data is stored as open-setlist.json in your Google Drive. Share the file with band members via Google Drive, then use the invite button."
     }
   },
-  "pwa": {
-    "title": "Install Open Setlist",
-    "androidChrome": "For the best experience, install the app:",
-    "install": "Install",
-    "iosSafari": "To install, tap the <strong>Share</strong> button, then <strong>Add to Home Screen</strong>.",
-    "iosOther": "Open this link in Safari to install the app:",
-    "desktop": "Click the install icon in your browser's address bar to install the app.",
-    "dismiss": "Not now"
+  "onboarding": {
+    "bannerTitle": "Getting Started",
+    "bannerDesc": "Learn how Open Setlist works.",
+    "skip": "Skip",
+    "next": "Next",
+    "done": "Done",
+    "steps": {
+      "welcome": {
+        "title": "Welcome to Open Setlist!",
+        "body": "Open Setlist is a free, open-source setlist manager that runs entirely in your browser. Your data stays on your device — no account needed."
+      },
+      "profile": {
+        "title": "Profiles",
+        "body": "Each profile has its own songs, setlists, and sync settings. You're currently on the Demo profile with sample songs. Create your own profile in Settings to start fresh."
+      },
+      "sync": {
+        "title": "Sync Your Data",
+        "body": "Connect GitHub or Google Drive to back up and sync your data across devices. Set it up in Settings > Synchronization."
+      },
+      "band": {
+        "title": "Share with Your Band",
+        "body": "Share your Google Drive file with bandmates so everyone stays on the same page. Each member can sync independently."
+      },
+      "install": {
+        "title": "Install the App",
+        "body": "Open Setlist works offline as a PWA. On mobile, use your browser's \"Add to Home Screen\" option. On desktop, look for the install icon in the address bar."
+      }
+    },
+    "about": {
+      "heading": "About",
+      "body": "Open Setlist is a free, open-source setlist manager that runs entirely in your browser.\n\nYour songs and setlists are stored locally on your device. No account is required.\n\nUse profiles to separate different projects or bands. Each profile has its own data and sync configuration.\n\nConnect GitHub or Google Drive in Settings to back up and sync across devices. Share your Google Drive file with bandmates to collaborate.\n\nThe app works offline as a PWA — use your browser's \"Add to Home Screen\" to install it.",
+      "version": "Open Setlist v1",
+      "resetTitle": "Reset the app?",
+      "resetMessage": "This will delete all local data — profiles, songs, setlists, and preferences. Remote storage (GitHub, Google Drive) will not be affected.",
+      "resetConfirm": "Yes, reset everything"
+    }
   },
   "invite": {
     "inviteMembers": "Invite band members",
@@ -295,6 +371,9 @@
     "joining": "Joining...",
     "joinSuccess": "Joined! Syncing setlists...",
     "joinFailed": "Could not join: {{error}}"
+  },
+  "techSheet": {
+    "noSongs": "No songs in this setlist."
   },
   "validation": {
     "titleRequired": "Title is required",

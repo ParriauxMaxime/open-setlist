@@ -3,6 +3,7 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
 import { getPerformReturn } from "../../performance/components/perform-sidebar";
+import { GettingStartedBanner } from "./getting-started-banner";
 import { NavLink } from "./nav-link";
 import { ProfileSwitcher } from "./profile-switcher";
 import { SidebarNav } from "./sidebar-nav";
@@ -10,7 +11,7 @@ import { SidebarPanel } from "./sidebar-panel";
 
 const isDev = process.env.NODE_ENV !== "production";
 
-const PLAYGROUND_ROUTES = ["Chords", "Tuner", "Quality"] as const;
+const TOOLS_ROUTES = ["Chords", "Tuner", "Quality"] as const;
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -39,15 +40,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         ? "sync"
         : route.name === "Settings"
           ? "settings"
-          : (PLAYGROUND_ROUTES as readonly string[]).includes(route.name)
-            ? "playground"
+          : (TOOLS_ROUTES as readonly string[]).includes(route.name)
+            ? "tools"
             : "songs"
     : "songs";
 
   const performReturn = getPerformReturn();
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeMobile = useCallback(() => setMobileOpen(false), []);
-  const [playgroundOpen, setPlaygroundOpen] = useState(section === "playground");
+  const [toolsOpen, setToolsOpen] = useState(section === "tools");
+  const [playgroundOpen, setPlaygroundOpen] = useState(false);
 
   // Close mobile sidebar on route change
   const prevRoute = useRef(route?.name);
@@ -81,7 +83,43 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {returnLabel}
     </Link>
   ) : (
-    <ProfileSwitcher />
+    <>
+      <ProfileSwitcher />
+      <GettingStartedBanner />
+    </>
+  );
+
+  const toolsFooter = (
+    <div className="mt-3 border-t border-border pt-3">
+      <button
+        type="button"
+        onClick={() => setToolsOpen((o) => !o)}
+        className={[
+          "flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+          section === "tools"
+            ? "text-accent hover:bg-bg-hover"
+            : "text-text-muted hover:bg-bg-hover hover:text-text",
+        ].join(" ")}
+      >
+        <span className="text-lg" aria-hidden="true">
+          🛠
+        </span>
+        <span className="flex-1 text-left">{t("nav.tools")}</span>
+        <span className="text-xs text-text-faint">{toolsOpen ? "▾" : "▸"}</span>
+      </button>
+      <div
+        className="ml-4 grid transition-[grid-template-rows] duration-200 ease-in-out"
+        style={{ gridTemplateRows: toolsOpen ? "1fr" : "0fr" }}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-0.5">
+            <NavLink to="Tuner" label={t("nav.tuner")} active={route?.name === "Tuner"} />
+            <NavLink to="Chords" label={t("nav.chords")} active={route?.name === "Chords"} />
+            <NavLink to="Quality" label={t("nav.quality")} active={route?.name === "Quality"} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 
   const playgroundFooter = isDev ? (
@@ -89,12 +127,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <button
         type="button"
         onClick={() => setPlaygroundOpen((o) => !o)}
-        className={[
-          "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-          section === "playground"
-            ? "text-accent"
-            : "text-text-muted hover:bg-bg-hover hover:text-text",
-        ].join(" ")}
+        className="flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-bg-hover hover:text-text"
       >
         <span className="text-lg" aria-hidden="true">
           🧪
@@ -102,25 +135,29 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <span className="flex-1 text-left">{t("nav.playground")}</span>
         <span className="text-xs text-text-faint">{playgroundOpen ? "▾" : "▸"}</span>
       </button>
-      {playgroundOpen && (
-        <div className="ml-4 flex flex-col gap-0.5">
-          <NavLink to="Chords" label={t("nav.chords")} icon="♯" active={route?.name === "Chords"} />
-          <NavLink to="Tuner" label={t("nav.tuner")} icon="🎵" active={route?.name === "Tuner"} />
-          <NavLink
-            to="Quality"
-            label={t("nav.quality")}
-            icon="✓"
-            active={route?.name === "Quality"}
-          />
+      <div
+        className="ml-4 grid transition-[grid-template-rows] duration-200 ease-in-out"
+        style={{ gridTemplateRows: playgroundOpen ? "1fr" : "0fr" }}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-0.5" />
         </div>
-      )}
+      </div>
     </div>
   ) : null;
 
   const sidebarContent = (
     <>
       {header}
-      <SidebarNav activeSection={section} footer={playgroundFooter} />
+      <SidebarNav
+        activeSection={section}
+        footer={
+          <>
+            {toolsFooter}
+            {playgroundFooter}
+          </>
+        }
+      />
     </>
   );
 

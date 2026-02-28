@@ -2,16 +2,19 @@ import type { SetlistSet } from "@db";
 import { useDb } from "@db/provider";
 import { closestCorners, DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { formatDuration } from "@domain/format";
 import { useActiveProfileId } from "@domain/profiles";
 import { type SetlistFormValues, setlistFormSchema } from "@domain/schemas/setlist";
 import { addTombstone } from "@domain/sync/tombstones";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "@swan-io/chicane";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
+import { ConfirmModal } from "../../design-system/components/confirm-modal";
+import { EditorHeader } from "../../design-system/components/editor-header";
 import { Field, Input } from "../../design-system/components/form";
 import { buildSetDragId, buildSongDragIds, useSetlistDnd } from "../hooks/use-setlist-dnd";
 import { DragOverlayContent } from "./drag-overlay-content";
@@ -36,13 +39,15 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
   const profileId = useActiveProfileId();
   const existing = useLiveQuery(() => db.setlists.get(setlistId), [setlistId, db]);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const {
     register,
     handleSubmit,
     reset,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
     control,
   } = useForm<SetlistFormValues>({
     resolver: zodResolver(setlistFormSchema),
@@ -68,9 +73,29 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
         venue: existing.venue,
         sets: existing.sets.map((s) => ({ ...s })),
         notes: existing.notes,
+        expectedDuration: existing.expectedDuration,
       });
     }
   }, [existing, reset]);
+
+  // Close menu on outside click or Escape
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("click", handleClick, true);
+    window.addEventListener("keydown", handleKey);
+    return () => {
+      window.removeEventListener("click", handleClick, true);
+      window.removeEventListener("keydown", handleKey);
+    };
+  }, [menuOpen]);
 
   const updateSet = useCallback(
     (index: number, updated: SetlistSet) => {
@@ -90,6 +115,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
       date: values.date || undefined,
       venue: values.venue || undefined,
       notes: values.notes || undefined,
+      expectedDuration: values.expectedDuration || undefined,
       id: setlistId,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
@@ -116,6 +142,32 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
   // All song IDs currently in any set (for catalog panel filtering)
   const usedSongIds = useMemo(() => sets.flatMap((s) => s.songIds), [sets]);
 
+  // Load songs to compute total duration
+  const uniqueSongIds = useMemo(() => [...new Set(usedSongIds)], [usedSongIds]);
+  const songs = useLiveQuery(
+    () => (uniqueSongIds.length > 0 ? db.songs.bulkGet(uniqueSongIds) : []),
+    [uniqueSongIds, db],
+  );
+
+  const { totalDuration, unknownCount } = useMemo(() => {
+    if (!songs) return { totalDuration: 0, unknownCount: 0 };
+    const defined = songs.filter((s): s is NonNullable<typeof s> => s != null);
+    const songMap = new Map(defined.map((s) => [s.id, s]));
+    let total = 0;
+    let unknown = 0;
+    for (const id of usedSongIds) {
+      const song = songMap.get(id);
+      if (song?.duration) {
+        total += song.duration;
+      } else {
+        unknown++;
+      }
+    }
+    return { totalDuration: total, unknownCount: unknown };
+  }, [songs, usedSongIds]);
+
+  const expectedDuration = watch("expectedDuration");
+
   // DnD hook
   const { sensors, onDragStart, onDragOver, onDragEnd, activeDrag } = useSetlistDnd({
     sets,
@@ -133,16 +185,70 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
 
   return (
     <div className="p-page">
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">{t("setlist.editSetlist")}</h1>
-        <Link to={Router.Setlists()} className="link">
-          {t("setlist.backToSetlists")}
-        </Link>
-      </div>
+      <EditorHeader
+        breadcrumbs={[
+          { label: t("nav.setlists"), to: Router.Setlists() },
+          { label: watch("name") || "..." },
+        ]}
+        actions={
+          <>
+            <button
+              type="submit"
+              form="setlist-form"
+              disabled={isSubmitting || !isDirty}
+              className="btn btn-primary btn-responsive"
+            >
+              {isSubmitting ? t("common.saving") : t("common.save")}
+            </button>
+            {totalSongs > 0 && (
+              <Link to={Router.TechSheet({ setlistId })} className="btn btn-outline btn-responsive">
+                {t("setlist.perform")}
+              </Link>
+            )}
+            <div ref={menuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                className="btn btn-ghost btn-responsive"
+                aria-label="More options"
+                aria-expanded={menuOpen}
+                aria-haspopup="true"
+              >
+                &#8942;
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 top-full z-50 mt-1 min-w-40 rounded-md border border-border bg-bg-surface py-1 shadow-lg">
+                  <button
+                    type="button"
+                    disabled={!isDirty}
+                    onClick={() => {
+                      reset();
+                      setMenuOpen(false);
+                    }}
+                    className="block w-full px-4 py-2 text-left text-sm text-text hover:bg-bg-hover disabled:opacity-50"
+                  >
+                    {t("setlist.resetChanges")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmDelete(true);
+                      setMenuOpen(false);
+                    }}
+                    className="block w-full px-4 py-2 text-left text-sm text-danger hover:bg-bg-hover"
+                  >
+                    {t("common.delete")}
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        }
+      />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <form id="setlist-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         {/* Metadata */}
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-4">
           <Field label={t("setlist.nameLabel")} error={errors.name?.message}>
             <Input {...register("name")} />
           </Field>
@@ -151,6 +257,19 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
           </Field>
           <Field label={t("setlist.venueLabel")} error={errors.venue?.message}>
             <Input {...register("venue")} placeholder={t("setlist.venuePlaceholder")} />
+          </Field>
+          <Field label={t("setlist.expectedDuration")} error={errors.expectedDuration?.message}>
+            <Input
+              type="number"
+              min={1}
+              {...register("expectedDuration", {
+                setValueAs: (v: string) => {
+                  const n = Number.parseInt(v, 10);
+                  return Number.isNaN(n) ? undefined : n * 60;
+                },
+              })}
+              value={expectedDuration ? Math.round(expectedDuration / 60) : ""}
+            />
           </Field>
         </div>
 
@@ -171,7 +290,12 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
               <h2 className="text-lg font-semibold">
                 {t("setlist.setsHeading")}{" "}
                 <span className="text-sm font-normal text-text-faint">
-                  ({t("setlist.songCount", { count: totalSongs })})
+                  {t("setlist.songCount", { count: totalSongs })}
+                  {totalDuration > 0 && <> &middot; {formatDuration(totalDuration)}</>}
+                  {unknownCount > 0 && (
+                    <> ({t("setlist.unknownDuration", { count: unknownCount })})</>
+                  )}
+                  {expectedDuration && <> / {formatDuration(expectedDuration)}</>}
                 </span>
               </h2>
 
@@ -201,48 +325,18 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
             {activeDrag ? <DragOverlayContent activeDrag={activeDrag} /> : null}
           </DragOverlay>
         </DndContext>
-
-        {/* Actions */}
-        <div className="flex items-center gap-3 border-t border-border pt-4">
-          <button type="submit" disabled={isSubmitting} className="btn btn-primary">
-            {isSubmitting ? t("common.saving") : t("common.save")}
-          </button>
-
-          {totalSongs > 0 && (
-            <Link to={Router.Perform({ setlistId })} className="btn btn-outline">
-              {t("setlist.perform")}
-            </Link>
-          )}
-
-          {confirmDelete ? (
-            <span className="flex items-center gap-2 text-sm">
-              <span className="text-danger">{t("setlist.deleteSetlistConfirm")}</span>
-              <button
-                type="button"
-                onClick={deleteSetlist}
-                className="btn-danger font-medium hover:underline"
-              >
-                {t("common.yes")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(false)}
-                className="link hover:underline"
-              >
-                {t("common.cancel")}
-              </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(true)}
-              className="btn-danger text-sm"
-            >
-              {t("common.delete")}
-            </button>
-          )}
-        </div>
       </form>
+
+      {confirmDelete && (
+        <ConfirmModal
+          title={t("setlist.deleteConfirmTitle")}
+          message={t("setlist.deleteConfirmMessage")}
+          confirmLabel={t("common.delete")}
+          variant="danger"
+          onConfirm={deleteSetlist}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
     </div>
   );
 }

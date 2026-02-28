@@ -1,10 +1,26 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { TUNINGS } from "../../domain/tunings";
+import { InstrumentPicker } from "./components/instrument-picker";
+import { StringVisualization } from "./components/string-visualization";
 import { TunerGauge } from "./components/tuner-gauge";
+import { useActiveString } from "./hooks/use-active-string";
 import { usePitch } from "./hooks/use-pitch";
 
 export function TunerPage() {
   const { t } = useTranslation();
   const { note, frequency, cents, listening, error, start, stop } = usePitch();
+
+  useEffect(() => {
+    start();
+  }, [start]);
+  const [selectedTuningId, setSelectedTuningId] = useState<string | null>("guitar-standard");
+
+  const selectedTuning = selectedTuningId
+    ? (TUNINGS.find((t) => t.id === selectedTuningId) ?? null)
+    : null;
+
+  const activeString = useActiveString(note, cents, selectedTuning);
 
   const centsColor =
     cents != null
@@ -47,6 +63,12 @@ export function TunerPage() {
         >
           {listening ? t("tuner.stop") : t("tuner.start")}
         </button>
+
+        <InstrumentPicker selectedId={selectedTuningId} onSelect={setSelectedTuningId} />
+
+        {selectedTuning && (
+          <StringVisualization tuning={selectedTuning} activeString={activeString} />
+        )}
       </div>
     </div>
   );

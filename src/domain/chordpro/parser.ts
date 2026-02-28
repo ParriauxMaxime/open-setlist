@@ -129,6 +129,7 @@ const META_DIRECTIVES = new Set([
   "duration",
   "tags",
   "notes",
+  "tech_notes",
   "capo",
   "tempo",
   "youtube",
@@ -233,7 +234,15 @@ export function parse(source: string): ChordProSong {
 
       if (META_DIRECTIVES.has(lower)) {
         const key =
-          lower === "t" ? "title" : lower === "st" ? "subtitle" : lower === "tempo" ? "bpm" : lower;
+          lower === "t"
+            ? "title"
+            : lower === "st"
+              ? "subtitle"
+              : lower === "tempo"
+                ? "bpm"
+                : lower === "tech_notes"
+                  ? "techNotes"
+                  : lower;
         metadata[key] = value ?? "";
       } else if (SECTION_START[lower]) {
         // Close any open section

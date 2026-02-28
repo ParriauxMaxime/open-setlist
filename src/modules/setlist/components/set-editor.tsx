@@ -140,7 +140,7 @@ export function SetEditor({
       )}
 
       {showPicker ? (
-        <SongPicker excludeIds={set.songIds} onPick={addSong} />
+        <SongPicker excludeIds={set.songIds} onPick={addSong} contextSongs={songs} />
       ) : (
         <button type="button" onClick={() => setShowPicker(true)} className="link-accent text-sm">
           {t("setlist.addSong")}

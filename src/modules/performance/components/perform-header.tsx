@@ -10,6 +10,10 @@ interface PerformHeaderProps {
   isFirst: boolean;
   isLast: boolean;
   setlistId?: string;
+  transposition: number;
+  transposeOpen: boolean;
+  onTranspose: (delta: number) => void;
+  onToggleTranspose: () => void;
   onPrev: () => void;
   onNext: () => void;
   onOpenSidebar: () => void;
@@ -21,6 +25,10 @@ export function PerformHeader({
   isFirst,
   isLast,
   setlistId,
+  transposition,
+  transposeOpen,
+  onTranspose,
+  onToggleTranspose,
   onPrev,
   onNext,
   onOpenSidebar,
@@ -28,6 +36,7 @@ export function PerformHeader({
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const showTranspose = transposeOpen || transposition !== 0;
 
   // Close menu on outside click or Escape
   useEffect(() => {
@@ -69,6 +78,35 @@ export function PerformHeader({
             </div>
             {song?.artist && <div className="truncate text-sm text-text-muted">{song.artist}</div>}
           </div>
+
+          {/* Transpose control — shown via menu toggle or when transposition is non-zero */}
+          {showTranspose && (
+            <div className="flex shrink-0 items-center gap-0.5">
+              <button
+                type="button"
+                onClick={() => onTranspose(-1)}
+                className="perform-btn"
+                aria-label={t("perform.transposeDown")}
+              >
+                −
+              </button>
+              <span className="min-w-[2ch] text-center text-sm font-medium text-text-muted tabular-nums">
+                {transposition === 0
+                  ? "0"
+                  : transposition > 0
+                    ? `+${transposition}`
+                    : transposition}
+              </span>
+              <button
+                type="button"
+                onClick={() => onTranspose(1)}
+                className="perform-btn"
+                aria-label={t("perform.transposeUp")}
+              >
+                +
+              </button>
+            </div>
+          )}
 
           {/* Navigation + menu */}
           <div className="flex shrink-0 items-center gap-1">
@@ -121,6 +159,16 @@ export function PerformHeader({
                       {t("perform.editSong")}
                     </Link>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onToggleTranspose();
+                      setMenuOpen(false);
+                    }}
+                    className="block w-full px-4 py-2.5 text-left text-base text-text hover:bg-bg-hover"
+                  >
+                    {t("perform.transpose")}
+                  </button>
                   <Link
                     to={Router.Settings()}
                     className="block px-4 py-2.5 text-left text-base text-text hover:bg-bg-hover"

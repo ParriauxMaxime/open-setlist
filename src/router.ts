@@ -10,6 +10,7 @@ export const Router = createRouter(
     SongEdit: "/song/:songId",
     Setlists: "/setlists",
     SetlistEdit: "/setlist/:setlistId",
+    TechSheet: "/tech/:setlistId",
     Perform: "/perform/:setlistId",
     PerformSong: "/perform-song/:songId",
     Chords: "/chords",

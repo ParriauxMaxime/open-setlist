@@ -1,0 +1,53 @@
+{title: Sweet Child O' Mine}
+{artist: Guns N' Roses}
+{key: D}
+{bpm: 122}
+{time: 4/4}
+{duration: 5:56}
+{tags: rock, classic, iconic-riff, crowd-pleaser}
+{tech_notes: Spotlight on guitar for intro riff. Full stage lights on verse entry. Big reverb on vocals for chorus.}
+
+{comment: Iconic intro riff over D chord}
+
+{start_of_verse: Verse 1}
+[D]She's got a smile that it seems to me
+Re[C]minds me of childhood memories
+Where [G]everything was as fresh
+As the [D]bright blue sky
+[D]Now and then when I see her face
+She [C]takes me away to that special place
+And if I [G]stared too long
+I'd probably [D]break down and cry
+{end_of_verse}
+
+{start_of_chorus: Chorus}
+[A]Oh, oh, oh [C]sweet child o' [D]mine
+[A]Oh, oh, oh, oh [C]sweet love o' [D]mine
+{end_of_chorus}
+
+{start_of_verse: Verse 2}
+[D]She's got eyes of the bluest skies
+As [C]if they thought of rain
+I'd [G]hate to look into those eyes
+And [D]see an ounce of pain
+[D]Her hair reminds me of a warm safe place
+Where [C]as a child I'd hide
+And [G]pray for the thunder and the rain
+To [D]quietly pass me by
+{end_of_verse}
+
+{chorus}
+
+{start_of_bridge: Bridge}
+[Em] [C] [B7] [Am]
+[Em] [C] [B7] [Am]
+{end_of_bridge}
+
+{start_of_verse: Outro}
+[E5]Where do we go? Where do we go now?
+[G5]Where do we go?
+[A5] [C5] [D5]
+[E5]Where do we go now?
+{end_of_verse}
+
+{comment: Repeat outro, build intensity}
