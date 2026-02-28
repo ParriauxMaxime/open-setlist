@@ -1,0 +1,40 @@
+{title: Wish You Were Here}
+{artist: Pink Floyd}
+{key: G}
+{bpm: 60}
+{time: 4/4}
+{duration: 5:34}
+{tags: classic-rock, acoustic, emotional, singalong}
+
+{start_of_verse: Intro}
+[Em7] [G] [Em7] [G]
+[Em7] [A7sus4] [Em7] [A7sus4]
+[G] [G]
+{end_of_verse}
+
+{start_of_verse: Verse 1}
+[C]So, so you think you can [D]tell
+Heaven from [Am]hell, blue skies from [G]pain
+Can you tell a green [D]field from a cold steel [C]rail
+A smile from a [Am]veil, do you think you can [G]tell
+{end_of_verse}
+
+{start_of_verse: Verse 2}
+Did they get you to [C]trade your heroes for [D]ghosts
+Hot ashes for [Am]trees, hot air for a [G]cool breeze
+Cold comfort for [D]change, did you ex[C]change
+A walk-on part in the [Am]war for a lead role in a [G]cage
+{end_of_verse}
+
+{start_of_chorus: Chorus}
+[Em7]How I wish, how I wish you were [A7sus4]here
+We're just [G]two lost souls swimming in a fish bowl
+[Em7]Year after year
+[A7sus4]Running over the same old ground
+[G]What have we found? The same old fears
+[Em7]Wish you were [G]here
+{end_of_chorus}
+
+{comment: Repeat intro picking, then repeat verse and chorus}
+
+{chorus}

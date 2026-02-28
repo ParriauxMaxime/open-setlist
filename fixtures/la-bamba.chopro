@@ -1,0 +1,47 @@
+{title: La Bamba}
+{artist: Ritchie Valens}
+{key: C}
+{bpm: 140}
+{time: 4/4}
+{duration: 2:07}
+{tags: latin, rock-n-roll, classic, crowd-pleaser}
+
+{start_of_verse: Verse 1}
+[C]Para bailar la [F]bamba
+[G]Para bailar la [C]bamba se nece[F]sita
+Una poca de [G]gracia
+[C]Una poca de [F]gracia pa' mi pa' [G]ti
+Ay arriba y a[C]rriba [F] [G]
+{end_of_verse}
+
+{start_of_chorus: Chorus}
+Ay arriba y a[C]rriba, por ti [F]seré
+Por ti se[G]ré, por ti seré
+[C]Yo no soy mari[F]nero [G]
+[C]Yo no soy mari[F]nero, soy capi[G]tán
+[C]Soy capi[F]tán, soy capi[G]tán
+{end_of_chorus}
+
+{start_of_verse: Bamba}
+[C]Bamba, [F]bamba [G]
+[C]Bamba, [F]bamba [G]
+[C]Bamba, [F]bamba [G]
+{end_of_verse}
+
+{start_of_verse: Verse 2}
+[C]Para bailar la [F]bamba
+[G]Para bailar la [C]bamba se nece[F]sita
+Una poca de [G]gracia
+[C]Una poca de [F]gracia pa' mi pa' [G]ti
+Ay arriba y a[C]rriba [F] [G]
+{end_of_verse}
+
+{chorus}
+
+{start_of_verse: Bamba}
+[C]Bamba, [F]bamba [G]
+[C]Bamba, [F]bamba [G]
+[C]Bamba, [F]bamba [G]
+{end_of_verse}
+
+{comment: Repeat and build energy, end big on C}

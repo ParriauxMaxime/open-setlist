@@ -23,7 +23,7 @@ export async function migrateAndInit(): Promise<{ db: AppDatabase; profileId: st
   // No old database — just ensure a default profile and seed
   const profileId = ensureDefaultProfile();
   const db = openProfileDb(profileId);
-  await seedIfEmpty(db);
+  await seedIfEmpty(db, profileId);
   return { db, profileId };
 }
 

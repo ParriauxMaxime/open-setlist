@@ -13,14 +13,20 @@ import {
   type SyncResult,
   type SyncReviewContext,
 } from "@domain/sync/orchestrator";
+import {
+  detectTranspositionMismatches,
+  type TranspositionMismatch,
+} from "@domain/sync/transposition-mismatch";
 import { Link } from "@swan-io/chicane";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
+import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { GitHubIcon, GoogleDriveIcon } from "../design-system/components/icons";
 import { SETTINGS_SCROLL_KEY } from "../settings/page";
 import { SyncReview } from "./components/sync-review";
+import { TranspositionAlert } from "./components/transposition-alert";
 
 type Status =
   | { type: "idle" }
@@ -67,6 +73,9 @@ export function SyncPage() {
   const [confirmImport, setConfirmImport] = useState(false);
   const [ghStatus, setGhStatus] = useState<GitHubStatus>({ type: "idle" });
   const [gdStatus, setGdStatus] = useState<GoogleDriveStatus>({ type: "idle" });
+  const [transpositionMismatches, setTranspositionMismatches] = useState<TranspositionMismatch[]>(
+    [],
+  );
 
   const syncConfig = loadSyncConfig(profileId);
   const ghConfigured = syncConfig?.adapter === "github";
@@ -100,6 +109,11 @@ export function SyncPage() {
       setGhStatus({ type: "pushing" });
       try {
         const adapter = createGitHubAdapter(config);
+        const mismatches = detectTranspositionMismatches(
+          ghStatus.ctx.local.songs,
+          ghStatus.ctx.remote.songs,
+        );
+        if (mismatches.length > 0) setTranspositionMismatches(mismatches);
         const result = await pushSelected(adapter, db, profileId, ghStatus.ctx, selectedOutgoing);
         setGhStatus({ type: "success", result });
       } catch (err) {
@@ -140,6 +154,11 @@ export function SyncPage() {
       setGdStatus({ type: "pushing" });
       try {
         const adapter = createGoogleDriveAdapter(config);
+        const mismatches = detectTranspositionMismatches(
+          gdStatus.ctx.local.songs,
+          gdStatus.ctx.remote.songs,
+        );
+        if (mismatches.length > 0) setTranspositionMismatches(mismatches);
         const result = await pushSelected(adapter, db, profileId, gdStatus.ctx, selectedOutgoing);
         setGdStatus({ type: "success", result });
       } catch (err) {
@@ -189,6 +208,10 @@ export function SyncPage() {
 
   return (
     <div className="p-page">
+      <TranspositionAlert
+        mismatches={transpositionMismatches}
+        onDismiss={() => setTranspositionMismatches([])}
+      />
       <h1 className="mb-4 text-2xl font-bold">{t("sync.title")}</h1>
 
       <p className="mb-4 text-text-muted">{t("sync.description")}</p>
@@ -203,35 +226,14 @@ export function SyncPage() {
           {status.type === "exporting" ? t("sync.exporting") : t("sync.exportToFile")}
         </button>
 
-        {confirmImport ? (
-          <span className="flex items-center gap-2 text-sm">
-            <span className="text-danger">{t("sync.replaceConfirm")}</span>
-            <button
-              type="button"
-              onClick={handleImport}
-              disabled={busy}
-              className="btn-danger font-medium hover:underline"
-            >
-              {t("sync.yesImport")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirmImport(false)}
-              className="link hover:underline"
-            >
-              {t("common.cancel")}
-            </button>
-          </span>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setConfirmImport(true)}
-            disabled={busy}
-            className="btn btn-ghost"
-          >
-            {status.type === "importing" ? t("sync.importing") : t("sync.importFile")}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setConfirmImport(true)}
+          disabled={busy}
+          className="btn btn-ghost"
+        >
+          {status.type === "importing" ? t("sync.importing") : t("sync.importFile")}
+        </button>
       </div>
 
       <div aria-live="polite">
@@ -410,6 +412,17 @@ export function SyncPage() {
             </div>
           )}
         </>
+      )}
+
+      {confirmImport && (
+        <ConfirmModal
+          title={t("sync.importConfirmTitle")}
+          message={t("sync.importConfirmMessage")}
+          confirmLabel={t("sync.yesImport")}
+          variant="danger"
+          onConfirm={handleImport}
+          onCancel={() => setConfirmImport(false)}
+        />
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 import type { Song } from "@db";
 import { useDb } from "@db/provider";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export interface FlatEntry {
   songId: string;
@@ -14,7 +14,11 @@ export interface FlatEntry {
 export function useSetlistNavigation(setlistId: string) {
   const db = useDb();
   const setlist = useLiveQuery(() => db.setlists.get(setlistId), [setlistId, db]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const start = Number.parseInt(params.get("start") ?? "", 10);
+    return Number.isNaN(start) || start < 0 ? 0 : start;
+  });
 
   const flatSongs = useMemo<FlatEntry[]>(() => {
     if (!setlist) return [];
@@ -33,6 +37,13 @@ export function useSetlistNavigation(setlistId: string) {
     }
     return result;
   }, [setlist]);
+
+  // Clamp index if it's out of bounds (e.g. stale bookmark after songs removed)
+  useEffect(() => {
+    if (flatSongs.length > 0 && currentIndex >= flatSongs.length) {
+      setCurrentIndex(flatSongs.length - 1);
+    }
+  }, [flatSongs.length, currentIndex]);
 
   const allSongIds = useMemo(() => flatSongs.map((s) => s.songId), [flatSongs]);
   const songs = useLiveQuery(async () => {

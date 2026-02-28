@@ -1,6 +1,8 @@
 import {
+  addProfile,
   type Profile,
   removeProfile,
+  setActiveProfileId,
   updateProfile,
   useActiveProfileId,
   useProfiles,
@@ -8,6 +10,8 @@ import {
 import { loadSyncConfig } from "@domain/sync/config";
 import Dexie from "dexie";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ConfirmModal } from "../../design-system/components/confirm-modal";
 
 const AVATAR_PRESETS = [
   "\u{1F3B8}",
@@ -21,8 +25,15 @@ const AVATAR_PRESETS = [
 ];
 
 export function ProfileManager() {
+  const { t } = useTranslation();
   const profiles = useProfiles();
   const activeId = useActiveProfileId();
+
+  const handleAdd = useCallback(() => {
+    const id = crypto.randomUUID();
+    addProfile({ id, name: t("settings.profile.newName"), createdAt: Date.now() });
+    setActiveProfileId(id);
+  }, [t]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -34,6 +45,9 @@ export function ProfileManager() {
           canDelete={profiles.length > 1}
         />
       ))}
+      <button type="button" onClick={handleAdd} className="link-accent text-sm">
+        {t("settings.profile.add")}
+      </button>
     </div>
   );
 }
@@ -47,6 +61,7 @@ function ProfileRow({
   isActive: boolean;
   canDelete: boolean;
 }) {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(profile.name);
   const [avatar, setAvatar] = useState(profile.avatar ?? "");
@@ -147,34 +162,27 @@ function ProfileRow({
         >
           Edit
         </button>
-        {canDelete &&
-          (confirmDelete ? (
-            <span className="flex items-center gap-1 text-xs">
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="font-medium text-danger hover:underline"
-              >
-                Confirm
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(false)}
-                className="text-text-muted hover:underline"
-              >
-                Cancel
-              </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(true)}
-              className="btn btn-ghost btn-sm text-xs text-danger"
-            >
-              Delete
-            </button>
-          ))}
+        {canDelete && (
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            className="btn btn-ghost btn-sm text-xs text-danger"
+          >
+            Delete
+          </button>
+        )}
       </div>
+
+      {confirmDelete && (
+        <ConfirmModal
+          title={t("settings.profile.deleteConfirmTitle")}
+          message={t("settings.profile.deleteConfirmMessage")}
+          confirmLabel={t("common.delete")}
+          variant="danger"
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
     </div>
   );
 }

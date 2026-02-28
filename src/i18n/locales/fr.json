@@ -7,6 +7,7 @@
     "playground": "Labo",
     "chords": "Accords",
     "tuner": "Accordeur",
+    "tools": "Outils",
     "quality": "Qualité"
   },
   "common": {
@@ -27,7 +28,9 @@
     "all": "Tous",
     "filter": "Filtrer...",
     "search": "Rechercher...",
-    "custom": "Personnalisé"
+    "custom": "Personnalisé",
+    "confirm": "Confirmer",
+    "sortBy": "Trier par"
   },
   "catalog": {
     "title": "Chansons",
@@ -62,14 +65,23 @@
     "notesPlaceholder": "Notes de performance, capo, etc.",
     "linksLabel": "Liens (YouTube, Spotify, Deezer)",
     "chordproLabel": "ChordPro",
+    "chordproHelp": "Référence du format ChordPro",
     "deleteSongConfirm": "Supprimer cette chanson\u00a0?",
     "yesDelete": "Oui, supprimer",
     "majorGroup": "Majeur",
     "minorGroup": "Mineur",
+    "transpositionLabel": "Transposition",
     "displayOverrides": "Affichage personnalisé",
     "enableDisplayOverrides": "Personnaliser l'affichage pour ce morceau",
     "displayOverridesDesc": "Ces réglages sont personnels et ne seront pas partagés lors de l'export du morceau.",
-    "resetToGlobal": "Revenir au global"
+    "resetToGlobal": "Revenir au global",
+    "resetChanges": "Réinitialiser",
+    "deleteConfirmTitle": "Supprimer la chanson\u00a0?",
+    "deleteConfirmMessage": "Cette action est irréversible.",
+    "techNotesLabel": "Notes techniques",
+    "techNotesPlaceholder": "Éclairage, cues son, effets...",
+    "metadata": "Métadonnées",
+    "toggleMetadata": "Afficher/masquer les métadonnées"
   },
   "lookup": {
     "title": "Chercher en ligne",
@@ -97,7 +109,11 @@
     "songCount_other": "{{count}} chansons",
     "addSet": "+ Ajouter un set",
     "perform": "Jouer",
+    "techSheet": "Fiche technique",
     "deleteSetlistConfirm": "Supprimer la setlist\u00a0?",
+    "deleteConfirmTitle": "Supprimer la setlist\u00a0?",
+    "deleteConfirmMessage": "Cette action est irréversible.",
+    "resetChanges": "Réinitialiser",
     "removeSet": "Retirer le set",
     "noSongsInSet": "Aucune chanson dans ce set.",
     "addSong": "+ Ajouter une chanson",
@@ -109,7 +125,12 @@
     "noCatalogSongsShort": "Aucune chanson dans le catalogue.",
     "noAvailableSongs": "Aucune chanson disponible.",
     "set": "Set",
-    "song": "Chanson"
+    "song": "Chanson",
+    "expectedDuration": "Durée prévue (min)",
+    "unknownDuration_one": "{{count}} sans durée",
+    "unknownDuration_other": "{{count}} sans durée",
+    "suggested": "Suggestions",
+    "allSongs": "Toutes les chansons"
   },
   "perform": {
     "noSongsInSetlist": "Cette setlist ne contient aucune chanson.",
@@ -123,7 +144,17 @@
     "backToSet": "Retour au set",
     "backToSong": "Retour à la chanson",
     "noContent": "Aucun contenu.",
-    "songNotFound": "Chanson introuvable."
+    "songNotFound": "Chanson introuvable.",
+    "transpose": "Transposer",
+    "transposeDown": "Transposer vers le bas",
+    "transposeUp": "Transposer vers le haut",
+    "hints": {
+      "tap": "Touchez pour afficher ou masquer les contrôles",
+      "swipe": "Glissez pour changer de chanson",
+      "doubleTapLeft": "Double-tap pour dézoomer",
+      "doubleTapRight": "Double-tap pour zoomer",
+      "dismiss": "Touchez pour fermer"
+    }
   },
   "sync": {
     "title": "Synchro",
@@ -136,6 +167,8 @@
     "exporting": "Export en cours...",
     "importFile": "Importer un fichier",
     "importing": "Import en cours...",
+    "importConfirmTitle": "Remplacer toutes les donn\u00e9es locales\u00a0?",
+    "importConfirmMessage": "L\u2019import remplace toutes les chansons et setlists existantes. Exportez d\u2019abord pour garder une sauvegarde.",
     "replaceConfirm": "Remplacer toutes les données locales\u00a0?",
     "yesImport": "Oui, importer",
     "exportSuccess": "Exporté avec succès.",
@@ -143,6 +176,8 @@
     "importSuccess": "Importé {{songs}} chansons et {{setlists}} setlists.",
     "importFailed": "Échec de l\u2019import.",
     "importNote": "L\u2019import remplace toutes les données locales. Exportez d\u2019abord pour garder une sauvegarde.",
+    "transpositionChanged": "Transposition modifiée pendant la synchro",
+    "transpositionDetail": "{{title}} : {{from}} → {{to}}",
     "github": {
       "sync": "Synchroniser avec GitHub",
       "syncing": "Synchronisation...",
@@ -166,14 +201,26 @@
     }
   },
   "tuner": {
-    "title": "Accordeur guitare",
+    "title": "Accordeur",
     "start": "Démarrer",
     "stop": "Arrêter",
     "cents": "cents",
     "hz": "Hz",
     "micDenied": "L'accès au microphone a été refusé. Veuillez autoriser le microphone dans les paramètres de votre navigateur.",
     "micUnsupported": "Votre navigateur ne supporte pas l'accès au microphone.",
-    "micError": "Impossible d'accéder au microphone."
+    "micError": "Impossible d'accéder au microphone.",
+    "instruments": {
+      "heading": "Instrument",
+      "none": "Chromatique",
+      "guitar": "Guitare",
+      "bass": "Basse",
+      "ukulele": "Ukulélé",
+      "violin": "Violon",
+      "banjo": "Banjo"
+    },
+    "strings": {
+      "inTune": "Accordé"
+    }
   },
   "chordLib": {
     "title": "Bibliothèque d\u2019accords",
@@ -242,10 +289,11 @@
       "heading": "Synchronisation",
       "desc": "Connectez un fournisseur de stockage distant pour synchroniser vos données entre appareils."
     },
-    "install": {
-      "heading": "Installer l\u2019appli",
-      "desc": "Installez Open Setlist sur votre appareil pour un acc\u00e8s rapide et une utilisation hors ligne.",
-      "action": "Instructions d\u2019installation"
+    "profile": {
+      "add": "+ Ajouter un profil",
+      "newName": "Nouveau profil",
+      "deleteConfirmTitle": "Supprimer le profil\u00a0?",
+      "deleteConfirmMessage": "Cela supprimera d\u00e9finitivement le profil et toutes ses donn\u00e9es."
     },
     "github": {
       "heading": "Dépôt GitHub",
@@ -276,14 +324,42 @@
       "help": "Vos données sont stockées dans le fichier open-setlist.json de votre Google Drive. Partagez le fichier avec les membres du groupe via Google Drive, puis utilisez le bouton d'invitation."
     }
   },
-  "pwa": {
-    "title": "Installer Open Setlist",
-    "androidChrome": "Pour une meilleure exp\u00e9rience, installez l\u2019appli\u00a0:",
-    "install": "Installer",
-    "iosSafari": "Pour installer, appuyez sur le bouton <strong>Partager</strong>, puis <strong>Sur l\u2019\u00e9cran d\u2019accueil</strong>.",
-    "iosOther": "Ouvrez ce lien dans Safari pour installer l\u2019appli\u00a0:",
-    "desktop": "Cliquez sur l\u2019ic\u00f4ne d\u2019installation dans la barre d\u2019adresse de votre navigateur.",
-    "dismiss": "Pas maintenant"
+  "onboarding": {
+    "bannerTitle": "Premiers pas",
+    "bannerDesc": "D\u00e9couvrez comment fonctionne Open Setlist.",
+    "skip": "Passer",
+    "next": "Suivant",
+    "done": "Termin\u00e9",
+    "steps": {
+      "welcome": {
+        "title": "Bienvenue sur Open Setlist\u00a0!",
+        "body": "Open Setlist est un gestionnaire de setlists gratuit et open-source qui fonctionne enti\u00e8rement dans votre navigateur. Vos donn\u00e9es restent sur votre appareil \u2014 aucun compte n\u00e9cessaire."
+      },
+      "profile": {
+        "title": "Profils",
+        "body": "Chaque profil poss\u00e8de ses propres chansons, setlists et param\u00e8tres de synchronisation. Vous \u00eates actuellement sur le profil D\u00e9mo avec des chansons d\u2019exemple. Cr\u00e9ez votre propre profil dans les Param\u00e8tres pour repartir de z\u00e9ro."
+      },
+      "sync": {
+        "title": "Synchronisez vos donn\u00e9es",
+        "body": "Connectez GitHub ou Google Drive pour sauvegarder et synchroniser vos donn\u00e9es entre appareils. Configurez dans Param\u00e8tres > Synchronisation."
+      },
+      "band": {
+        "title": "Partagez avec votre groupe",
+        "body": "Partagez votre fichier Google Drive avec vos coll\u00e8gues musiciens pour que tout le monde reste \u00e0 jour. Chaque membre peut synchroniser ind\u00e9pendamment."
+      },
+      "install": {
+        "title": "Installer l\u2019appli",
+        "body": "Open Setlist fonctionne hors ligne en tant que PWA. Sur mobile, utilisez l\u2019option \u00ab\u00a0Ajouter \u00e0 l\u2019\u00e9cran d\u2019accueil\u00a0\u00bb de votre navigateur. Sur ordinateur, cherchez l\u2019ic\u00f4ne d\u2019installation dans la barre d\u2019adresse."
+      }
+    },
+    "about": {
+      "heading": "\u00c0 propos",
+      "body": "Open Setlist est un gestionnaire de setlists gratuit et open-source qui fonctionne enti\u00e8rement dans votre navigateur.\n\nVos chansons et setlists sont stock\u00e9es localement sur votre appareil. Aucun compte n\u2019est n\u00e9cessaire.\n\nUtilisez les profils pour s\u00e9parer diff\u00e9rents projets ou groupes. Chaque profil a ses propres donn\u00e9es et configuration de synchronisation.\n\nConnectez GitHub ou Google Drive dans les Param\u00e8tres pour sauvegarder et synchroniser entre appareils. Partagez votre fichier Google Drive avec vos coll\u00e8gues pour collaborer.\n\nL\u2019appli fonctionne hors ligne en tant que PWA \u2014 utilisez l\u2019option \u00ab\u00a0Ajouter \u00e0 l\u2019\u00e9cran d\u2019accueil\u00a0\u00bb de votre navigateur pour l\u2019installer.",
+      "version": "Open Setlist v1",
+      "resetTitle": "R\u00e9initialiser l\u2019appli\u00a0?",
+      "resetMessage": "Cela supprimera toutes les donn\u00e9es locales \u2014 profils, chansons, setlists et pr\u00e9f\u00e9rences. Le stockage distant (GitHub, Google Drive) ne sera pas affect\u00e9.",
+      "resetConfirm": "Oui, tout r\u00e9initialiser"
+    }
   },
   "invite": {
     "inviteMembers": "Inviter des membres",
@@ -295,6 +371,9 @@
     "joining": "Connexion...",
     "joinSuccess": "Rejoint\u00a0! Synchronisation des setlists...",
     "joinFailed": "Impossible de rejoindre\u00a0: {{error}}"
+  },
+  "techSheet": {
+    "noSongs": "Aucune chanson dans cette setlist."
   },
   "validation": {
     "titleRequired": "Le titre est requis",

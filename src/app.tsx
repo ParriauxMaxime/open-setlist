@@ -7,8 +7,9 @@ import { SetlistPage } from "./modules/setlist/page";
 import { SettingsPage } from "./modules/settings/page";
 import { AdminLayout } from "./modules/shared/components/admin-layout";
 import { JoinPrompt } from "./modules/shared/components/join-prompt";
-import { PwaInstallPrompt } from "./modules/shared/components/pwa-install-prompt";
+
 import { SyncPage } from "./modules/sync/page";
+import { TechSheetPage } from "./modules/tech-sheet/page";
 import { TunerPage } from "./modules/tuner/page";
 import { Router } from "./router";
 
@@ -20,6 +21,7 @@ export function App() {
     "SongEdit",
     "Setlists",
     "SetlistEdit",
+    "TechSheet",
     "Perform",
     "PerformSong",
     "Chords",
@@ -45,7 +47,6 @@ export function App() {
   // Admin routes — wrapped in layout
   return (
     <>
-      <PwaInstallPrompt />
       <JoinPrompt />
       <AdminLayout>
         <AdminRoutes route={route} />
@@ -66,6 +67,7 @@ function AdminRoutes({
         | "SongEdit"
         | "Setlists"
         | "SetlistEdit"
+        | "TechSheet"
         | "Chords"
         | "Tuner"
         | "Sync"
@@ -89,6 +91,8 @@ function AdminRoutes({
       return <SetlistPage />;
     case "SetlistEdit":
       return <SetlistPage setlistId={route.params.setlistId} />;
+    case "TechSheet":
+      return <TechSheetPage setlistId={route.params.setlistId} />;
     case "Chords":
       return <ChordsPage />;
     case "Tuner":

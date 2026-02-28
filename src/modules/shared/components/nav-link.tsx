@@ -7,7 +7,7 @@ interface NavLinkProps {
   to: RouteName;
   params?: Record<string, string>;
   label: string;
-  icon: string;
+  icon?: string;
   active?: boolean;
   onClick?: () => void;
 }
@@ -25,9 +25,11 @@ export function NavLink({ to, params, label, icon, active, onClick }: NavLinkPro
           : "text-text-muted hover:bg-bg-hover hover:text-text",
       ].join(" ")}
     >
-      <span className="text-lg" aria-hidden="true">
-        {icon}
-      </span>
+      {icon && (
+        <span className="text-lg" aria-hidden="true">
+          {icon}
+        </span>
+      )}
       <span>{label}</span>
     </Link>
   );

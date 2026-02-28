@@ -34,12 +34,28 @@ export function CatalogPage() {
   const columns: ColumnDef<Song, unknown>[] = [
     col.accessor("title", {
       header: t("catalog.colTitle"),
-      cell: (info) => <span className="font-medium">{info.getValue()}</span>,
+      cell: (info) => {
+        const song = info.row.original;
+        return (
+          <div>
+            <span className="font-medium">{info.getValue()}</span>
+            <div className="mt-0.5 flex items-center gap-2 text-xs md:hidden">
+              {song.artist && <span className="text-text-muted">{song.artist}</span>}
+              {song.key && <span className="text-chord">{song.key}</span>}
+            </div>
+          </div>
+        );
+      },
     }) as ColumnDef<Song, unknown>,
     col.accessor("artist", {
       header: t("catalog.colArtist"),
       cell: (info) => <span className="text-text-muted">{info.getValue() ?? "—"}</span>,
-      meta: { filterType: "select", filterOptions: uniqueArtists, hideFilterOnMobile: true },
+      meta: {
+        filterType: "select",
+        filterOptions: uniqueArtists,
+        hideFilterOnMobile: true,
+        className: "hidden md:table-cell",
+      },
     }) as ColumnDef<Song, unknown>,
     col.accessor("key", {
       header: t("catalog.colKey"),
@@ -52,6 +68,7 @@ export function CatalogPage() {
         filterType: "select",
         filterOptions: [...MUSICAL_KEY_LIST],
         hideFilterOnMobile: true,
+        className: "hidden md:table-cell",
       },
     }) as ColumnDef<Song, unknown>,
     col.accessor("bpm", {
@@ -62,6 +79,7 @@ export function CatalogPage() {
         const v = info.getValue();
         return v != null ? <span className="text-text-faint">{v}</span> : null;
       },
+      meta: { className: "hidden md:table-cell" },
     }) as ColumnDef<Song, unknown>,
     col.accessor("tags", {
       header: t("catalog.colTags"),
@@ -101,7 +119,7 @@ export function CatalogPage() {
           columns={columns}
           data={songs}
           getRowHref={(song) => Router.SongEdit({ songId: song.id })}
-          globalSearchFields={["title", "artist"]}
+          globalSearchFields={["title", "artist", "tags"]}
           searchPlaceholder={t("catalog.searchPlaceholder")}
           emptyMessage={t("catalog.empty")}
         />

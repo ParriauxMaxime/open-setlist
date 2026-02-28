@@ -1,4 +1,5 @@
 import { parse, type Section } from "@domain/chordpro/parser";
+import { transposeChord } from "@domain/chords/transpose";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -9,10 +10,11 @@ export interface ChordTapInfo {
 
 interface ChordProViewProps {
   content: string;
+  transposition?: number;
   onChordTap?: (info: ChordTapInfo) => void;
 }
 
-export function ChordProView({ content, onChordTap }: ChordProViewProps) {
+export function ChordProView({ content, transposition, onChordTap }: ChordProViewProps) {
   const { t } = useTranslation();
   const parsed = useMemo(() => parse(content), [content]);
 
@@ -23,8 +25,13 @@ export function ChordProView({ content, onChordTap }: ChordProViewProps) {
   return (
     <div className="flex flex-col gap-4">
       {parsed.sections.map((section, si) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: sections are static parsed output
-        <SectionView key={si} section={section} onChordTap={onChordTap} />
+        <SectionView
+          // biome-ignore lint/suspicious/noArrayIndexKey: sections are static parsed output
+          key={si}
+          section={section}
+          transposition={transposition}
+          onChordTap={onChordTap}
+        />
       ))}
     </div>
   );
@@ -32,13 +39,16 @@ export function ChordProView({ content, onChordTap }: ChordProViewProps) {
 
 function ChordToken({
   chord,
+  transposition,
   onChordTap,
   className,
 }: {
   chord: string;
+  transposition?: number;
   onChordTap?: (info: ChordTapInfo) => void;
   className?: string;
 }) {
+  const displayChord = transposition ? transposeChord(chord, transposition) : chord;
   const base = `text-perform-chord font-bold text-chord${onChordTap ? " cursor-pointer" : ""}`;
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: role is conditionally "button" when interactive
@@ -53,7 +63,7 @@ function ChordToken({
               e.stopPropagation();
               const r = e.currentTarget.getBoundingClientRect();
               onChordTap({
-                chord,
+                chord: displayChord,
                 anchorRect: { x: r.x, y: r.y, width: r.width, height: r.height },
               });
             }
@@ -66,7 +76,7 @@ function ChordToken({
                 e.preventDefault();
                 const r = e.currentTarget.getBoundingClientRect();
                 onChordTap({
-                  chord,
+                  chord: displayChord,
                   anchorRect: { x: r.x, y: r.y, width: r.width, height: r.height },
                 });
               }
@@ -74,16 +84,18 @@ function ChordToken({
           : undefined
       }
     >
-      {chord}
+      {displayChord}
     </span>
   );
 }
 
 function SectionView({
   section,
+  transposition,
   onChordTap,
 }: {
   section: Section;
+  transposition?: number;
   onChordTap?: (info: ChordTapInfo) => void;
 }) {
   const bgClass =
@@ -117,7 +129,13 @@ function SectionView({
               {line.segments.map((seg, si) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: segments are static parsed output
                 <span key={si}>
-                  {seg.chord && <ChordToken chord={seg.chord} onChordTap={onChordTap} />}
+                  {seg.chord && (
+                    <ChordToken
+                      chord={seg.chord}
+                      transposition={transposition}
+                      onChordTap={onChordTap}
+                    />
+                  )}
                   {seg.text}
                 </span>
               ))}
@@ -128,7 +146,13 @@ function SectionView({
               {line.segments.map((seg, si) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: segments are static parsed output
                 <span key={si}>
-                  {seg.chord && <ChordToken chord={seg.chord} onChordTap={onChordTap} />}
+                  {seg.chord && (
+                    <ChordToken
+                      chord={seg.chord}
+                      transposition={transposition}
+                      onChordTap={onChordTap}
+                    />
+                  )}
                   {seg.text}
                 </span>
               ))}
@@ -138,32 +162,34 @@ function SectionView({
               className={`text-perform-lyrics whitespace-pre-wrap${
                 line.segments.some((s) => s.chord) ? " relative pt-[var(--text-perform-chord)]" : ""
               }`}
+              style={
+                line.segments.some((s) => s.chord)
+                  ? { lineHeight: "calc(1em + var(--text-perform-chord) + 0.125rem)" }
+                  : undefined
+              }
             >
               {line.segments.map((seg, si) => (
                 <span
                   // biome-ignore lint/suspicious/noArrayIndexKey: segments are static parsed output
                   key={si}
-                  className={
-                    seg.chord
-                      ? seg.text.length < seg.chord.length + 2
-                        ? "relative inline-block align-bottom"
-                        : "relative"
-                      : undefined
-                  }
-                  style={
-                    seg.chord && seg.text.length < seg.chord.length + 2
-                      ? { minWidth: `${seg.chord.length + 1}ch` }
-                      : undefined
-                  }
+                  className={seg.chord ? "relative" : undefined}
                 >
                   {seg.chord && (
                     <ChordToken
                       chord={seg.chord}
+                      transposition={transposition}
                       onChordTap={onChordTap}
                       className="absolute bottom-full left-0 leading-none"
                     />
                   )}
-                  {seg.text}
+                  {seg.chord && seg.text.length < seg.chord.length + 2 ? (
+                    <span className="invisible text-perform-chord font-bold" aria-hidden="true">
+                      {seg.chord}
+                      {"\u00A0"}
+                    </span>
+                  ) : (
+                    seg.text
+                  )}
                 </span>
               ))}
             </div>

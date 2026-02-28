@@ -1,0 +1,60 @@
+{title: Livin' on a Prayer}
+{artist: Bon Jovi}
+{key: Em}
+{bpm: 122}
+{time: 4/4}
+{duration: 4:09}
+{tags: rock, anthem, singalong, crowd-pleaser}
+{tech_notes: Talk box needs DI channel 3. Strobes on the key change. House lights up on final chorus for singalong.}
+
+{comment: Talk box intro on Em}
+
+{start_of_verse: Verse 1}
+[Em]Tommy used to work on the docks
+[Em]Union's been on strike, he's down on his luck
+It's [C]tough, [D]so [Em]tough
+[Em]Gina works the diner all day
+[Em]Working for her man, she brings home her pay for
+[C]Love, [D]for [Em]love
+{end_of_verse}
+
+{start_of_bridge: Pre-Chorus}
+[C]She says we've got to [D]hold on to what we've [Em]got
+It [C]doesn't make a [D]difference if we make it or [Em]not
+We've [C]got each other [D]and that's a lot for
+[Em]Love, we'll [C]give it a [D]shot
+{end_of_bridge}
+
+{start_of_chorus: Chorus}
+[Em]Woah, we're [C]half way [D]there
+[Em]Woah, [C]livin' on a [D]prayer
+[Em]Take my [C]hand, we'll [D]make it I swear
+[Em]Woah, [C]livin' on a [D]prayer
+{end_of_chorus}
+
+{start_of_verse: Verse 2}
+[Em]Tommy's got his six string in hock
+[Em]Now he's holding in what he used to make it talk so
+[C]Tough, [D]it's [Em]tough
+[Em]Gina dreams of running away
+[Em]When she cries in the night Tommy whispers, baby it's
+[C]O[D]K, some[Em]day
+{end_of_verse}
+
+{start_of_bridge: Pre-Chorus}
+[C]We've got to [D]hold on to what we've [Em]got
+It [C]doesn't make a [D]difference if we make it or [Em]not
+We've [C]got each other [D]and that's a lot for
+[Em]Love, we'll [C]give it a [D]shot
+{end_of_bridge}
+
+{chorus}
+
+{comment: Key change up a half step for final chorus — Em to Fm}
+
+{start_of_chorus: Final Chorus}
+[Fm]Woah, we're [Db]half way [Eb]there
+[Fm]Woah, [Db]livin' on a [Eb]prayer
+[Fm]Take my [Db]hand, we'll [Eb]make it I swear
+[Fm]Woah, [Db]livin' on a [Eb]prayer
+{end_of_chorus}

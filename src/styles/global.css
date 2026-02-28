@@ -11,6 +11,11 @@
  * Typography: readable at arm's length on a music stand.
  */
 
+/* Global base: all buttons get pointer cursor unless disabled */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
 @theme {
   /* --- Colors --- */
 
@@ -353,6 +358,16 @@ body {
   border-radius: var(--radius-sm);
 }
 
+/* Responsive: default size on mobile, small on lg+ */
+@media (min-width: 1024px) {
+  .btn-responsive {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    border-radius: var(--radius-sm);
+  }
+}
+
 /* --- Text link --- */
 
 .link {
@@ -411,4 +426,54 @@ body {
 
 .accordion .accordion-inner {
   overflow: hidden;
+}
+
+/* --- ChordPro syntax highlight overlay --- */
+
+.chordpro-highlight-wrap {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  transition: border-color 0.15s;
+}
+
+.chordpro-highlight-wrap:focus-within {
+  border-color: var(--color-border-focus);
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -1px;
+}
+
+.chordpro-highlight,
+.chordpro-textarea {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  padding: 0.5rem 0.75rem;
+  tab-size: 2;
+  word-wrap: break-word;
+}
+
+.chordpro-highlight {
+  color: var(--color-text);
+}
+
+.chordpro-textarea {
+  color: transparent;
+  border: none;
+  outline: none;
+}
+
+.chordpro-textarea::placeholder {
+  color: var(--color-text-faint);
+}
+
+/* Token colors */
+.cphl-directive {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.cphl-chord {
+  color: var(--color-chord);
+  font-weight: 600;
 }

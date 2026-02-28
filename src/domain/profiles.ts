@@ -4,6 +4,7 @@ export interface Profile {
   id: string;
   name: string;
   avatar?: string;
+  isDemo?: boolean;
   createdAt: number;
 }
 
@@ -69,7 +70,7 @@ export function ensureDefaultProfile(): string {
   let profiles = loadProfiles();
   if (profiles.length === 0) {
     const id = crypto.randomUUID();
-    profiles = [{ id, name: "Personal", avatar: "\u{1F3B5}", createdAt: Date.now() }];
+    profiles = [{ id, name: "Demo", avatar: "\u{1F3AF}", isDemo: true, createdAt: Date.now() }];
     saveProfiles(profiles);
   }
   let activeId = getActiveProfileId();
@@ -116,4 +117,11 @@ export function useProfiles(): Profile[] {
 
 export function useActiveProfileId(): string {
   return useSyncExternalStore(subscribe, getActiveSnapshot);
+}
+
+export function useIsDemoProfile(): boolean {
+  const profiles = useProfiles();
+  const activeId = useActiveProfileId();
+  const active = profiles.find((p) => p.id === activeId);
+  return active?.isDemo === true;
 }

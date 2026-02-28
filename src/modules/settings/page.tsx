@@ -13,10 +13,11 @@ import {
   saveSongOverrides,
 } from "@domain/preferences";
 import { useActiveProfileId } from "@domain/profiles";
-import { detectPlatform, requestPwaPrompt } from "@domain/pwa";
+import Dexie from "dexie";
 import i18n from "i18next";
-import { useCallback, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { GitHubConfigForm } from "./components/github-config-form";
 import { GoogleDriveConfigForm } from "./components/google-drive-config-form";
 import { ProfileManager } from "./components/profile-manager";
@@ -57,6 +58,33 @@ export function SettingsPage() {
   const profileId = useActiveProfileId();
   const [prefs, setPrefs] = useState(loadPreferences);
   const [status, setStatus] = useState<Status>({ type: "idle" });
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const resetClickCount = useRef(0);
+  const resetClickTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const handleResetAreaClick = useCallback(() => {
+    resetClickCount.current += 1;
+    clearTimeout(resetClickTimer.current);
+    if (resetClickCount.current >= 5) {
+      resetClickCount.current = 0;
+      setShowResetConfirm(true);
+    } else {
+      resetClickTimer.current = setTimeout(() => {
+        resetClickCount.current = 0;
+      }, 2000);
+    }
+  }, []);
+
+  const handleFullReset = useCallback(async () => {
+    setShowResetConfirm(false);
+    // Delete all IndexedDB databases for every profile
+    const databases = await Dexie.getDatabaseNames();
+    await Promise.all(databases.map((name) => Dexie.delete(name)));
+    // Clear all localStorage
+    localStorage.clear();
+    // Reload the app from scratch
+    window.location.reload();
+  }, []);
 
   const update = useCallback((patch: Partial<AppPreferences>) => {
     setPrefs((prev) => {
@@ -297,21 +325,6 @@ export function SettingsPage() {
       </section>
 
       {/* ================================================================
-       * Section — Install the app (hidden when already standalone)
-       * ================================================================ */}
-      {detectPlatform() !== "standalone" && (
-        <section id="install" className="mb-8">
-          <h2 className="mb-4 border-b border-border pb-2 text-lg font-semibold">
-            {t("settings.install.heading")}
-          </h2>
-          <p className="mb-4 text-sm text-text-muted">{t("settings.install.desc")}</p>
-          <button type="button" onClick={requestPwaPrompt} className="btn btn-outline">
-            {t("settings.install.action")}
-          </button>
-        </section>
-      )}
-
-      {/* ================================================================
        * Section 2 — Display (performance mode)
        * ================================================================ */}
       <section id="display" className="mb-8">
@@ -473,6 +486,36 @@ export function SettingsPage() {
         </div>
       </section>
 
+      {/* ================================================================
+       * Section — About
+       * ================================================================ */}
+      <section id="about" className="mb-8">
+        <AboutCollapsible label={t("onboarding.about.heading")}>
+          <p className="whitespace-pre-line text-sm text-text-muted">
+            {t("onboarding.about.body")}
+          </p>
+          <button
+            type="button"
+            tabIndex={-1}
+            className="mt-6 block cursor-default select-none border-0 bg-transparent p-0 text-xs text-text-faint"
+            onClick={handleResetAreaClick}
+          >
+            {t("onboarding.about.version")}
+          </button>
+        </AboutCollapsible>
+      </section>
+
+      {showResetConfirm && (
+        <ConfirmModal
+          title={t("onboarding.about.resetTitle")}
+          message={t("onboarding.about.resetMessage")}
+          confirmLabel={t("onboarding.about.resetConfirm")}
+          onConfirm={handleFullReset}
+          onCancel={() => setShowResetConfirm(false)}
+          variant="danger"
+        />
+      )}
+
       <div aria-live="polite">
         {status.type === "success" && <p className="mt-4 text-sm text-accent">{status.message}</p>}
         {status.type === "error" && <p className="mt-4 text-sm text-danger">{status.message}</p>}
@@ -557,5 +600,32 @@ function ColorField({
         maxLength={7}
       />
     </label>
+  );
+}
+
+function AboutCollapsible({ label, children }: { label: string; children: ReactNode }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="mb-4 flex w-full cursor-pointer items-center gap-2 border-b border-border pb-2 text-lg font-semibold"
+      >
+        <span
+          className="text-xs text-text-faint transition-transform duration-200"
+          style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)" }}
+        >
+          {"▸"}
+        </span>
+        {label}
+      </button>
+      <div
+        className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+        style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+      >
+        <div className="overflow-hidden">{children}</div>
+      </div>
+    </div>
   );
 }

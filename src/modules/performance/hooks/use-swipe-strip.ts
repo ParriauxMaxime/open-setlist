@@ -189,14 +189,9 @@ export function useSwipeStrip(options: UseSwipeStripOptions) {
         const target = e.target as HTMLElement;
         if (!target.closest("[data-chord-tap]")) {
           const rect = el.getBoundingClientRect();
-          const isUpper = t.clientY - rect.top < rect.height * 0.15;
-          const zone: "left" | "right" | "other" = isUpper
-            ? t.clientX < rect.left + rect.width / 2
-              ? "left"
-              : "right"
-            : "other";
+          const zone: "left" | "right" = t.clientX < rect.left + rect.width / 2 ? "left" : "right";
 
-          if (doubleTapScaleEnabledRef.current && (zone === "left" || zone === "right")) {
+          if (doubleTapScaleEnabledRef.current) {
             const now = Date.now();
             const prev = lastTapRef.current;
             if (prev && now - prev.time < 300 && prev.zone === zone) {

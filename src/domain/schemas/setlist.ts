@@ -13,6 +13,7 @@ export const setlistSchema = z.object({
   venue: z.string().optional(),
   sets: z.array(setlistSetSchema),
   notes: z.string().optional(),
+  expectedDuration: z.number().int().positive().optional(),
   createdAt: z.number(),
   updatedAt: z.number(),
 });

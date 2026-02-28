@@ -11,6 +11,9 @@ interface SongStripProps {
   prevSong: Song | undefined;
   currentSong: Song | undefined;
   nextSong: Song | undefined;
+  prevTransposition?: number;
+  currentTransposition?: number;
+  nextTransposition?: number;
   prevSongStyle?: CSSProperties;
   currentSongStyle?: CSSProperties;
   nextSongStyle?: CSSProperties;
@@ -25,6 +28,9 @@ export function SongStrip({
   prevSong,
   currentSong,
   nextSong,
+  prevTransposition,
+  currentTransposition,
+  nextTransposition,
   prevSongStyle,
   currentSongStyle,
   nextSongStyle,
@@ -42,7 +48,13 @@ export function SongStrip({
           className="absolute inset-y-0 right-full w-full overflow-y-auto px-4 py-4"
           style={prevSongStyle}
         >
-          {prevSong && <ChordProView content={prevSong.content} onChordTap={onChordTap} />}
+          {prevSong && (
+            <ChordProView
+              content={prevSong.content}
+              transposition={prevTransposition}
+              onChordTap={onChordTap}
+            />
+          )}
         </div>
         {/* Current song panel */}
         <div
@@ -51,7 +63,11 @@ export function SongStrip({
           style={currentSongStyle}
         >
           {currentSong ? (
-            <ChordProView content={currentSong.content} onChordTap={onChordTap} />
+            <ChordProView
+              content={currentSong.content}
+              transposition={currentTransposition}
+              onChordTap={onChordTap}
+            />
           ) : (
             <p className="text-text-faint">{t("perform.songNotFound")}</p>
           )}
@@ -61,7 +77,13 @@ export function SongStrip({
           className="absolute inset-y-0 left-full w-full overflow-y-auto px-4 py-4"
           style={nextSongStyle}
         >
-          {nextSong && <ChordProView content={nextSong.content} onChordTap={onChordTap} />}
+          {nextSong && (
+            <ChordProView
+              content={nextSong.content}
+              transposition={nextTransposition}
+              onChordTap={onChordTap}
+            />
+          )}
         </div>
       </div>
     </div>

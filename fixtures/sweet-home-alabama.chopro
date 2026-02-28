@@ -1,0 +1,53 @@
+{title: Sweet Home Alabama}
+{artist: Lynyrd Skynyrd}
+{key: G}
+{bpm: 100}
+{time: 4/4}
+{duration: 4:43}
+{tags: southern-rock, classic, crowd-pleaser, anthem}
+
+{start_of_verse: Intro / Riff}
+[D] [C] [G]
+[D] [C] [G]
+{end_of_verse}
+
+{start_of_verse: Verse 1}
+[D]Big [C]wheels keep on [G]turning
+[D]Carry me [C]home to see my [G]kin
+[D]Singing [C]songs about the [G]southland
+[D]I miss ole [C]'Bamy once [G]again, and I think it's a sin, yes
+{end_of_verse}
+
+{start_of_verse: Verse 2}
+[D]Well I heard Mister [C]Young sing a[G]bout her
+[D]Well I heard ole [C]Neil put her [G]down
+[D]Well I hope Neil [C]Young will re[G]member
+[D]A southern [C]man don't need him a[G]round anyhow
+{end_of_verse}
+
+{start_of_chorus: Chorus}
+[D]Sweet [C]home Ala[G]bama
+[D]Where the [C]skies are so [G]blue
+[D]Sweet [C]home Ala[G]bama
+[D]Lord, I'm [C]coming home to [G]you
+{end_of_chorus}
+
+{start_of_verse: Verse 3}
+[D]In Birming[C]ham they love the [G]Gov'nor, boo boo boo
+[D]Now we all [C]did what we could [G]do
+[D]Now Water[C]gate does not [G]bother me
+[D]Does your [C]conscience bother [G]you? Tell the truth
+{end_of_verse}
+
+{chorus}
+
+{start_of_verse: Verse 4}
+[D]Now Muscle [C]Shoals has got the [G]Swampers
+[D]And they've been [C]known to pick a song or [G]two
+[D]Lord they [C]get me off [G]so much
+[D]They pick me [C]up when I'm feeling [G]blue, now how about you?
+{end_of_verse}
+
+{chorus}
+
+{comment: Repeat chorus and solo over D-C-G to fade}
