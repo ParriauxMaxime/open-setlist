@@ -116,7 +116,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
     watch,
     setValue,
     getValues,
-    formState: { errors, isSubmitting, isDirty },
+    formState: { errors, isSubmitting, isDirty, isSubmitSuccessful },
   } = useForm<SongFormValues>({
     resolver: zodResolver(songFormSchema),
     defaultValues,
@@ -144,6 +144,11 @@ export function EditSongPage({ songId }: EditSongPageProps) {
       });
     }
   }, [existing, reset]);
+
+  // A save can race the live-query reset above; re-baseline once the submit settles.
+  useEffect(() => {
+    if (isSubmitSuccessful) reset(getValues());
+  }, [isSubmitSuccessful, reset, getValues]);
 
   // Cancel enrichment on unmount
   useEffect(() => {
