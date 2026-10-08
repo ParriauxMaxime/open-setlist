@@ -253,6 +253,35 @@ describe("parseSetlistHelperCsv — fallbacks and edge cases", () => {
     expect(songs[0].song.content.endsWith("[A]la\n{c:Outro}")).toBe(true);
     expect(songs[0].song.bpm).toBe(90);
   });
+
+  it("decodes HTML entities in text fields", () => {
+    const { songs } = parseSetlistHelperCsv(
+      utf16le(
+        buildCsv([
+          {
+            Name: "Caf&#233; &amp; Th&#xE9;",
+            ArtistName: "Les &quot;Fictifs&quot;",
+            GenreName: "Vari&#233;t&#233;",
+            Notes: "a &lt;b&gt; &#39;c&#39; &apos;d&apos;",
+            Lyrics: "[Am]Cr&#232;me",
+          },
+        ]),
+      ),
+    );
+    expect(songs[0].song).toMatchObject({
+      title: "Café & Thé",
+      artist: 'Les "Fictifs"',
+      tags: ["Variété"],
+      notes: "a <b> 'c' 'd'",
+    });
+    expect(songs[0].song.content.endsWith("[Am]Crème")).toBe(true);
+  });
+
+  it("rejects a setlist export", () => {
+    expect(() => parseSetlistHelperCsv(`SequenceNumber,${HEADER.join(",")}\r\n`)).toThrow(
+      SetlistHelperFormatError,
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------

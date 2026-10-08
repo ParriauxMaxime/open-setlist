@@ -212,6 +212,27 @@
       "lastSync": "Last synced: {{time}}"
     }
   },
+  "syncConflicts": {
+    "title": "Conflicts ({{count}})",
+    "description": "Changed on this device and by someone else since the last sync. Choose which version to keep. The other one is replaced.",
+    "mine": "Mine",
+    "theirs": "Theirs",
+    "keepMine": "Keep mine",
+    "takeTheirs": "Take theirs",
+    "edited": "Edited {{date}}",
+    "deleted": "Deleted",
+    "deletedOn": "Deleted {{date}}",
+    "lines_one": "{{count}} line",
+    "lines_other": "{{count}} lines",
+    "songs_one": "{{count}} song",
+    "songs_other": "{{count}} songs",
+    "linesDiff": "{{mine}} lines only in mine, {{theirs}} only in theirs",
+    "songsDiff": "{{mine}} songs only in mine, {{theirs}} only in theirs",
+    "changedFields": "Changed: {{fields}}",
+    "unresolved_one": "Resolve {{count}} conflict to sync.",
+    "unresolved_other": "Resolve {{count}} conflicts to sync.",
+    "reviewRefreshed": "Data changed while you were reviewing (another sync or another tab). Nothing was overwritten. Review the updated changes."
+  },
   "importSetlistHelper": {
     "button": "Import from Setlist Helper",
     "reading": "Reading...",
@@ -234,7 +255,9 @@
       "invalidTempo": "invalid tempo \"{{value}}\", ignored.",
       "invalidDuration": "invalid length \"{{value}}\", ignored.",
       "transposeClamped": "transposition {{value}} out of range, clamped.",
-      "duplicateInFile": "duplicate in file, skipped."
+      "duplicateInFile": "duplicate in file, skipped.",
+      "invalidSequence": "invalid sequence number \"{{value}}\", placed at the end.",
+      "ambiguousMatch": "matches {{value}} catalog songs, the oldest one is used."
     },
     "safeNote": "Nothing is deleted. Export the catalog CSV from Setlist Helper web (Song Catalog > Export CSV).",
     "confirm": "Import",
@@ -243,6 +266,27 @@
     "success": "Setlist Helper import: {{added}} added, {{updated}} updated.",
     "invalidFile": "This file is not a Setlist Helper catalog CSV.",
     "failed": "Setlist Helper import failed."
+  },
+  "importSetlists": {
+    "button": "Import Setlist Helper setlists",
+    "reading": "Reading...",
+    "previewTitle": "Import Setlist Helper setlists",
+    "defaultName": "Imported setlist",
+    "matchedCount_one": "{{count}} song found in your catalog",
+    "matchedCount_other": "{{count}} songs found in your catalog",
+    "unmatchedCount_one": "{{count}} song not in your catalog",
+    "unmatchedCount_other": "{{count}} songs not in your catalog",
+    "unmatchedLegend": "Songs not in your catalog",
+    "action": {
+      "create": "Create them (metadata only, no chart)",
+      "skip": "Leave them out of the setlist"
+    },
+    "invalidFiles": "Ignored, not a Setlist Helper setlist CSV: {{files}}",
+    "tip": "One file per setlist. In Setlist Helper web: Setlists > select a setlist > Export > CSV. Existing setlists are never overwritten; a name already in use gets a \" (2)\" suffix.",
+    "success_one": "Setlist Helper import: {{count}} setlist created, {{songs}} new song(s).",
+    "success_other": "Setlist Helper import: {{count}} setlists created, {{songs}} new song(s).",
+    "invalidFile": "No Setlist Helper setlist CSV found in the selected files.",
+    "failed": "Setlist import failed."
   },
   "tuner": {
     "title": "Tuner",

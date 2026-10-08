@@ -45,3 +45,14 @@ export function migrateUnkeyedTombstones(profileId: string): boolean {
   localStorage.removeItem(OLD_KEY);
   return true;
 }
+
+/** Union of tombstone lists, one entry per item (latest deletion wins). */
+export function mergeTombstones(...lists: Tombstone[][]): Tombstone[] {
+  const byKey = new Map<string, Tombstone>();
+  for (const tombstone of lists.flat()) {
+    const key = `${tombstone.type}:${tombstone.id}`;
+    const existing = byKey.get(key);
+    if (!existing || tombstone.deletedAt > existing.deletedAt) byKey.set(key, tombstone);
+  }
+  return Array.from(byKey.values());
+}

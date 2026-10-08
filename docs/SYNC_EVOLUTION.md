@@ -2,23 +2,23 @@
 
 ## Current State
 
-The sync system is **all-or-nothing**: the entire DB (all songs + setlists) is exported as a single snapshot, merged with the remote via last-write-wins on `updatedAt`, and pushed back. There is no review step — pressing "Sync Now" immediately pulls, merges, and pushes everything.
+Phases 1 and 2 below are built. Each profile syncs one JSON snapshot (all songs + setlists + tombstones) with one remote, through a pull → review → push flow. The original design notes are kept below for context.
 
 ### What exists today
-- **Orchestrator** (`domain/sync/orchestrator.ts`): Pull → Merge → Push pipeline
-- **Merge** (`domain/sync/merge.ts`): Last-write-wins by `updatedAt` timestamp, tombstone-aware
-- **Adapters**: GitHub (API v3, stores snapshot.json in a repo) and File (browser import/export)
-- **Tombstones** (`domain/sync/tombstones.ts`): localStorage-based deletion tracking, pruned after 30 days
-- **Config** (`domain/sync/config.ts`): Single GitHub config in localStorage
-- **UI** (`modules/sync/page.tsx`): "Sync Now" button + file import/export
-- **DB**: Single Dexie database `"OpenSetlist"` with `songs` and `setlists` tables
-- **DB access**: ~20 files import `db` from `@db` — direct Dexie calls everywhere
+- **Profiles** (`domain/profiles.ts`, `db/provider.tsx`): one Dexie database per profile (`open-setlist-{profileId}`), `useDb()` context. Sync config and tombstones are keyed by profile in localStorage.
+- **Adapters** (`domain/sync/adapters/`): GitHub (Contents API, file `sha` = version token) and Google Drive (`headRevisionId` = version token), both behind `RemoteSyncPort`. File import/export stays separate and destructive.
+- **Diff** (`domain/sync/diff.ts`): three-way per item (local, last synced snapshot in `_syncState`, remote). Outgoing = changed only locally, incoming = changed only remotely, conflict = changed on both sides to different versions. Remote deletions come from the remote snapshot's `tombstones` or from items missing vs the baseline. With no baseline for an item, a deletion wins only if it is newer than the other side's last edit.
+- **Merge** (`domain/sync/merge.ts`): applies incoming changes, remote deletions included. Conflicts follow the user's resolution; an unresolved conflict keeps the local version. Local and remote tombstones are merged.
+- **Orchestrator** (`domain/sync/orchestrator.ts`): `pullAndDiff` (no-op when nothing changed), then `pushSelected(selected outgoing, conflict resolutions)`. Push = remote + selected outgoing + "keep mine" conflicts, with merged tombstones. Push happens before the local write, and is skipped when there is nothing to push. On a stale version token it re-pulls and rebuilds on the fresh remote (max 2 retries). If the fresh remote touched an item the user decided on, or created a new conflict, or local data changed since the review, it throws `SyncReviewRequiredError` with a fresh review instead of overwriting.
+- **Tombstones** (`domain/sync/tombstones.ts`): local deletions in localStorage, carried in pushed snapshots, kept through `importSnapshot(db, snapshot, profileId)`, pruned after 30 days.
+- **UI** (`modules/sync/page.tsx`, `components/sync-review.tsx`): review screen with conflicts (both versions: name, edit/deletion date, line or song count, changed fields, lines only on one side), incoming list, outgoing checkboxes. Each conflict needs "Keep mine" or "Take theirs" and there is no default, so sync stays blocked until every conflict is resolved (or the user cancels, which changes nothing).
+- **Invites** (`domain/invite.ts`): join link that configures a profile and runs `sync()`. `sync()` auto-selects every outgoing change and refuses to proceed if there are conflicts.
 
-### Pain points
-1. **Fat-finger push**: No way to review what will change before syncing. One tap sends everything.
-2. **No selective sync**: Can't push only some songs or setlists. It's the full DB every time.
-3. **Single identity**: No concept of "this setlist belongs to my band" vs "this is personal". Everything lives in one flat namespace.
-4. **No change visibility**: User has no idea what changed locally since last sync, or what changed remotely.
+### Known limits
+- Conflict granularity is the whole item (song or setlist), not fields or lines.
+- Change detection relies on `updatedAt`. Two different edits with the same `updatedAt` look identical.
+- Older app versions writing to the same remote use last-write-wins and drop tombstones.
+- There is still a small window between the "local changed?" check and the local write in `pushSelected`.
 
 ---
 

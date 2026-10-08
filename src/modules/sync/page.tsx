@@ -7,11 +7,13 @@ import { createGitHubAdapter } from "@domain/sync/adapters/github";
 import { createGoogleDriveAdapter } from "@domain/sync/adapters/google-drive";
 import { loadSyncConfig } from "@domain/sync/config";
 import type { ChangeItem } from "@domain/sync/diff";
+import type { ConflictResolutions } from "@domain/sync/merge";
 import {
   pullAndDiff,
   pushSelected,
   type SyncResult,
   type SyncReviewContext,
+  SyncReviewRequiredError,
 } from "@domain/sync/orchestrator";
 import {
   detectTranspositionMismatches,
@@ -26,6 +28,7 @@ import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { GitHubIcon, GoogleDriveIcon } from "../design-system/components/icons";
 import { SETTINGS_SCROLL_KEY } from "../settings/page";
 import { SetlistHelperImport } from "./components/setlist-helper-import";
+import { SetlistHelperSetlistImport } from "./components/setlist-helper-setlist-import";
 import { SyncReview } from "./components/sync-review";
 import { TranspositionAlert } from "./components/transposition-alert";
 
@@ -39,7 +42,7 @@ type Status =
 type GitHubStatus =
   | { type: "idle" }
   | { type: "pulling" }
-  | { type: "review"; ctx: SyncReviewContext }
+  | { type: "review"; ctx: SyncReviewContext; refreshed?: boolean }
   | { type: "pushing" }
   | { type: "success"; result: SyncResult }
   | { type: "error"; message: string };
@@ -48,7 +51,7 @@ type GoogleDriveStatus =
   | { type: "idle" }
   | { type: "authenticating" }
   | { type: "pulling" }
-  | { type: "review"; ctx: SyncReviewContext }
+  | { type: "review"; ctx: SyncReviewContext; refreshed?: boolean }
   | { type: "pushing" }
   | { type: "success"; result: SyncResult }
   | { type: "error"; message: string };
@@ -103,7 +106,7 @@ export function SyncPage() {
 
   // Step 2: Push selected
   const handlePushSelected = useCallback(
-    async (selectedOutgoing: ChangeItem[]) => {
+    async (selectedOutgoing: ChangeItem[], resolutions: ConflictResolutions) => {
       if (ghStatus.type !== "review") return;
       const config = loadSyncConfig(profileId);
       if (!config || config.adapter !== "github") return;
@@ -115,9 +118,20 @@ export function SyncPage() {
           ghStatus.ctx.remote.songs,
         );
         if (mismatches.length > 0) setTranspositionMismatches(mismatches);
-        const result = await pushSelected(adapter, db, profileId, ghStatus.ctx, selectedOutgoing);
+        const result = await pushSelected(
+          adapter,
+          db,
+          profileId,
+          ghStatus.ctx,
+          selectedOutgoing,
+          resolutions,
+        );
         setGhStatus({ type: "success", result });
       } catch (err) {
+        if (err instanceof SyncReviewRequiredError) {
+          setGhStatus({ type: "review", ctx: err.ctx, refreshed: true });
+          return;
+        }
         const message = err instanceof Error ? err.message : "Unknown error";
         setGhStatus({ type: "error", message });
       }
@@ -148,7 +162,7 @@ export function SyncPage() {
 
   // Google Drive: Step 2 — push selected
   const handleGdPushSelected = useCallback(
-    async (selectedOutgoing: ChangeItem[]) => {
+    async (selectedOutgoing: ChangeItem[], resolutions: ConflictResolutions) => {
       if (gdStatus.type !== "review") return;
       const config = loadSyncConfig(profileId);
       if (!config || config.adapter !== "google-drive") return;
@@ -160,9 +174,20 @@ export function SyncPage() {
           gdStatus.ctx.remote.songs,
         );
         if (mismatches.length > 0) setTranspositionMismatches(mismatches);
-        const result = await pushSelected(adapter, db, profileId, gdStatus.ctx, selectedOutgoing);
+        const result = await pushSelected(
+          adapter,
+          db,
+          profileId,
+          gdStatus.ctx,
+          selectedOutgoing,
+          resolutions,
+        );
         setGdStatus({ type: "success", result });
       } catch (err) {
+        if (err instanceof SyncReviewRequiredError) {
+          setGdStatus({ type: "review", ctx: err.ctx, refreshed: true });
+          return;
+        }
         const message = err instanceof Error ? err.message : "Unknown error";
         setGdStatus({ type: "error", message });
       }
@@ -241,6 +266,11 @@ export function SyncPage() {
           onSuccess={(message) => setStatus({ type: "success", message })}
           onError={(message) => setStatus({ type: "error", message })}
         />
+        <SetlistHelperSetlistImport
+          disabled={busy}
+          onSuccess={(message) => setStatus({ type: "success", message })}
+          onError={(message) => setStatus({ type: "error", message })}
+        />
       </div>
 
       <div aria-live="polite">
@@ -274,10 +304,12 @@ export function SyncPage() {
           {/* Review mode */}
           {ghStatus.type === "review" ? (
             <SyncReview
+              key={`${ghStatus.ctx.versionToken}:${ghStatus.ctx.local.exportedAt}`}
               diff={ghStatus.ctx.diff}
               onConfirm={handlePushSelected}
               onCancel={() => setGhStatus({ type: "idle" })}
               busy={false}
+              notice={ghStatus.refreshed ? t("syncConflicts.reviewRefreshed") : undefined}
             />
           ) : (
             <>
@@ -355,10 +387,12 @@ export function SyncPage() {
             <div className="flex flex-col gap-3">
               {gdStatus.type === "review" ? (
                 <SyncReview
+                  key={`${gdStatus.ctx.versionToken}:${gdStatus.ctx.local.exportedAt}`}
                   diff={gdStatus.ctx.diff}
                   onConfirm={handleGdPushSelected}
                   onCancel={() => setGdStatus({ type: "idle" })}
                   busy={false}
+                  notice={gdStatus.refreshed ? t("syncConflicts.reviewRefreshed") : undefined}
                 />
               ) : (
                 <>

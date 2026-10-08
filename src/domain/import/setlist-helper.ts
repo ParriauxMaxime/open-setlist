@@ -13,6 +13,7 @@ import {
   tagsToDirective,
 } from "../chordpro/directives";
 import { decodeTextBytes, parseCsv } from "./csv";
+import { decodeHtmlEntities } from "./html-entities";
 import { normalizeKey } from "./normalize-key";
 
 export type ImportedSongFields = Omit<Song, "id" | "createdAt" | "updatedAt">;
@@ -32,6 +33,8 @@ export const IMPORT_WARNING_CODES = {
   invalidDuration: "invalidDuration",
   transposeClamped: "transposeClamped",
   duplicateInFile: "duplicateInFile",
+  invalidSequence: "invalidSequence",
+  ambiguousMatch: "ambiguousMatch",
 } as const;
 
 export type ImportWarningCode = (typeof IMPORT_WARNING_CODES)[keyof typeof IMPORT_WARNING_CODES];
@@ -153,7 +156,8 @@ function buildContent(song: ImportedSongFields, body: string): string {
   return body ? `${header}\n\n${body}` : header;
 }
 
-function mapRow(
+/** Map one CSV record (catalog or setlist export) to song fields. */
+export function mapSetlistHelperRecord(
   record: Record<string, string>,
   row: number,
   warnings: ImportWarning[],
@@ -244,29 +248,50 @@ export function songMatchKey(title: string, artist: string | undefined): string 
   return `${norm(title)}|${norm(artist ?? "")}`;
 }
 
-/** Parse a Setlist Helper catalog CSV (raw bytes or already-decoded text). */
-export function parseSetlistHelperCsv(input: Uint8Array | string): SetlistHelperImport {
+/** Column name used only by setlist exports (`/Setlist/ExportCsv`). */
+export const SEQUENCE_COLUMN = "SequenceNumber";
+
+/**
+ * Decode + parse a Setlist Helper CSV into header-keyed records.
+ * Field values have HTML entities decoded. Throws if a required column is missing.
+ */
+export function readSetlistHelperRecords(
+  input: Uint8Array | string,
+  required: readonly string[],
+): { columns: string[]; records: Record<string, string>[] } {
   const text = typeof input === "string" ? input : decodeTextBytes(input);
   const [header, ...records] = parseCsv(text);
   const columns = (header ?? []).map((h) => h.trim());
-  for (const col of REQUIRED_COLUMNS) {
+  for (const col of required) {
     if (!columns.includes(col)) {
       throw new SetlistHelperFormatError(`Missing column "${col}"`);
     }
+  }
+  const decoded = records.map((fields) => {
+    const record: Record<string, string> = {};
+    columns.forEach((col, i) => {
+      record[col] = decodeHtmlEntities(fields[i] ?? "");
+    });
+    return record;
+  });
+  return { columns, records: decoded };
+}
+
+/** Parse a Setlist Helper catalog CSV (raw bytes or already-decoded text). */
+export function parseSetlistHelperCsv(input: Uint8Array | string): SetlistHelperImport {
+  const { columns, records } = readSetlistHelperRecords(input, REQUIRED_COLUMNS);
+  // A setlist export has the catalog columns too; importing it here would create empty charts.
+  if (columns.includes(SEQUENCE_COLUMN)) {
+    throw new SetlistHelperFormatError("This is a setlist export, not a catalog export");
   }
 
   const songs: ImportedSong[] = [];
   const warnings: ImportWarning[] = [];
   const seen = new Set<string>();
 
-  records.forEach((fields, index) => {
+  records.forEach((record, index) => {
     const row = index + 1;
-    const record: Record<string, string> = {};
-    columns.forEach((col, i) => {
-      record[col] = fields[i] ?? "";
-    });
-
-    const imported = mapRow(record, row, warnings);
+    const imported = mapSetlistHelperRecord(record, row, warnings);
     if (!imported) return;
 
     const matchKey = songMatchKey(imported.song.title, imported.song.artist);

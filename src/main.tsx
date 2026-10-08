@@ -7,6 +7,9 @@ import { App } from "./app";
 import { DbProvider } from "./db/provider";
 import "./styles/global.css";
 
+// Tells the stale-SW recovery script in index.html that the bundle loaded.
+window.__openSetlistBooted = true;
+
 // Apply display preferences before render to prevent flash of default styles
 applyPreferences(loadPreferences());
 
