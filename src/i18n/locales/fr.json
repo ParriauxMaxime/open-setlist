@@ -156,6 +156,18 @@
       "dismiss": "Touchez pour fermer"
     }
   },
+  "performStage": {
+    "startAutoScroll": "Lancer le défilement auto",
+    "pauseAutoScroll": "Mettre en pause le défilement auto",
+    "scrollSlower": "Défiler plus lentement",
+    "scrollFaster": "Défiler plus vite",
+    "scrollSpeedLabel": "Vitesse de défilement",
+    "scrollSpeedAuto": "Auto",
+    "enterFullscreen": "Plein écran",
+    "exitFullscreen": "Quitter le plein écran",
+    "hintPedal": "Pédale ou clavier : Page suiv., Espace ou ↓ pour avancer, Page préc. ou ↑ pour reculer, ← → pour changer de chanson",
+    "hintAutoScroll": "S lance ou met en pause le défilement auto"
+  },
   "sync": {
     "title": "Synchro",
     "description": "Exportez vos chansons et setlists en fichier JSON, ou importez depuis un fichier précédemment exporté.",
@@ -199,6 +211,38 @@
       "goToSettings": "Aller aux paramètres",
       "lastSync": "Dernière synchro\u00a0: {{time}}"
     }
+  },
+  "importSetlistHelper": {
+    "button": "Importer depuis Setlist Helper",
+    "reading": "Lecture...",
+    "previewTitle": "Importer depuis Setlist Helper",
+    "newCount_one": "{{count}} nouvelle chanson",
+    "newCount_other": "{{count}} nouvelles chansons",
+    "matchCount_one": "{{count}} chanson déjà dans votre catalogue",
+    "matchCount_other": "{{count}} chansons déjà dans votre catalogue",
+    "warningCount_one": "{{count}} avertissement",
+    "warningCount_other": "{{count}} avertissements",
+    "matchLegend": "Chansons déjà dans votre catalogue",
+    "strategy": {
+      "skip": "Les ignorer (garder ma version)",
+      "update": "Les mettre à jour depuis Setlist Helper"
+    },
+    "warningRow": "Ligne {{row}} {{title}} :",
+    "warning": {
+      "missingTitle": "pas de titre, ligne ignorée.",
+      "unparseableKey": "tonalité inconnue « {{value}} », laissée vide.",
+      "invalidTempo": "tempo invalide « {{value}} », ignoré.",
+      "invalidDuration": "durée invalide « {{value}} », ignorée.",
+      "transposeClamped": "transposition {{value}} hors limites, ramenée dans l'intervalle.",
+      "duplicateInFile": "doublon dans le fichier, ignoré."
+    },
+    "safeNote": "Rien n'est supprimé. Exportez le CSV du catalogue depuis Setlist Helper web (Song Catalog > Export CSV).",
+    "confirm": "Importer",
+    "importing": "Import en cours...",
+    "cancel": "Annuler",
+    "success": "Import Setlist Helper : {{added}} ajoutée(s), {{updated}} mise(s) à jour.",
+    "invalidFile": "Ce fichier n'est pas un CSV de catalogue Setlist Helper.",
+    "failed": "L'import Setlist Helper a échoué."
   },
   "tuner": {
     "title": "Accordeur",
@@ -379,5 +423,10 @@
     "titleRequired": "Le titre est requis",
     "setNameRequired": "Le nom du set est requis",
     "nameRequired": "Le nom est requis"
+  },
+  "chordpro": {
+    "setup": "Réglages",
+    "chorus": "Refrain",
+    "repeat": "reprise"
   }
 }

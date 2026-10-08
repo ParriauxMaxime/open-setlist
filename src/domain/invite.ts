@@ -1,3 +1,4 @@
+import { createId } from "@domain/id";
 import { addProfile, loadProfiles, type Profile, setActiveProfileId } from "./profiles";
 import { type GitHubConfig, type GoogleDriveConfig, saveSyncConfig } from "./sync/config";
 
@@ -70,7 +71,7 @@ export function applyInvite(payload: InvitePayload): string {
     profileId = existing.id;
   } else {
     const newProfile: Profile = {
-      id: crypto.randomUUID(),
+      id: createId(),
       name: payload.profile.name,
       avatar: payload.profile.avatar,
       createdAt: Date.now(),

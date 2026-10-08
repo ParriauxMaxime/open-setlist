@@ -1,5 +1,5 @@
 import type { Song } from "@db/song";
-import { parse } from "./chordpro/parser";
+import { type LyricLine, parse } from "./chordpro/parser";
 
 export interface QualityFlag {
   id: string;
@@ -102,7 +102,10 @@ export function analyzeSong(song: Song): QualityReport {
     category: "structure",
   });
 
-  const hasOrphan = sections.some((s) => s.type === "custom");
+  // Comments between sections are fine; only stray lyric lines count as orphans
+  const hasOrphan = sections.some(
+    (s) => s.type === "custom" && s.lines.some((l) => l.kind === "lyric"),
+  );
   flags.push({
     id: "no-orphan-lines",
     label: "No orphan lines (outside sections)",
@@ -122,7 +125,9 @@ export function analyzeSong(song: Song): QualityReport {
 
   // ── Chords (30 pts) ──
 
-  const allLines = sections.flatMap((s) => s.lines);
+  const allLines = sections
+    .flatMap((s) => s.lines)
+    .filter((l): l is LyricLine => l.kind === "lyric");
   const nonEmptyLines = allLines.filter((l) => l.segments.some((s) => s.text.trim() || s.chord));
   const linesWithChords = nonEmptyLines.filter((l) => l.segments.some((s) => s.chord));
   const linesWithLyrics = nonEmptyLines.filter((l) =>

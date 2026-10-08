@@ -43,6 +43,9 @@ button:not(:disabled) {
   --color-section-chorus: #f0a05022;
   --color-section-bridge: #a07cf022;
 
+  /* Highlight — {soh}…{eoh} and {highlight} text (backing vocals, hooks, x3) */
+  --color-highlight: #facc1540;
+
   /* Status */
   --color-success: #4ade80;
   --color-warning: #fbbf24;

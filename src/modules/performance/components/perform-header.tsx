@@ -14,6 +14,16 @@ interface PerformHeaderProps {
   transposeOpen: boolean;
   onTranspose: (delta: number) => void;
   onToggleTranspose: () => void;
+  autoScrolling: boolean;
+  showScrollSpeed: boolean;
+  scrollSpeed: number | null;
+  /** True when the speed is derived from duration rather than stored on the song. */
+  scrollSpeedDerived: boolean;
+  onToggleAutoScroll: () => void;
+  onScrollSpeed: (delta: number) => void;
+  fullscreenSupported: boolean;
+  isFullscreen: boolean;
+  onToggleFullscreen: () => void;
   onPrev: () => void;
   onNext: () => void;
   onOpenSidebar: () => void;
@@ -29,6 +39,15 @@ export function PerformHeader({
   transposeOpen,
   onTranspose,
   onToggleTranspose,
+  autoScrolling,
+  showScrollSpeed,
+  scrollSpeed,
+  scrollSpeedDerived,
+  onToggleAutoScroll,
+  onScrollSpeed,
+  fullscreenSupported,
+  isFullscreen,
+  onToggleFullscreen,
   onPrev,
   onNext,
   onOpenSidebar,
@@ -108,6 +127,55 @@ export function PerformHeader({
             </div>
           )}
 
+          {/* Auto-scroll: start/pause + speed */}
+          <div className="flex shrink-0 items-center gap-0.5">
+            {showScrollSpeed && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onScrollSpeed(-1)}
+                  className="perform-btn"
+                  aria-label={t("performStage.scrollSlower")}
+                >
+                  −
+                </button>
+                <span
+                  className={`min-w-[2ch] text-center text-sm font-medium tabular-nums ${
+                    scrollSpeedDerived ? "text-text-faint" : "text-text-muted"
+                  }`}
+                  title={
+                    scrollSpeedDerived
+                      ? t("performStage.scrollSpeedAuto")
+                      : t("performStage.scrollSpeedLabel")
+                  }
+                >
+                  {scrollSpeed === null ? "–" : Math.round(scrollSpeed)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onScrollSpeed(1)}
+                  className="perform-btn"
+                  aria-label={t("performStage.scrollFaster")}
+                >
+                  +
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={onToggleAutoScroll}
+              className={`perform-btn ${autoScrolling ? "text-accent" : ""}`}
+              aria-label={
+                autoScrolling
+                  ? t("performStage.pauseAutoScroll")
+                  : t("performStage.startAutoScroll")
+              }
+              aria-pressed={autoScrolling}
+            >
+              {autoScrolling ? "❚❚" : "▶\uFE0E"}
+            </button>
+          </div>
+
           {/* Navigation + menu */}
           <div className="flex shrink-0 items-center gap-1">
             <button
@@ -169,6 +237,20 @@ export function PerformHeader({
                   >
                     {t("perform.transpose")}
                   </button>
+                  {fullscreenSupported && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onToggleFullscreen();
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full px-4 py-2.5 text-left text-base text-text hover:bg-bg-hover"
+                    >
+                      {isFullscreen
+                        ? t("performStage.exitFullscreen")
+                        : t("performStage.enterFullscreen")}
+                    </button>
+                  )}
                   <Link
                     to={Router.Settings()}
                     className="block px-4 py-2.5 text-left text-base text-text hover:bg-bg-hover"

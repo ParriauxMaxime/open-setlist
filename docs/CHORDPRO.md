@@ -238,7 +238,7 @@ The spec allows `{start_of_anything}` with arbitrary names. We handle these with
 
 `{chorus}` directive — repeats the last defined chorus at that location.
 
-**Status:** Not yet implemented. Worth adding — it's common in real charts to write the chorus once and reference it. Implementation: store the last chorus section, insert a reference node in the AST.
+**Status:** Implemented. `{chorus}` (optional label) and an **empty** `{soc}{eoc}` / `{start_of_chorus}{end_of_chorus}` pair (Setlist Helper's convention) both produce a `chorus-recall` line pointing at the most recent chorus that has lyrics. Performance mode renders that chorus again under a "Chorus ↻ repeat" header. If no chorus is defined yet, only the marker is shown. `{chorus}` inside an explicit section is added as a line of that section; otherwise it becomes its own chorus section.
 
 ---
 
@@ -251,8 +251,17 @@ The spec allows `{start_of_anything}` with arbitrary names. We handle these with
 | `comment` | `c` | Inline comment/instruction rendered visually (not a `#` comment — this one shows up). Stage directions, cues, etc. |
 | `comment_italic` | `ci` | Same, italic style. |
 | `comment_box` | `cb` | Same, boxed style. |
+| `highlight` | — | Same, highlighted background. |
 
 These are **stage directions** — "solo here", "drums drop out", "key change". Critical for performance mode.
+
+Comments render as their own line at their position, inside or between sections. A comment trailing a lyric line (`la la {comment:↘}`) is rendered on the next line. All accept `for=<instrument>`.
+
+**Setup line:** the first comment of a song, when it comes before any lyric line, is extracted as `ChordProSong.setup` and shown as a banner at the top of the song. Bands use it for the device setup: patch code, instruments, capo (`{comment: 31C 🎙️🎹🎸}`, `{c: Capo 3 🎸}`). Section labels (`[Verse 1 :]`) and blank lines do not count as lyrics.
+
+### Highlight — `{soh}` … `{eoh}` (Setlist Helper extension)
+
+Start/end of highlight. Can open and close within one line (`Guitarisé, {soh}(oh){eoh}`) or span several lines. Text in between is rendered with a highlight background (`--color-highlight`). Chords inside highlighted text are still parsed. Segments carry `highlight: true`.
 
 ### Skipped
 
@@ -348,10 +357,12 @@ We should display:
 source string
   → split by \n
   → for each line:
-      directive? → metadata or section start/end
-      song line? → extract [chords] + text segments
-  → ChordProSong { metadata, sections[] }
+      directive? → metadata, section start/end, comment, chorus recall, highlight toggle
+      song line? → extract [chords] + text segments (+ trailing inline comments)
+  → ChordProSong { metadata, sections[], setup? }
 ```
+
+Section lines already use the `SongLine` union below (`lyric` / `comment` / `chorus-recall`); `chorus-recall` also carries a reference to the recalled `chorus` section, and `Segment` has an optional `highlight` flag. The rest of the target AST (multi-value metadata, chord definitions) is not implemented yet.
 
 ### Target: richer AST
 
@@ -459,8 +470,9 @@ The current parser discards unknown directives and `#` comments. The serializer 
 - [ ] Render modes: lyrics / monospace / prose based on environment type
 - [ ] Arbitrary custom environments (`{start_of_anything}`)
 - [ ] `{start_of_note}` / `{end_of_note}` environment
-- [ ] Comment directives (`{comment}`, `{ci}`, `{cb}`) with optional `for`
-- [ ] Chorus recall (`{chorus}`)
+- [x] Comment directives (`{comment}`, `{ci}`, `{cb}`, `{highlight}`) with optional `for`, setup line
+- [x] Chorus recall (`{chorus}`, empty `{soc}{eoc}`)
+- [x] Highlight (`{soh}`…`{eoh}`)
 - [ ] Multiple values for repeatable metadata (`artist`, `tag`)
 - [ ] Unknown directive preservation
 - [ ] `#` comment preservation

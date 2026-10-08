@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MUSICAL_KEY_LIST } from "../music";
+import { SCROLL_SPEED_MAX, SCROLL_SPEED_MIN } from "../perform-stage";
 
 const songLinksSchema = z
   .object({
@@ -17,6 +18,7 @@ export const songSchema = z.object({
   bpm: z.number().int().positive().optional(),
   duration: z.number().int().positive().optional(),
   transposition: z.number().int().min(-11).max(11).optional(),
+  scrollSpeed: z.number().int().min(SCROLL_SPEED_MIN).max(SCROLL_SPEED_MAX).optional(),
   tags: z.array(z.string()),
   notes: z.string().optional(),
   techNotes: z.string().optional(),

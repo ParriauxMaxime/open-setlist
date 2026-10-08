@@ -1,3 +1,4 @@
+import { createId } from "@domain/id";
 import {
   addProfile,
   type Profile,
@@ -52,7 +53,7 @@ export function ProfileSwitcher() {
   const handleCreate = useCallback(() => {
     const name = newName.trim();
     if (!name) return;
-    const id = crypto.randomUUID();
+    const id = createId();
     const profile: Profile = {
       id,
       name,

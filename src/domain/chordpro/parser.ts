@@ -8,6 +8,10 @@
  * - Render mode: how a section displays (lyrics, monospace, prose)
  * - Layer: visibility filtering (core, band, instrument)
  * - `for` attribute: scopes a section to a specific instrument
+ * - Comment directives become inline comment lines; the first one before any
+ *   lyric is the band's setup line (patch code, instruments, capo...)
+ * - Chorus recall: `{chorus}` or an empty `{soc}{eoc}` pair
+ * - Highlight: `{soh}`…`{eoh}` (Setlist Helper), inline or across lines
  */
 
 export type RenderMode = "lyrics" | "monospace" | "prose";
@@ -16,6 +20,8 @@ export type Layer = "core" | "band" | "instrument";
 export interface ChordProSong {
   metadata: Record<string, string>;
   sections: Section[];
+  /** First comment of the song when it comes before any lyric (e.g. `12B 🎸`). */
+  setup?: string;
 }
 
 export interface Section {
@@ -24,16 +30,36 @@ export interface Section {
   renderMode: RenderMode;
   layer: Layer;
   instrument?: string;
-  lines: Line[];
+  lines: SongLine[];
 }
 
-export interface Line {
+export type CommentStyle = "default" | "italic" | "box" | "highlight";
+
+export interface LyricLine {
+  kind: "lyric";
   segments: Segment[];
 }
+
+export interface CommentLine {
+  kind: "comment";
+  style: CommentStyle;
+  text: string;
+  instrument?: string;
+}
+
+export interface ChorusRecallLine {
+  kind: "chorus-recall";
+  label?: string;
+  /** Most recent chorus with lyrics defined before the recall, if any. */
+  chorus?: Section;
+}
+
+export type SongLine = LyricLine | CommentLine | ChorusRecallLine;
 
 export interface Segment {
   chord?: string;
   text: string;
+  highlight?: boolean;
 }
 
 const DIRECTIVE_RE = /^\{(\w+)(?::\s*(.+))?\}$/;
@@ -135,6 +161,19 @@ const META_DIRECTIVES = new Set([
   "youtube",
 ]);
 
+const COMMENT_STYLES: Record<string, CommentStyle> = {
+  comment: "default",
+  c: "default",
+  comment_italic: "italic",
+  ci: "italic",
+  comment_box: "box",
+  cb: "box",
+  highlight: "highlight",
+};
+
+const INLINE_COMMENT_RE = /\{(comment|c|comment_italic|ci|comment_box|cb|highlight):\s*([^}]*)\}/gi;
+const HIGHLIGHT_TOGGLE_RE = /\{(soh|eoh)\}/i;
+
 const CORE_TYPES = new Set(["verse", "chorus", "bridge"]);
 
 function getRenderMode(type: string): RenderMode {
@@ -212,17 +251,117 @@ function isCustomEnd(name: string): boolean {
   return /^end_of_\w+$/.test(name) && !SECTION_END.has(name);
 }
 
+function makeComment(style: CommentStyle, value: string | undefined): CommentLine | null {
+  const { label, instrument } = parseSectionArgs(value?.trim());
+  if (!label) return null;
+  return { kind: "comment", style, text: label, instrument };
+}
+
+function isBlank(line: SongLine): boolean {
+  return line.kind === "lyric" && line.segments.every((s) => !s.chord && !s.text.trim());
+}
+
+function hasLyricContent(section: Section): boolean {
+  return section.lines.some((l) => l.kind === "lyric" && !isBlank(l));
+}
+
+function markHighlight(segments: Segment[]): Segment[] {
+  return segments.map((s) => ({ ...s, highlight: true }));
+}
+
+/**
+ * Parse lyric text that may contain `{soh}`/`{eoh}` toggles.
+ * Returns the line (null when the text only toggled highlight) and the
+ * highlight state to carry over to the next line.
+ */
+function parseLyric(
+  text: string,
+  highlightOn: boolean,
+): { line: LyricLine | null; highlightOn: boolean } {
+  // Splitting on a capture group alternates text pieces and toggle names
+  const parts = text.split(HIGHLIGHT_TOGGLE_RE);
+  if (parts.length === 1) {
+    const { segments } = parseLine(text);
+    return {
+      line: { kind: "lyric", segments: highlightOn ? markHighlight(segments) : segments },
+      highlightOn,
+    };
+  }
+  const segments: Segment[] = [];
+  let on = highlightOn;
+  parts.forEach((part, i) => {
+    if (i % 2 === 1) {
+      on = part.toLowerCase() === "soh";
+    } else if (part) {
+      const parsed = parseLine(part).segments;
+      segments.push(...(on ? markHighlight(parsed) : parsed));
+    }
+  });
+  return { line: segments.length > 0 ? { kind: "lyric", segments } : null, highlightOn: on };
+}
+
 export function parse(source: string): ChordProSong {
   const lines = source.split("\n");
   const metadata: Record<string, string> = {};
   const sections: Section[] = [];
-  let currentSection: Section | null = null;
+  // Cast: TS would otherwise narrow to `null`, as it's only reassigned inside closures
+  let currentSection = null as Section | null;
+  // Implicit sections hold content found outside any section directive
+  let currentImplicit = false;
+  let lastChorus: Section | undefined;
+  let seenLyrics = false;
+  let seenComment = false;
+  let setup: string | undefined;
+  let highlightOn = false;
+
+  const closeSection = () => {
+    if (!currentSection) return;
+    if (currentSection.type === "chorus" && hasLyricContent(currentSection)) {
+      lastChorus = currentSection;
+    }
+    sections.push(currentSection);
+    currentSection = null;
+    currentImplicit = false;
+  };
+
+  const openSection = (section: Section, implicit = false) => {
+    closeSection();
+    currentSection = section;
+    currentImplicit = implicit;
+  };
+
+  const pushLine = (songLine: SongLine) => {
+    if (songLine.kind === "lyric" && !isBlank(songLine)) seenLyrics = true;
+    if (currentSection) {
+      currentSection.lines.push(songLine);
+    } else {
+      // Lines outside sections go into an implicit section
+      openSection({ type: "custom", renderMode: "prose", layer: "band", lines: [songLine] }, true);
+    }
+  };
+
+  const pushComment = (comment: CommentLine | null) => {
+    if (!comment) return;
+    const isSetup = !seenComment && !seenLyrics;
+    seenComment = true;
+    if (isSetup) {
+      setup = comment.text;
+    } else {
+      pushLine(comment);
+    }
+  };
+
+  const recallLine = (label: string | undefined): ChorusRecallLine => ({
+    kind: "chorus-recall",
+    label,
+    chorus: lastChorus,
+  });
 
   for (const raw of lines) {
     const line = raw.trim();
     if (line === "") {
       if (currentSection) {
-        currentSection.lines.push({ segments: [{ text: "" }] });
+        currentSection.lines.push({ kind: "lyric", segments: [{ text: "" }] });
       }
       continue;
     }
@@ -244,47 +383,55 @@ export function parse(source: string): ChordProSong {
                   ? "techNotes"
                   : lower;
         metadata[key] = value ?? "";
-      } else if (SECTION_START[lower]) {
-        // Close any open section
-        if (currentSection) {
-          sections.push(currentSection);
+      } else if (COMMENT_STYLES[lower]) {
+        pushComment(makeComment(COMMENT_STYLES[lower], value));
+      } else if (lower === "soh" || lower === "eoh") {
+        highlightOn = lower === "soh";
+      } else if (lower === "chorus") {
+        const label = value?.trim() || undefined;
+        if (currentSection && !currentImplicit) {
+          currentSection.lines.push(recallLine(label));
+        } else {
+          openSection({
+            type: "chorus",
+            renderMode: "lyrics",
+            layer: "core",
+            lines: [recallLine(label)],
+          });
+          closeSection();
         }
+      } else if (SECTION_START[lower]) {
         const sectionType = SECTION_START[lower];
         const { label, instrument } = parseSectionArgs(value);
-        currentSection = {
+        openSection({
           type: sectionType,
           label,
           renderMode: getRenderMode(sectionType),
           layer: getLayer(sectionType, instrument),
           instrument,
           lines: [],
-        };
+        });
       } else if (SECTION_END.has(lower)) {
-        if (currentSection) {
-          sections.push(currentSection);
-          currentSection = null;
+        // An empty {soc}{eoc} pair means "chorus here" (Setlist Helper convention)
+        if (currentSection?.type === "chorus" && currentSection.lines.every(isBlank)) {
+          currentSection.lines = [recallLine(currentSection.label)];
         }
+        closeSection();
       } else {
         // Check for custom environments: start_of_<name> / end_of_<name>
         const customType = parseCustomStart(lower);
         if (customType) {
-          if (currentSection) {
-            sections.push(currentSection);
-          }
           const { label, instrument } = parseSectionArgs(value);
-          currentSection = {
+          openSection({
             type: customType,
             label,
             renderMode: getRenderMode(customType),
             layer: getLayer(customType, instrument),
             instrument,
             lines: [],
-          };
+          });
         } else if (isCustomEnd(lower)) {
-          if (currentSection) {
-            sections.push(currentSection);
-            currentSection = null;
-          }
+          closeSection();
         }
         // Other directives ignored for now
       }
@@ -294,43 +441,45 @@ export function parse(source: string): ChordProSong {
     // Heuristic: bracket-based section labels like [Verse 1 :], [Intro 🎸:]
     const bracketSection = isBracketSection(line);
     if (bracketSection) {
-      if (currentSection) {
-        sections.push(currentSection);
-      }
-      currentSection = {
+      openSection({
         type: bracketSection.type,
         label: bracketSection.label,
         renderMode: getRenderMode(bracketSection.type),
         layer: getLayer(bracketSection.type),
         lines: [],
-      };
+      });
       continue;
     }
 
-    // Regular line with potential chords
-    const parsedLine = parseLine(line);
-    if (currentSection) {
-      currentSection.lines.push(parsedLine);
-    } else {
-      // Lines outside sections go into an implicit section
-      currentSection = {
-        type: "custom",
-        renderMode: "prose",
-        layer: "band",
-        lines: [parsedLine],
-      };
+    // Keep leading whitespace in monospace (tab) sections so columns stay aligned
+    const text = currentSection?.renderMode === "monospace" ? raw.trimEnd() : line;
+
+    // Comment directives trailing lyrics, e.g. "Laisser tomber {comment:↘}"
+    const inlineComments: CommentLine[] = [];
+    const lyricText = text.replace(INLINE_COMMENT_RE, (_full, name: string, value: string) => {
+      const comment = makeComment(COMMENT_STYLES[name.toLowerCase()], value);
+      if (comment) inlineComments.push(comment);
+      return "";
+    });
+
+    const lyric = parseLyric(
+      inlineComments.length > 0 ? lyricText.trimEnd() : lyricText,
+      highlightOn,
+    );
+    highlightOn = lyric.highlightOn;
+    if (lyric.line && !isBlank(lyric.line)) {
+      pushLine(lyric.line);
     }
+    for (const comment of inlineComments) pushComment(comment);
   }
 
   // Close any unclosed section
-  if (currentSection) {
-    sections.push(currentSection);
-  }
+  closeSection();
 
-  return { metadata, sections };
+  return { metadata, sections, setup };
 }
 
-function parseLine(raw: string): Line {
+function parseLine(raw: string): { segments: Segment[] } {
   const line = expandMultiChordBrackets(raw);
   const segments: Segment[] = [];
   let lastIndex = 0;

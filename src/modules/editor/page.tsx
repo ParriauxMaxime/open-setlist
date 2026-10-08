@@ -1,4 +1,5 @@
 import { useDb } from "@db/provider";
+import { createId } from "@domain/id";
 import {
   getSongOverrides,
   loadPreferences,
@@ -36,6 +37,7 @@ const defaultValues: SongFormValues = {
   bpm: undefined,
   duration: undefined,
   transposition: undefined,
+  scrollSpeed: undefined,
   tags: [],
   notes: "",
   techNotes: "",
@@ -50,7 +52,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
   const db = useDb();
   const profileId = useActiveProfileId();
   const existing = useLiveQuery(() => (songId ? db.songs.get(songId) : undefined), [songId, db]);
-  const [songDbId] = useState(() => songId ?? crypto.randomUUID());
+  const [songDbId] = useState(() => songId ?? createId());
   const [tagInput, setTagInput] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -131,6 +133,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
         bpm: existing.bpm,
         duration: existing.duration,
         transposition: existing.transposition,
+        scrollSpeed: existing.scrollSpeed,
         tags: existing.tags,
         notes: existing.notes ?? "",
         techNotes: existing.techNotes ?? "",
