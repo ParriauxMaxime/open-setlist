@@ -12,6 +12,7 @@ interface GoogleTokenClient {
   requestAccessToken(overrides?: { prompt?: string }): void;
 }
 declare interface Window {
+  __openSetlistBooted?: boolean;
   google?: {
     accounts: {
       oauth2: {

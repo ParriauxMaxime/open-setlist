@@ -1,5 +1,11 @@
 import { snapshotSchema } from "@domain/schemas/snapshot";
-import { loadTombstones, type Tombstone } from "@domain/sync/tombstones";
+import {
+  loadTombstones,
+  mergeTombstones,
+  pruneTombstones,
+  saveTombstones,
+  type Tombstone,
+} from "@domain/sync/tombstones";
 import type { AppDatabase } from ".";
 import type { Setlist } from "./setlist";
 import type { Song } from "./song";
@@ -26,7 +32,15 @@ export async function exportSnapshot(db: AppDatabase, profileId: string): Promis
   };
 }
 
-export async function importSnapshot(db: AppDatabase, data: unknown): Promise<void> {
+/**
+ * Replace local songs and setlists with the snapshot's. With a `profileId`, the snapshot's
+ * tombstones are also merged into that profile's tombstone store (minus items now present).
+ */
+export async function importSnapshot(
+  db: AppDatabase,
+  data: unknown,
+  profileId?: string,
+): Promise<void> {
   const snapshot = snapshotSchema.parse(data);
   await db.transaction("rw", db.songs, db.setlists, async () => {
     await db.songs.clear();
@@ -38,4 +52,15 @@ export async function importSnapshot(db: AppDatabase, data: unknown): Promise<vo
       await db.setlists.bulkAdd(snapshot.setlists);
     }
   });
+  if (profileId) {
+    const present = new Set([
+      ...snapshot.songs.map((s) => `song:${s.id}`),
+      ...snapshot.setlists.map((s) => `setlist:${s.id}`),
+    ]);
+    const tombstones = mergeTombstones(loadTombstones(profileId), snapshot.tombstones ?? []);
+    saveTombstones(
+      profileId,
+      pruneTombstones(tombstones).filter((t) => !present.has(`${t.type}:${t.id}`)),
+    );
+  }
 }

@@ -212,6 +212,27 @@
       "lastSync": "Dernière synchro\u00a0: {{time}}"
     }
   },
+  "syncConflicts": {
+    "title": "Conflits ({{count}})",
+    "description": "Modifié sur cet appareil et par quelqu'un d'autre depuis la dernière synchro. Choisissez la version à garder. L'autre est remplacée.",
+    "mine": "La mienne",
+    "theirs": "La leur",
+    "keepMine": "Garder la mienne",
+    "takeTheirs": "Prendre la leur",
+    "edited": "Modifiée le {{date}}",
+    "deleted": "Supprimée",
+    "deletedOn": "Supprimée le {{date}}",
+    "lines_one": "{{count}} ligne",
+    "lines_other": "{{count}} lignes",
+    "songs_one": "{{count}} chanson",
+    "songs_other": "{{count}} chansons",
+    "linesDiff": "{{mine}} lignes seulement dans la mienne, {{theirs}} seulement dans la leur",
+    "songsDiff": "{{mine}} chansons seulement dans la mienne, {{theirs}} seulement dans la leur",
+    "changedFields": "Modifié\u00a0: {{fields}}",
+    "unresolved_one": "Résolvez {{count}} conflit pour synchroniser.",
+    "unresolved_other": "Résolvez {{count}} conflits pour synchroniser.",
+    "reviewRefreshed": "Les données ont changé pendant votre vérification (autre synchro ou autre onglet). Rien n'a été écrasé. Vérifiez les changements mis à jour."
+  },
   "importSetlistHelper": {
     "button": "Importer depuis Setlist Helper",
     "reading": "Lecture...",
@@ -234,7 +255,9 @@
       "invalidTempo": "tempo invalide « {{value}} », ignoré.",
       "invalidDuration": "durée invalide « {{value}} », ignorée.",
       "transposeClamped": "transposition {{value}} hors limites, ramenée dans l'intervalle.",
-      "duplicateInFile": "doublon dans le fichier, ignoré."
+      "duplicateInFile": "doublon dans le fichier, ignoré.",
+      "invalidSequence": "numéro d'ordre invalide « {{value}} », placé à la fin.",
+      "ambiguousMatch": "correspond à {{value}} chansons du catalogue, la plus ancienne est utilisée."
     },
     "safeNote": "Rien n'est supprimé. Exportez le CSV du catalogue depuis Setlist Helper web (Song Catalog > Export CSV).",
     "confirm": "Importer",
@@ -243,6 +266,27 @@
     "success": "Import Setlist Helper : {{added}} ajoutée(s), {{updated}} mise(s) à jour.",
     "invalidFile": "Ce fichier n'est pas un CSV de catalogue Setlist Helper.",
     "failed": "L'import Setlist Helper a échoué."
+  },
+  "importSetlists": {
+    "button": "Importer des setlists Setlist Helper",
+    "reading": "Lecture...",
+    "previewTitle": "Importer des setlists Setlist Helper",
+    "defaultName": "Setlist importée",
+    "matchedCount_one": "{{count}} chanson trouvée dans votre catalogue",
+    "matchedCount_other": "{{count}} chansons trouvées dans votre catalogue",
+    "unmatchedCount_one": "{{count}} chanson absente de votre catalogue",
+    "unmatchedCount_other": "{{count}} chansons absentes de votre catalogue",
+    "unmatchedLegend": "Chansons absentes de votre catalogue",
+    "action": {
+      "create": "Les créer (métadonnées seules, sans grille)",
+      "skip": "Les retirer de la setlist"
+    },
+    "invalidFiles": "Ignorés, ce ne sont pas des CSV de setlist Setlist Helper : {{files}}",
+    "tip": "Un fichier par setlist. Dans Setlist Helper web : Setlists > choisir une setlist > Export > CSV. Les setlists existantes ne sont jamais écrasées ; un nom déjà utilisé reçoit le suffixe « (2) ».",
+    "success_one": "Import Setlist Helper : {{count}} setlist créée, {{songs}} nouvelle(s) chanson(s).",
+    "success_other": "Import Setlist Helper : {{count}} setlists créées, {{songs}} nouvelle(s) chanson(s).",
+    "invalidFile": "Aucun CSV de setlist Setlist Helper dans les fichiers choisis.",
+    "failed": "L'import des setlists a échoué."
   },
   "tuner": {
     "title": "Accordeur",
