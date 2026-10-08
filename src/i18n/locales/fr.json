@@ -180,6 +180,26 @@
     "hintPedal": "Pédale ou clavier : Page suiv., Espace ou ↓ pour avancer, Page préc. ou ↑ pour reculer, ← → pour changer de chanson",
     "hintAutoScroll": "S lance ou met en pause le défilement auto"
   },
+  "myPart": {
+    "title": "Ma partie",
+    "all": "Tous",
+    "showChords": "Afficher les accords",
+    "showCues": "Afficher les indications (commentaires, notes)",
+    "lyricsOnly": "Paroles seules",
+    "noCues": "Sans indications",
+    "chipTitle": "Filtre Ma partie : {{summary}}",
+    "editorHelp": "En mode performance, ⋮ → Ma partie n’affiche à chaque musicien que les sections et commentaires for= de son instrument.",
+    "parts": {
+      "vocals": "Chant",
+      "guitar": "Guitare",
+      "bass": "Basse",
+      "keys": "Claviers",
+      "drums": "Batterie",
+      "sax": "Sax",
+      "trumpet": "Trompette",
+      "violin": "Violon"
+    }
+  },
   "sync": {
     "title": "Synchro",
     "description": "Exportez vos chansons et setlists en fichier JSON, ou importez depuis un fichier précédemment exporté.",

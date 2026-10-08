@@ -3,7 +3,9 @@ import { Link } from "@swan-io/chicane";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
+import type { MyPart } from "../hooks/use-my-part";
 import { KeyChips } from "./key-chips";
+import { MyPartChip, MyPartMenu } from "./my-part-menu";
 
 interface PerformHeaderProps {
   visible: boolean;
@@ -28,6 +30,7 @@ interface PerformHeaderProps {
   onPrev: () => void;
   onNext: () => void;
   onOpenSidebar: () => void;
+  myPart: MyPart;
 }
 
 export function PerformHeader({
@@ -52,6 +55,7 @@ export function PerformHeader({
   onPrev,
   onNext,
   onOpenSidebar,
+  myPart,
 }: PerformHeaderProps) {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -99,6 +103,8 @@ export function PerformHeader({
             {song?.artist && <div className="truncate text-sm text-text-muted">{song.artist}</div>}
             <KeyChips song={song} transposition={transposition} />
           </div>
+
+          <MyPartChip myPart={myPart} onClick={() => setMenuOpen(true)} />
 
           {/* Transpose control — shown via menu toggle or when transposition is non-zero */}
           {showTranspose && (
@@ -212,7 +218,8 @@ export function PerformHeader({
                 ⋮
               </button>
               {menuOpen && (
-                <div className="absolute right-0 top-full z-50 mt-1 min-w-40 rounded-md border border-border bg-bg-surface py-1 shadow-lg">
+                <div className="absolute right-0 top-full z-50 mt-1 max-h-[80dvh] min-w-40 overflow-y-auto rounded-md border border-border bg-bg-surface py-1 shadow-lg">
+                  <MyPartMenu myPart={myPart} />
                   {setlistId && (
                     <Link
                       to={Router.SetlistEdit({ setlistId })}

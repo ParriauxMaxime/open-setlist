@@ -7,6 +7,7 @@ import {
   type Segment,
   type SongLine,
 } from "@domain/chordpro/parser";
+import { filterSong, type PartView } from "@domain/chordpro/visibility";
 import { formatChord, type Notation } from "@domain/chords/notation";
 import { transposeChord } from "@domain/chords/transpose";
 import { createContext, useContext, useMemo } from "react";
@@ -22,6 +23,8 @@ interface ChordProViewProps {
   content: string;
   transposition?: number;
   onChordTap?: (info: ChordTapInfo) => void;
+  /** "My part" filter (performance mode); everything is shown when omitted. */
+  partView?: PartView;
 }
 
 /** Song key (for key-aware transposed spelling) and device notation, read by every chord. */
@@ -49,9 +52,10 @@ function useChordDisplay(transposition = 0) {
   };
 }
 
-function ChordProBody({ content, transposition, onChordTap }: ChordProViewProps) {
+function ChordProBody({ content, transposition, onChordTap, partView }: ChordProViewProps) {
   const { t } = useTranslation();
-  const parsed = useMemo(() => parse(content), [content]);
+  const song = useMemo(() => parse(content), [content]);
+  const parsed = useMemo(() => (partView ? filterSong(song, partView) : song), [song, partView]);
 
   if (parsed.sections.length === 0 && content.trim() === "") {
     return <p className="text-text-faint italic">{t("perform.noContent")}</p>;

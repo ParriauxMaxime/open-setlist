@@ -54,6 +54,11 @@ describe("Heuristic: bracket section labels", () => {
     expect(s[0].label).toBe("Chorus x2");
   });
 
+  it("bracket labels are song structure (core layer)", () => {
+    const s = sections("[Intro]\n[Em] [G]\n[Solo]\n[Verse 1]\nla");
+    expect(s.map((sec) => sec.layer)).toEqual(["core", "core", "core"]);
+  });
+
   it("does NOT treat a chord bracket as a section label", () => {
     const s = sections("[Am]some text");
     expect(segsOf(s[0].lines[0])[0].chord).toBe("Am");
@@ -246,7 +251,7 @@ describe("Heuristic: implicit section creation", () => {
     const s = sections("just some text");
     expect(s).toHaveLength(1);
     expect(s[0].type).toBe("custom");
-    expect(s[0].layer).toBe("band");
+    expect(s[0].layer).toBe("core");
     expect(s[0].renderMode).toBe("prose");
   });
 

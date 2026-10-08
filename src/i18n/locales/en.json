@@ -180,6 +180,26 @@
     "hintPedal": "Pedal or keyboard: Page Down, Space or ↓ to scroll forward, Page Up or ↑ to scroll back, ← → to change song",
     "hintAutoScroll": "S starts or pauses auto-scroll"
   },
+  "myPart": {
+    "title": "My part",
+    "all": "All",
+    "showChords": "Show chords",
+    "showCues": "Show band cues (comments, notes)",
+    "lyricsOnly": "Lyrics only",
+    "noCues": "No cues",
+    "chipTitle": "My part filter: {{summary}}",
+    "editorHelp": "In performance mode, ⋮ → My part shows each musician only the for= sections and comments of their instrument.",
+    "parts": {
+      "vocals": "Vocals",
+      "guitar": "Guitar",
+      "bass": "Bass",
+      "keys": "Keys",
+      "drums": "Drums",
+      "sax": "Sax",
+      "trumpet": "Trumpet",
+      "violin": "Violin"
+    }
+  },
   "sync": {
     "title": "Sync",
     "description": "Export your songs and setlists as a JSON file, or import from a previously exported file.",

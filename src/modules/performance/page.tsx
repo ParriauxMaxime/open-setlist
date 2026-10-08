@@ -21,6 +21,7 @@ import { clearPerformReturn, PerformSidebar } from "./components/perform-sidebar
 import { SongStrip } from "./components/song-strip";
 import { useAutoScroll } from "./hooks/use-auto-scroll";
 import { useFullscreen } from "./hooks/use-fullscreen";
+import { useMyPart } from "./hooks/use-my-part";
 import { usePerformKeys } from "./hooks/use-perform-keys";
 import { useSetlistNavigation } from "./hooks/use-setlist-navigation";
 import { useSingleSongNavigation } from "./hooks/use-single-song-navigation";
@@ -45,6 +46,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
   const [transposeOpen, setTransposeOpen] = useState(false);
   const toggleTranspose = useCallback(() => setTransposeOpen((v) => !v), []);
   const [activeChord, setActiveChord] = useState<ChordTapInfo | null>(null);
+  const myPart = useMyPart(nav.flatSongs);
   const handleChordTap = useCallback((info: ChordTapInfo) => setActiveChord(info), []);
 
   const handleTranspose = useCallback(
@@ -215,6 +217,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         onPrev={swipe.goPrev}
         onNext={swipe.goNext}
         onOpenSidebar={() => setSidebarOpen(true)}
+        myPart={myPart}
       />
       <SongStrip
         containerRef={swipe.containerRef}
@@ -231,6 +234,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         currentSongStyle={currentSongStyle}
         nextSongStyle={nextSongStyle}
         onChordTap={handleChordTap}
+        partView={myPart.view}
       />
       {activeChord && (
         <ChordPopover
