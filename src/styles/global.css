@@ -51,6 +51,12 @@ button:not(:disabled) {
   --color-warning: #fbbf24;
   --color-danger: #f87171;
 
+  /* Song readiness — catalog dots, setlist warnings */
+  --color-status-idea: #a78bfa;
+  --color-status-rehearsing: var(--color-warning);
+  --color-status-ready: var(--color-success);
+  --color-status-retired: var(--color-text-faint);
+
   /* Borders */
   --color-border: #2a2a2a;
   --color-border-focus: #4a9eff;
@@ -91,6 +97,7 @@ button:not(:disabled) {
   --color-danger: #f87171;
   --color-success: #4ade80;
   --color-warning: #fbbf24;
+  --color-status-idea: #a78bfa;
 }
 
 [data-theme="light"] {
@@ -109,6 +116,7 @@ button:not(:disabled) {
   --color-danger: #dc2626;
   --color-success: #16a34a;
   --color-warning: #ca8a04;
+  --color-status-idea: #7c3aed;
 }
 
 /* --- Base resets --- */

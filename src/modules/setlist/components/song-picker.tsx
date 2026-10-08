@@ -4,6 +4,7 @@ import { relativeKey, sameKeyEnharmonic } from "@domain/music";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { SongStatusDot } from "../../shared/components/song-status-dot";
 
 interface SongPickerProps {
   excludeIds: string[];
@@ -151,6 +152,7 @@ function SongRow({ item, onPick }: { item: ScoredSong; onPick: (id: string) => v
         onClick={() => onPick(song.id)}
         className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm transition-colors hover:bg-bg-hover"
       >
+        <SongStatusDot status={song.status} />
         <span className="flex-1 truncate">{song.title}</span>
         {song.artist && <span className="shrink-0 text-text-faint">{song.artist}</span>}
         {song.key && <span className="shrink-0 text-chord text-xs">({song.key})</span>}

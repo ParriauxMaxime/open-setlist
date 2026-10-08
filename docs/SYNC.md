@@ -93,6 +93,17 @@ The data is already plain text files — ChordPro songs and YAML setlists. Git w
 - Non-technical musicians might balk at "GitHub" — but they never need to see it
 - Binary files (audio attachments) need Git LFS or a different solution
 
+### Invites
+
+Settings > GitHub > "Invite band members" builds a `?join=` link (`src/domain/invite.ts`). Two choices:
+
+- **Passphrase (default).** The payload (band name, repo, path, token) is encrypted with AES-256-GCM. Key: PBKDF2-SHA256, 600,000 iterations, random 16-byte salt; random 12-byte IV; the version tag is bound as additional data. Link: `e1.<salt>.<iv>.<ciphertext>`, base64url, ~300-500 characters. The app suggests four words plus a number from a built-in EN/FR list (~34 bits), editable, minimum 8 characters. Case, accents and separators are ignored so it can be dictated. Share it by voice or in another app, never next to the link. It is never stored.
+- **Token-less.** `o1.<json>` carries only repo coordinates. Each member pastes their own fine-grained token (Contents read/write on that repo only). The token is checked against GitHub before any profile is created.
+
+Joining asks for the passphrase (wrong one: error, retry), then confirms. After the first sync it offers to set the favourite instrument (optional). Google Drive invites use `o1`: a file id is not a credential.
+
+Old plaintext links (`?join=<base64 json>`) still join, with a warning that the token was exposed and should be replaced. Limits: anyone with link and passphrase gets the token. Someone holding the link alone can still guess offline: a full search of the suggested format takes hours on one high-end GPU. That stops casual leaks (chat history, screenshots), not a determined attacker. Use a longer passphrase or token-less invites for more, and revoke the token on GitHub if a link leaks.
+
 ---
 
 ## Tier 3: Cloud Folder (Google Drive / Dropbox)

@@ -19,8 +19,11 @@ declare module "@tanstack/react-table" {
   interface ColumnMeta<TData, TValue> {
     filterType?: "text" | "select";
     filterOptions?: string[] | ((data: TData[]) => string[]);
+    filterOptionLabel?: (value: string) => string;
     className?: string;
     hideFilterOnMobile?: boolean;
+    /** Render the cell outside the row link (for cells with their own controls). */
+    disableRowLink?: boolean;
   }
 }
 
@@ -31,6 +34,7 @@ interface DataTableProps<T> {
   emptyMessage?: string;
   globalSearchFields?: (keyof T & string)[];
   searchPlaceholder?: string;
+  initialColumnFilters?: ColumnFiltersState;
 }
 
 export function DataTable<T>({
@@ -40,11 +44,14 @@ export function DataTable<T>({
   emptyMessage,
   globalSearchFields,
   searchPlaceholder,
+  initialColumnFilters,
 }: DataTableProps<T>) {
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
+    initialColumnFilters ?? [],
+  );
 
   const table = useReactTable({
     data,
@@ -68,7 +75,6 @@ export function DataTable<T>({
   });
 
   const rowCount = table.getRowModel().rows.length;
-  const hasActiveFilters = globalFilter || columnFilters.length > 0;
 
   return (
     <div className="flex flex-col gap-3">
@@ -84,7 +90,7 @@ export function DataTable<T>({
         />
       )}
 
-      {data.length === 0 && !hasActiveFilters ? (
+      {data.length === 0 ? (
         <p className="text-text-muted">{emptyMessage ?? t("common.noData")}</p>
       ) : rowCount === 0 ? (
         <p className="text-text-muted">{t("common.noResults")}</p>
@@ -159,29 +165,32 @@ export function DataTable<T>({
                     href ? "cursor-pointer" : "",
                   ].join(" ")}
                 >
-                  {row.getVisibleCells().map((cell, ci) => (
-                    <td
-                      key={cell.id}
-                      className={[
-                        href ? "!p-0" : "px-3 py-3.5 md:py-2.5",
-                        cell.column.columnDef.meta?.className,
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                    >
-                      {href ? (
-                        <Link
-                          to={href}
-                          className="block px-3 py-3.5 md:py-2.5"
-                          tabIndex={ci === 0 ? 0 : -1}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </Link>
-                      ) : (
-                        flexRender(cell.column.columnDef.cell, cell.getContext())
-                      )}
-                    </td>
-                  ))}
+                  {row.getVisibleCells().map((cell, ci) => {
+                    const cellHref = cell.column.columnDef.meta?.disableRowLink ? undefined : href;
+                    return (
+                      <td
+                        key={cell.id}
+                        className={[
+                          cellHref ? "!p-0" : "px-3 py-3.5 md:py-2.5",
+                          cell.column.columnDef.meta?.className,
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                      >
+                        {cellHref ? (
+                          <Link
+                            to={cellHref}
+                            className="block px-3 py-3.5 md:py-2.5"
+                            tabIndex={ci === 0 ? 0 : -1}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </Link>
+                        ) : (
+                          flexRender(cell.column.columnDef.cell, cell.getContext())
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
               );
             })}
@@ -242,7 +251,7 @@ function SelectFilter<T>({ column, data }: { column: Column<T, unknown>; data: T
       <option value="">{t("common.all")}</option>
       {options.map((opt) => (
         <option key={opt} value={opt}>
-          {opt}
+          {meta?.filterOptionLabel?.(opt) ?? opt}
         </option>
       ))}
     </select>

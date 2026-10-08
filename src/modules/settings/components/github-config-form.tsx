@@ -1,5 +1,3 @@
-import { buildInviteUrl, type InvitePayload } from "@domain/invite";
-import { loadProfiles } from "@domain/profiles";
 import { createGitHubAdapter } from "@domain/sync/adapters/github";
 import {
   clearSyncConfig,
@@ -10,6 +8,7 @@ import {
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GitHubIcon } from "../../design-system/components/icons";
+import { GitHubInvitePanel } from "./github-invite-panel";
 
 type Status =
   | { type: "idle" }
@@ -82,43 +81,7 @@ export function GitHubConfigForm({ profileId, defaultOpen = false }: GitHubConfi
     setStatus({ type: "disconnected" });
   }, [profileId]);
 
-  const [inviteFeedback, setInviteFeedback] = useState<string | null>(null);
-
-  const handleInvite = useCallback(async () => {
-    const config = loadSyncConfig(profileId);
-    if (!config || config.adapter !== "github") return;
-
-    const profile = loadProfiles().find((p) => p.id === profileId);
-    const payload: InvitePayload = {
-      profile: { name: profile?.name ?? "Band", avatar: profile?.avatar },
-      sync: {
-        adapter: "github",
-        owner: config.owner,
-        repo: config.repo,
-        token: config.token,
-        path: config.path,
-      },
-    };
-
-    const url = buildInviteUrl(payload);
-
-    try {
-      await navigator.clipboard.writeText(url);
-      setInviteFeedback(t("invite.linkCopied"));
-
-      if (navigator.share) {
-        try {
-          await navigator.share({ url });
-        } catch {
-          // User cancelled share — link is still copied
-        }
-      }
-    } catch {
-      setInviteFeedback(t("invite.shareFailed"));
-    }
-
-    setTimeout(() => setInviteFeedback(null), 3000);
-  }, [profileId, t]);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   return (
     <details
@@ -195,12 +158,12 @@ export function GitHubConfigForm({ profileId, defaultOpen = false }: GitHubConfi
                   </p>
                   <button
                     type="button"
-                    onClick={handleInvite}
+                    onClick={() => setInviteOpen((open) => !open)}
+                    aria-expanded={inviteOpen}
                     className="btn btn-outline self-start"
                   >
                     {t("invite.inviteMembers")}
                   </button>
-                  {inviteFeedback && <p className="text-sm text-accent">{inviteFeedback}</p>}
                 </div>
               )}
               {status.type === "error" && (
@@ -212,6 +175,10 @@ export function GitHubConfigForm({ profileId, defaultOpen = false }: GitHubConfi
                 <p className="text-sm text-text-muted">{t("settings.github.disconnected")}</p>
               )}
             </div>
+
+            {status.type === "connected" && inviteOpen && (
+              <GitHubInvitePanel profileId={profileId} />
+            )}
 
             <p className="text-xs text-text-faint">{t("settings.github.tokenHelp")}</p>
 
