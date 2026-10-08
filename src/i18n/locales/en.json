@@ -533,6 +533,20 @@
   "techSheet": {
     "noSongs": "No songs in this setlist."
   },
+  "print": {
+    "print": "Print",
+    "modeLabel": "Print layout",
+    "sheet": "Stage sheet",
+    "booklet": "Chart booklet",
+    "printButton": "Print / Save as PDF",
+    "pdfHint": "Choose \"Save as PDF\" as the printer to get a file.",
+    "backToSetlist": "Back to setlist",
+    "notFound": "Setlist not found.",
+    "total": "Total {{duration}}",
+    "contents": "Contents",
+    "key": "Key: {{key}}",
+    "bpm": "{{bpm}} BPM"
+  },
   "validation": {
     "titleRequired": "Title is required",
     "setNameRequired": "Set name is required",

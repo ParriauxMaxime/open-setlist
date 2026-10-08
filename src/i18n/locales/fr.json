@@ -533,6 +533,20 @@
   "techSheet": {
     "noSongs": "Aucune chanson dans cette setlist."
   },
+  "print": {
+    "print": "Imprimer",
+    "modeLabel": "Mise en page",
+    "sheet": "Feuille de scène",
+    "booklet": "Livret des grilles",
+    "printButton": "Imprimer / Enregistrer en PDF",
+    "pdfHint": "Choisissez « Enregistrer au format PDF » comme imprimante pour obtenir un fichier.",
+    "backToSetlist": "Retour à la setlist",
+    "notFound": "Setlist introuvable.",
+    "total": "Total {{duration}}",
+    "contents": "Sommaire",
+    "key": "Tonalité : {{key}}",
+    "bpm": "{{bpm}} BPM"
+  },
   "validation": {
     "titleRequired": "Le titre est requis",
     "setNameRequired": "Le nom du set est requis",

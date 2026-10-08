@@ -55,7 +55,13 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
     <div className="p-page">
       <EditorHeader
         breadcrumbs={[{ label: t("nav.setlists"), to: Router.Setlists() }, { label: setlist.name }]}
-        actions={null}
+        actions={
+          totalSongs > 0 ? (
+            <Link to={Router.Print({ setlistId })} className="btn btn-outline btn-responsive">
+              {t("print.print")}
+            </Link>
+          ) : null
+        }
       />
 
       {totalSongs === 0 ? (

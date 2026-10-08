@@ -2,6 +2,7 @@ import { CatalogPage } from "./modules/catalog/page";
 import { ChordsPage } from "./modules/chords/page";
 import { EditSongPage } from "./modules/editor/page";
 import { PerformPage } from "./modules/performance/page";
+import { PrintPage } from "./modules/print/page";
 import { QualityPage } from "./modules/quality/page";
 import { SetlistPage } from "./modules/setlist/page";
 import { SettingsPage } from "./modules/settings/page";
@@ -24,6 +25,7 @@ export function App() {
     "TechSheet",
     "Perform",
     "PerformSong",
+    "Print",
     "Chords",
     "Tuner",
     "Sync",
@@ -42,6 +44,9 @@ export function App() {
   }
   if (route.name === "PerformSong") {
     return <PerformPage songId={route.params.songId} />;
+  }
+  if (route.name === "Print") {
+    return <PrintPage setlistId={route.params.setlistId} mode={route.params.mode} />;
   }
 
   // Admin routes — wrapped in layout
