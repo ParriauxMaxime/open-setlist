@@ -80,7 +80,7 @@ function CatalogDraggableItem({ song }: { song: Song }) {
       {...listeners}
     >
       <span className="cursor-grab text-text-faint active:cursor-grabbing">⠿</span>
-      <SongRowContent song={song} />
+      <SongRowContent song={song} statusIndicator="dot" />
     </li>
   );
 }

@@ -1,6 +1,6 @@
 import { clearAccessToken, isGoogleDriveAvailable, requestAccessToken } from "@domain/google-auth";
 import { showDrivePicker } from "@domain/google-picker";
-import { buildInviteUrl, type InvitePayload } from "@domain/invite";
+import { buildInviteUrl, encodeOpenInvite, type InvitePayload } from "@domain/invite";
 import { loadProfiles } from "@domain/profiles";
 import { createDriveFile, createGoogleDriveAdapter } from "@domain/sync/adapters/google-drive";
 import { clearSyncConfig, loadSyncConfig, saveSyncConfig } from "@domain/sync/config";
@@ -96,7 +96,8 @@ export function GoogleDriveConfigForm({
       sync: { adapter: "google-drive", fileId: config.fileId },
     };
 
-    const url = buildInviteUrl(payload);
+    // A Drive file id is not a credential: members still need access to the file.
+    const url = buildInviteUrl(encodeOpenInvite(payload));
 
     try {
       await navigator.clipboard.writeText(url);

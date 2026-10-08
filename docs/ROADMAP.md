@@ -30,7 +30,7 @@ Audit date: 2026-10-08 (HEAD `3f90860`). Goal: replace Setlist Helper for a gigg
 3. ~~`src/domain/sync/merge.ts` never applies remote deletions.~~ Fixed: remote deletions apply unless the item was also edited locally (shown as a conflict). Tombstones are merged into pushed snapshots and kept through the sync import.
 4. `src/modules/performance/components/chordpro-view.tsx:184` reserves chord width for chord-only segments (intended, matches Setlist Helper) but also replaces real short lyric fragments with the invisible spacer. `[Am]I ` renders no "I".
 5. `{comment}`/`{c}` and `{soh}…{eoh}` are silently dropped. The band's charts use them for patch codes, section labels, singer cues and backing vocals. Editor help and `docs/CHORDPRO.md` claim support.
-6. Invite links embed the GitHub PAT in base64 (`src/domain/invite.ts`). Anyone with the link has repo write access.
+6. ~~Invite links embed the GitHub PAT in base64 (`src/domain/invite.ts`). Anyone with the link has repo write access.~~ Fixed: GitHub invites are either encrypted with a passphrase shared separately, or token-less (each member pastes their own token). Old links still join, with a warning.
 
 ## Doc drift
 
@@ -74,7 +74,7 @@ Smallest steps that unlock real band usage first. Each step is shippable alone.
 
 10. ~~**Sync correctness**: re-pull on conflict (bug 2), apply remote deletions with tombstones (bug 3), keep tombstones on import.~~ Done, with tests (`src/domain/sync/*.test.ts`).
 11. ~~**Per-item conflict surfacing** in the review screen when both sides changed since last sync, instead of silent last-write-wins.~~ Done: "Keep mine" / "Take theirs" per item, sync blocked until all are resolved.
-12. **Safer invites**: stop embedding the PAT, or warn clearly and recommend a fine-grained, single-repo token.
+12. ~~**Safer invites**: stop embedding the PAT, or warn clearly and recommend a fine-grained, single-repo token.~~ Done (bug 6). See `docs/SYNC.md` > Invites.
 
 ### P3 — Performance polish
 

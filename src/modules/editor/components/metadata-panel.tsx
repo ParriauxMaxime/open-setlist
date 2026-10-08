@@ -2,9 +2,12 @@ import { MAJOR_KEYS, MINOR_KEYS } from "@domain/music";
 import { SCROLL_SPEED_MAX, SCROLL_SPEED_MIN } from "@domain/perform-stage";
 import type { SongDisplayPrefs } from "@domain/preferences";
 import type { SongFormValues } from "@domain/schemas/song";
+import { resolveSongStatus, SONG_STATUS_LIST } from "@domain/song-status";
+import { useId } from "react";
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Field, Input, Select, Textarea } from "../../design-system/components/form";
+import { SongStatusDot } from "../../shared/components/song-status-dot";
 
 interface MetadataPanelProps {
   register: UseFormRegister<SongFormValues>;
@@ -33,6 +36,8 @@ interface MetadataPanelProps {
 export function MetadataPanel({
   register,
   errors,
+  watch,
+  setValue,
   tags,
   tagInput,
   onTagInputChange,
@@ -73,6 +78,11 @@ export function MetadataPanel({
       <Field label={t("editor.artistLabel")} error={errors.artist?.message}>
         <Input {...register("artist")} placeholder={t("editor.artistPlaceholder")} />
       </Field>
+
+      <StatusControl
+        value={watch("status")}
+        onChange={(status) => setValue("status", status, { shouldDirty: true })}
+      />
 
       {/* Key / BPM / Duration / Transposition / Scroll speed — 2-col grid for narrow panel */}
       <div className="grid grid-cols-2 gap-3">
@@ -329,6 +339,46 @@ export function MetadataPanel({
         </fieldset>
       )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Status segmented control
+// ---------------------------------------------------------------------------
+
+function StatusControl({
+  value,
+  onChange,
+}: {
+  value: SongFormValues["status"];
+  onChange: (status: NonNullable<SongFormValues["status"]>) => void;
+}) {
+  const { t } = useTranslation();
+  // The panel is rendered twice (mobile + desktop), so radio group names must differ
+  const name = useId();
+  const current = resolveSongStatus(value);
+
+  return (
+    <fieldset className="flex flex-col gap-1">
+      <legend className="mb-1 text-sm font-medium text-text-muted">{t("songStatus.label")}</legend>
+      <div className="grid grid-cols-4 gap-0.5 rounded-md border border-border bg-bg p-0.5">
+        {SONG_STATUS_LIST.map((status) => (
+          <label key={status} className="flex">
+            <input
+              type="radio"
+              name={name}
+              value={status}
+              checked={current === status}
+              onChange={() => onChange(status)}
+              className="peer sr-only"
+            />
+            <span className="flex flex-1 cursor-pointer items-center justify-center rounded-sm px-1 py-1.5 text-center text-xs leading-tight text-text-muted transition-colors hover:text-text peer-checked:bg-bg-raised peer-checked:font-medium peer-checked:text-text peer-focus-visible:outline-2 peer-focus-visible:outline-border-focus">
+              <SongStatusDot status={status} withLabel />
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 

@@ -106,7 +106,7 @@ export function SetEditor({
               return (
                 <SortableSongItem key={dragId} id={dragId} songTitle={song?.title}>
                   <span className="w-5 text-center text-xs text-text-faint">{i + 1}</span>
-                  <SongRowContent song={song} />
+                  <SongRowContent song={song} statusIndicator="warning" />
                   <div className="flex shrink-0 gap-1">
                     <button
                       type="button"

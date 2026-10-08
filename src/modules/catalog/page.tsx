@@ -1,14 +1,27 @@
 import type { Song } from "@db";
 import { useDb } from "@db/provider";
 import { MUSICAL_KEY_LIST } from "@domain/music";
+import {
+  ACTIVE_STATUS_FILTER,
+  matchesStatusFilter,
+  parseSongStatus,
+  resolveSongStatus,
+  SONG_STATUS_FILTER_LIST,
+  SONG_STATUS_LIST,
+  songStatusLabelKey,
+  songStatusRank,
+} from "@domain/song-status";
 import { Link } from "@swan-io/chicane";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
 import { DataTable } from "../design-system/components/data-table";
+import { SongStatusDot } from "../shared/components/song-status-dot";
 
 const col = createColumnHelper<Song>();
+
+const initialFilters = [{ id: "status", value: ACTIVE_STATUS_FILTER }];
 
 function uniqueTags(data: Song[]): string[] {
   const set = new Set<string>();
@@ -45,6 +58,24 @@ export function CatalogPage() {
             </div>
           </div>
         );
+      },
+    }) as ColumnDef<Song, unknown>,
+    col.accessor((song) => resolveSongStatus(song.status), {
+      id: "status",
+      header: t("songStatus.label"),
+      size: 140,
+      sortingFn: (a, b) => songStatusRank(a.original.status) - songStatusRank(b.original.status),
+      filterFn: (row, _columnId, filterValue) =>
+        matchesStatusFilter(row.original.status, filterValue as string | undefined),
+      cell: (info) => <StatusCell song={info.row.original} />,
+      meta: {
+        filterType: "select",
+        filterOptions: [...SONG_STATUS_FILTER_LIST],
+        filterOptionLabel: (value) => {
+          const status = parseSongStatus(value);
+          return status ? t(songStatusLabelKey(status)) : t("songStatus.filterActive");
+        },
+        disableRowLink: true,
       },
     }) as ColumnDef<Song, unknown>,
     col.accessor("artist", {
@@ -122,8 +153,36 @@ export function CatalogPage() {
           globalSearchFields={["title", "artist", "tags"]}
           searchPlaceholder={t("catalog.searchPlaceholder")}
           emptyMessage={t("catalog.empty")}
+          initialColumnFilters={initialFilters}
         />
       )}
     </div>
+  );
+}
+
+/** Status dot + label; a transparent native select on top gives a quick status menu. */
+function StatusCell({ song }: { song: Song }) {
+  const { t } = useTranslation();
+  const db = useDb();
+
+  return (
+    <span className="relative inline-flex min-h-6 min-w-6 items-center rounded-sm text-text-muted focus-within:outline-2 focus-within:outline-border-focus">
+      <SongStatusDot status={song.status} withLabel labelHiddenOnMobile />
+      <select
+        value={resolveSongStatus(song.status)}
+        onChange={(e) => {
+          const status = parseSongStatus(e.target.value);
+          if (status) db.songs.update(song.id, { status, updatedAt: Date.now() });
+        }}
+        aria-label={t("songStatus.change")}
+        className="absolute inset-0 cursor-pointer opacity-0"
+      >
+        {SONG_STATUS_LIST.map((status) => (
+          <option key={status} value={status}>
+            {t(songStatusLabelKey(status))}
+          </option>
+        ))}
+      </select>
+    </span>
   );
 }

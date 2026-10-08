@@ -5,6 +5,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { formatDuration } from "@domain/format";
 import { useActiveProfileId } from "@domain/profiles";
 import { type SetlistFormValues, setlistFormSchema } from "@domain/schemas/setlist";
+import { countNotReadySongs } from "@domain/song-status";
 import { addTombstone } from "@domain/sync/tombstones";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "@swan-io/chicane";
@@ -166,6 +167,8 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
     return { totalDuration: total, unknownCount: unknown };
   }, [songs, usedSongIds]);
 
+  const notReadyCount = useMemo(() => countNotReadySongs(sets, songs ?? []), [sets, songs]);
+
   const expectedDuration = watch("expectedDuration");
 
   // DnD hook
@@ -296,6 +299,15 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
                     <> ({t("setlist.unknownDuration", { count: unknownCount })})</>
                   )}
                   {expectedDuration && <> / {formatDuration(expectedDuration)}</>}
+                  {notReadyCount > 0 && (
+                    <>
+                      {" "}
+                      &middot;{" "}
+                      <span className="text-warning">
+                        ⚠ {t("songStatus.notReadyCount", { count: notReadyCount })}
+                      </span>
+                    </>
+                  )}
                 </span>
               </h2>
 
