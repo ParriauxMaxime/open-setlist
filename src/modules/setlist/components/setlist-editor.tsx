@@ -208,6 +208,11 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
                 {t("setlist.perform")}
               </Link>
             )}
+            {totalSongs > 0 && (
+              <Link to={Router.Print({ setlistId })} className="btn btn-ghost btn-responsive">
+                {t("print.print")}
+              </Link>
+            )}
             <div ref={menuRef} className="relative">
               <button
                 type="button"

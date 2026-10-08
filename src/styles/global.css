@@ -490,3 +490,34 @@ body {
   color: var(--color-chord);
   font-weight: 600;
 }
+
+/* --- Print (stage sheet + chart booklet, src/modules/print/) --- */
+
+/* Margin mirrors PRINT_MARGIN_MM in src/domain/print.ts (used by the sheet auto-fit) */
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+/* Paper is always black on white, whatever the app theme or user colors */
+.print-doc {
+  --color-bg: #ffffff;
+  --color-bg-surface: #ffffff;
+  --color-text: #000000;
+  --color-text-muted: #333333;
+  --color-text-faint: #555555;
+  --color-border: #999999;
+  --color-chord: #000000;
+  --color-highlight: #e0e0e0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+@media print {
+  html,
+  body {
+    background: none;
+  }
+}
