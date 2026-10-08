@@ -326,6 +326,16 @@
     "title": "Chord Library",
     "allRoots": "All roots"
   },
+  "notation": {
+    "label": "Chord notation",
+    "desc": "How chord and key names are shown on this device. Songs are still saved in English notation.",
+    "english": "English (C D E F G A B)",
+    "solfege": "Solfège (Do Ré Mi Fa Sol La Si)",
+    "german": "German (C D E F G A H)",
+    "transposedKey": "Original key → transposed key",
+    "capo": "Capo {{capo}}",
+    "capoSounds": "Capo {{capo}} · sounds {{key}}"
+  },
   "settings": {
     "title": "Settings",
     "autoSaveNote": "Changes apply immediately and are saved to your browser.",

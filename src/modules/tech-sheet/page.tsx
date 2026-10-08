@@ -1,5 +1,6 @@
 import type { Song } from "@db";
 import { useDb } from "@db/provider";
+import { formatKey } from "@domain/chords/notation";
 import { formatDuration } from "@domain/format";
 import { Link } from "@swan-io/chicane";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -7,6 +8,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
 import { EditorHeader } from "../design-system/components/editor-header";
+import { useNotation } from "../shared/hooks/use-notation";
 
 interface TechSheetPageProps {
   setlistId: string;
@@ -15,6 +17,7 @@ interface TechSheetPageProps {
 export function TechSheetPage({ setlistId }: TechSheetPageProps) {
   const { t } = useTranslation();
   const db = useDb();
+  const notation = useNotation();
 
   const setlist = useLiveQuery(() => db.setlists.get(setlistId), [setlistId, db]);
 
@@ -95,7 +98,7 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
                           )}
                         </div>
                         <div className="mt-1 flex flex-wrap gap-3 text-sm text-text-muted">
-                          {song.key && <span>Key: {song.key}</span>}
+                          {song.key && <span>Key: {formatKey(song.key, notation)}</span>}
                           {song.bpm && <span>BPM: {song.bpm}</span>}
                           {song.duration && <span>{formatDuration(song.duration)}</span>}
                         </div>

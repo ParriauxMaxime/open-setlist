@@ -1,10 +1,12 @@
 import type { Song } from "@db";
 import { useDb } from "@db/provider";
+import { formatKey, type Notation } from "@domain/chords/notation";
 import { relativeKey, sameKeyEnharmonic } from "@domain/music";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SongStatusDot } from "../../shared/components/song-status-dot";
+import { useNotation } from "../../shared/hooks/use-notation";
 
 interface SongPickerProps {
   excludeIds: string[];
@@ -52,6 +54,7 @@ function scoreSong(song: Song, lastKey: string | undefined, setTags: Set<string>
 export function SongPicker({ excludeIds, onPick, contextSongs }: SongPickerProps) {
   const { t } = useTranslation();
   const db = useDb();
+  const notation = useNotation();
   const [search, setSearch] = useState("");
   const songs = useLiveQuery(() => db.songs.orderBy("title").toArray(), [db]);
 
@@ -114,7 +117,9 @@ export function SongPicker({ excludeIds, onPick, contextSongs }: SongPickerProps
       ) : (
         <ul className="flex max-h-48 flex-col gap-1 overflow-y-auto">
           {search ? (
-            filtered.map((item) => <SongRow key={item.song.id} item={item} onPick={onPick} />)
+            filtered.map((item) => (
+              <SongRow key={item.song.id} item={item} notation={notation} onPick={onPick} />
+            ))
           ) : (
             <>
               {suggested.length > 0 && (
@@ -123,7 +128,7 @@ export function SongPicker({ excludeIds, onPick, contextSongs }: SongPickerProps
                     {t("setlist.suggested")}
                   </li>
                   {suggested.map((item) => (
-                    <SongRow key={item.song.id} item={item} onPick={onPick} />
+                    <SongRow key={item.song.id} item={item} notation={notation} onPick={onPick} />
                   ))}
                 </>
               )}
@@ -133,7 +138,7 @@ export function SongPicker({ excludeIds, onPick, contextSongs }: SongPickerProps
                 </li>
               )}
               {rest.map((item) => (
-                <SongRow key={item.song.id} item={item} onPick={onPick} />
+                <SongRow key={item.song.id} item={item} notation={notation} onPick={onPick} />
               ))}
             </>
           )}
@@ -143,7 +148,15 @@ export function SongPicker({ excludeIds, onPick, contextSongs }: SongPickerProps
   );
 }
 
-function SongRow({ item, onPick }: { item: ScoredSong; onPick: (id: string) => void }) {
+function SongRow({
+  item,
+  notation,
+  onPick,
+}: {
+  item: ScoredSong;
+  notation: Notation;
+  onPick: (id: string) => void;
+}) {
   const { song, keyBadge, tagBadges } = item;
   return (
     <li>
@@ -155,10 +168,12 @@ function SongRow({ item, onPick }: { item: ScoredSong; onPick: (id: string) => v
         <SongStatusDot status={song.status} />
         <span className="flex-1 truncate">{song.title}</span>
         {song.artist && <span className="shrink-0 text-text-faint">{song.artist}</span>}
-        {song.key && <span className="shrink-0 text-chord text-xs">({song.key})</span>}
+        {song.key && (
+          <span className="shrink-0 text-chord text-xs">({formatKey(song.key, notation)})</span>
+        )}
         {keyBadge && (
           <span className="shrink-0 rounded-sm bg-chord/15 px-1 text-xs text-chord">
-            {keyBadge}
+            {formatKey(keyBadge, notation)}
           </span>
         )}
         {tagBadges.map((tag) => (

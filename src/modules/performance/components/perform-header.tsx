@@ -3,6 +3,7 @@ import { Link } from "@swan-io/chicane";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
+import { KeyChips } from "./key-chips";
 
 interface PerformHeaderProps {
   visible: boolean;
@@ -96,6 +97,7 @@ export function PerformHeader({
               {song?.title ?? t("common.unknown")}
             </div>
             {song?.artist && <div className="truncate text-sm text-text-muted">{song.artist}</div>}
+            <KeyChips song={song} transposition={transposition} />
           </div>
 
           {/* Transpose control — shown via menu toggle or when transposition is non-zero */}

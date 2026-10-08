@@ -1,3 +1,4 @@
+import { formatKey } from "@domain/chords/notation";
 import { MAJOR_KEYS, MINOR_KEYS } from "@domain/music";
 import { SCROLL_SPEED_MAX, SCROLL_SPEED_MIN } from "@domain/perform-stage";
 import type { SongDisplayPrefs } from "@domain/preferences";
@@ -8,6 +9,7 @@ import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from
 import { useTranslation } from "react-i18next";
 import { Field, Input, Select, Textarea } from "../../design-system/components/form";
 import { SongStatusDot } from "../../shared/components/song-status-dot";
+import { useNotation } from "../../shared/hooks/use-notation";
 
 interface MetadataPanelProps {
   register: UseFormRegister<SongFormValues>;
@@ -54,6 +56,7 @@ export function MetadataPanel({
   onClearAllOverrides,
 }: MetadataPanelProps) {
   const { t } = useTranslation();
+  const notation = useNotation();
 
   return (
     <div className="flex flex-col gap-4">
@@ -92,14 +95,14 @@ export function MetadataPanel({
             <optgroup label={t("editor.majorGroup")}>
               {MAJOR_KEYS.map((k) => (
                 <option key={k} value={k}>
-                  {k}
+                  {formatKey(k, notation)}
                 </option>
               ))}
             </optgroup>
             <optgroup label={t("editor.minorGroup")}>
               {MINOR_KEYS.map((k) => (
                 <option key={k} value={k}>
-                  {k}
+                  {formatKey(k, notation)}
                 </option>
               ))}
             </optgroup>
