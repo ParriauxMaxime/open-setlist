@@ -7,7 +7,18 @@
 {tags: classic-rock, iconic-riff, crowd-pleaser}
 {tech_notes: Red wash on stage during riff. Fog machine on the organ solo. Cut fog before last chorus.}
 
-{comment: The riff: G5-Bb5-C5, G5-Bb5-Db5-C5, G5-Bb5-C5-Bb5-G5}
+{comment: 21B 🎸🎹🥁 · Overdrive on}
+
+{start_of_tab: The riff, for=guitar}
+e|-----------------|-----------------|
+B|-----------------|-----------------|
+G|--0--3--5--------|--0--3--6--5-----|
+D|--0--3--5--------|--0--3--6--5-----|
+{end_of_tab}
+
+{start_of_note: Organ, for=keys}
+Hammond doubles the riff from bar 5. Leslie fast on the chorus.
+{end_of_note}
 
 {start_of_verse: Verse 1}
 [Gm]We all came out to Montreux
@@ -22,7 +33,7 @@ Were [F]at the best place a[Gm]round
 
 {start_of_chorus: Chorus}
 [C]Smoke on the [Ab]water, [Gm]a fire in the sky
-[C]Smoke on the [Ab]water [Gm]
+[C]{soh}Smoke on the [Ab]water{eoh} [Gm]
 {end_of_chorus}
 
 {start_of_verse: Verse 2}
@@ -37,6 +48,8 @@ It [F]seemed that we would lose the [Gm]race
 {end_of_verse}
 
 {chorus}
+
+{c: Bass and drums only for 4 bars ↘}
 
 {start_of_verse: Verse 3}
 [Gm]We ended up at the Grand Hotel
