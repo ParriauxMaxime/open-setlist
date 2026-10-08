@@ -1,7 +1,9 @@
 import type { Song } from "@db";
+import { formatKey } from "@domain/chords/notation";
 import { formatDuration } from "@domain/format";
 import { useTranslation } from "react-i18next";
 import { SongStatusDot } from "../../shared/components/song-status-dot";
+import { useNotation } from "../../shared/hooks/use-notation";
 import { NotReadyBadge } from "./not-ready-badge";
 
 interface SongRowContentProps {
@@ -12,6 +14,7 @@ interface SongRowContentProps {
 
 export function SongRowContent({ song, statusIndicator }: SongRowContentProps) {
   const { t } = useTranslation();
+  const notation = useNotation();
 
   if (!song) {
     return (
@@ -20,7 +23,7 @@ export function SongRowContent({ song, statusIndicator }: SongRowContentProps) {
   }
 
   const details = [
-    song.key,
+    song.key ? formatKey(song.key, notation) : null,
     song.bpm ? `${song.bpm} bpm` : null,
     song.duration ? formatDuration(song.duration) : null,
   ]

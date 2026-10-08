@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { NOTATIONS } from "./chords/notation";
 
 // ---------------------------------------------------------------------------
 // Schema & types
@@ -14,6 +15,8 @@ export const appPreferencesSchema = z.object({
   performDoubleTapScale: z.boolean().default(true),
   accentColor: hexColor.default("#4a9eff"),
   favoriteInstrument: z.enum(["guitar", "piano"]).default("guitar"),
+  /** Chord name display (per device, not synced). Stored content stays English. */
+  notation: z.enum(NOTATIONS).default("english"),
 
   // --- Performance display ---
   globalScale: z.number().min(0.5).max(3).default(1),
@@ -143,6 +146,7 @@ export const DEFAULT_PREFERENCES: AppPreferences = {
   performDoubleTapScale: true,
   accentColor: "#4a9eff",
   favoriteInstrument: "guitar",
+  notation: "english",
   globalScale: 1,
   lyricsSize: 1.5,
   chordSize: 1.125,

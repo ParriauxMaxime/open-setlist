@@ -326,6 +326,16 @@
     "title": "Bibliothèque d\u2019accords",
     "allRoots": "Toutes les notes"
   },
+  "notation": {
+    "label": "Notation des accords",
+    "desc": "Affichage des accords et des tonalités sur cet appareil. Les chansons restent enregistrées en notation anglaise.",
+    "english": "Anglaise (C D E F G A B)",
+    "solfege": "Solfège (Do Ré Mi Fa Sol La Si)",
+    "german": "Allemande (C D E F G A H)",
+    "transposedKey": "Tonalité d’origine → tonalité transposée",
+    "capo": "Capo {{capo}}",
+    "capoSounds": "Capo {{capo}} · sonne en {{key}}"
+  },
   "settings": {
     "title": "Paramètres",
     "autoSaveNote": "Les modifications s\u2019appliquent immédiatement et sont sauvegardées dans votre navigateur.",

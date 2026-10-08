@@ -1,10 +1,12 @@
 import { getGuitarFingerings } from "@domain/chords/guitar";
+import { formatChord } from "@domain/chords/notation";
 import { chordMidi, parseChordSuffix } from "@domain/chords/theory";
 import { arrow, computePosition, flip, offset, shift } from "@floating-ui/dom";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FretboardDiagram } from "../../chords/components/fretboard-diagram";
 import { KeyboardDiagram } from "../../chords/components/keyboard-diagram";
+import { useNotation } from "../../shared/hooks/use-notation";
 
 interface ChordPopoverProps {
   chord: string;
@@ -25,6 +27,9 @@ export function ChordPopover({ chord, anchorRect, instrument, onClose }: ChordPo
   const floatingRef = useRef<HTMLDivElement>(null);
   const arrowRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<Pos | null>(null);
+  const notation = useNotation();
+  // `chord` stays English for the diagram lookup; only the shown name follows the notation.
+  const label = formatChord(chord, notation);
 
   // Close on Escape
   useEffect(() => {
@@ -108,7 +113,7 @@ export function ChordPopover({ chord, anchorRect, instrument, onClose }: ChordPo
         ref={floatingRef}
         role="dialog"
         aria-modal="true"
-        aria-label={`${chord} chord diagram`}
+        aria-label={`${label} chord diagram`}
         className="z-50 rounded-lg border border-white/10 bg-bg-raised/80 p-3 shadow-lg backdrop-blur-xl"
         style={{
           position: "fixed",
@@ -118,7 +123,7 @@ export function ChordPopover({ chord, anchorRect, instrument, onClose }: ChordPo
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <ChordDiagram chord={chord} instrument={instrument} />
+        <ChordDiagram chord={chord} label={label} instrument={instrument} />
         <div
           ref={arrowRef}
           className="absolute h-2.5 w-2.5 rotate-45 border-white/10 bg-bg-raised/80 backdrop-blur-xl"
@@ -130,14 +135,22 @@ export function ChordPopover({ chord, anchorRect, instrument, onClose }: ChordPo
   );
 }
 
-function ChordDiagram({ chord, instrument }: { chord: string; instrument: "guitar" | "piano" }) {
+function ChordDiagram({
+  chord,
+  label,
+  instrument,
+}: {
+  chord: string;
+  label: string;
+  instrument: "guitar" | "piano";
+}) {
   if (instrument === "guitar") {
     const fingerings = getGuitarFingerings(chord);
-    if (fingerings.length === 0) return <NoData chord={chord} />;
+    if (fingerings.length === 0) return <NoData chord={label} />;
     const f = fingerings[0];
     return (
       <FretboardDiagram
-        name={chord}
+        name={label}
         frets={f.frets}
         baseFret={f.baseFret}
         barres={f.barres}
@@ -147,10 +160,10 @@ function ChordDiagram({ chord, instrument }: { chord: string; instrument: "guita
   }
 
   const parsed = parseChordSuffix(chord);
-  if (!parsed) return <NoData chord={chord} />;
+  if (!parsed) return <NoData chord={label} />;
   const midi = chordMidi(parsed.root, parsed.intervals);
-  if (midi.length === 0) return <NoData chord={chord} />;
-  return <KeyboardDiagram name={chord} midi={midi} width={160} />;
+  if (midi.length === 0) return <NoData chord={label} />;
+  return <KeyboardDiagram name={label} midi={midi} width={160} />;
 }
 
 function NoData({ chord }: { chord: string }) {

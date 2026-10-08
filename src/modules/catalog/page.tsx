@@ -1,5 +1,6 @@
 import type { Song } from "@db";
 import { useDb } from "@db/provider";
+import { formatKey } from "@domain/chords/notation";
 import { MUSICAL_KEY_LIST } from "@domain/music";
 import {
   ACTIVE_STATUS_FILTER,
@@ -18,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
 import { DataTable } from "../design-system/components/data-table";
 import { SongStatusDot } from "../shared/components/song-status-dot";
+import { useNotation } from "../shared/hooks/use-notation";
 
 const col = createColumnHelper<Song>();
 
@@ -42,6 +44,7 @@ function uniqueArtists(data: Song[]): string[] {
 export function CatalogPage() {
   const { t } = useTranslation();
   const db = useDb();
+  const notation = useNotation();
   const songs = useLiveQuery(() => db.songs.orderBy("title").toArray(), [db]);
 
   const columns: ColumnDef<Song, unknown>[] = [
@@ -54,7 +57,7 @@ export function CatalogPage() {
             <span className="font-medium">{info.getValue()}</span>
             <div className="mt-0.5 flex items-center gap-2 text-xs md:hidden">
               {song.artist && <span className="text-text-muted">{song.artist}</span>}
-              {song.key && <span className="text-chord">{song.key}</span>}
+              {song.key && <span className="text-chord">{formatKey(song.key, notation)}</span>}
             </div>
           </div>
         );
@@ -93,11 +96,12 @@ export function CatalogPage() {
       size: 80,
       cell: (info) => {
         const v = info.getValue();
-        return v ? <span className="text-chord">{v}</span> : null;
+        return v ? <span className="text-chord">{formatKey(v, notation)}</span> : null;
       },
       meta: {
         filterType: "select",
         filterOptions: [...MUSICAL_KEY_LIST],
+        filterOptionLabel: (key) => formatKey(key, notation),
         hideFilterOnMobile: true,
         className: "hidden md:table-cell",
       },

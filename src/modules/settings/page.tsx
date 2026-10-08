@@ -1,3 +1,4 @@
+import { NOTATION_LIST } from "@domain/chords/notation";
 import {
   ACCENT_PRESETS,
   type AppPreferences,
@@ -18,6 +19,7 @@ import i18n from "i18next";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
+import { Select } from "../design-system/components/form";
 import { GitHubConfigForm } from "./components/github-config-form";
 import { GoogleDriveConfigForm } from "./components/google-drive-config-form";
 import { ProfileManager } from "./components/profile-manager";
@@ -197,6 +199,30 @@ export function SettingsPage() {
               </button>
             ))}
           </div>
+        </fieldset>
+
+        {/* Chord notation */}
+        <fieldset className="mb-5">
+          <legend className="mb-2 text-sm font-semibold uppercase tracking-wide text-text-muted">
+            {t("notation.label")}
+          </legend>
+          <div className="max-w-xs">
+            <Select
+              value={prefs.notation}
+              onChange={(e) => {
+                const notation = NOTATION_LIST.find((n) => n === e.target.value);
+                if (notation) update({ notation });
+              }}
+              aria-label={t("notation.label")}
+            >
+              {NOTATION_LIST.map((n) => (
+                <option key={n} value={n}>
+                  {t(`notation.${n}`)}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <p className="mt-1 text-xs text-text-faint">{t("notation.desc")}</p>
         </fieldset>
 
         {/* Color scheme */}

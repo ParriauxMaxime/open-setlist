@@ -1,4 +1,5 @@
 import { getGuitarFingerings } from "@domain/chords/guitar";
+import { formatChord } from "@domain/chords/notation";
 import {
   CHORD_GROUPS,
   CHROMATIC_ROOTS,
@@ -9,6 +10,7 @@ import {
 import { INSTRUMENT_OPTIONS, type InstrumentType } from "@domain/chords/types";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNotation } from "../shared/hooks/use-notation";
 import { FretboardDiagram } from "./components/fretboard-diagram";
 import { KeyboardDiagram } from "./components/keyboard-diagram";
 
@@ -19,6 +21,7 @@ const INSTRUMENT_KEYS: Record<string, string> = {
 
 export function ChordsPage() {
   const { t } = useTranslation();
+  const notation = useNotation();
   const [instrument, setInstrument] = useState<InstrumentType>("guitar");
   const [rootFilter, setRootFilter] = useState<string>("");
 
@@ -70,7 +73,7 @@ export function ChordsPage() {
             <option value="">{t("chordLib.allRoots")}</option>
             {CHROMATIC_ROOTS.map((note) => (
               <option key={note} value={note}>
-                {note}
+                {formatChord(note, notation)}
               </option>
             ))}
           </select>
@@ -88,7 +91,7 @@ export function ChordsPage() {
                 getGuitarFingerings(chord.name).map((f) => (
                   <FretboardDiagram
                     key={`${chord.name}-${f.baseFret}${f.barres?.length ? "b" : ""}`}
-                    name={chord.name}
+                    name={formatChord(chord.name, notation)}
                     frets={f.frets}
                     baseFret={f.baseFret}
                     barres={f.barres}
@@ -99,7 +102,7 @@ export function ChordsPage() {
               group.chords.map((chord) => (
                 <KeyboardDiagram
                   key={chord.name}
-                  name={chord.name}
+                  name={formatChord(chord.name, notation)}
                   midi={chordMidi(chord.root, group.quality.intervals)}
                 />
               ))}

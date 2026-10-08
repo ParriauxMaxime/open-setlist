@@ -7,9 +7,11 @@ import {
   type Segment,
   type SongLine,
 } from "@domain/chordpro/parser";
+import { formatChord, type Notation } from "@domain/chords/notation";
 import { transposeChord } from "@domain/chords/transpose";
-import { useMemo } from "react";
+import { createContext, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useNotation } from "../../shared/hooks/use-notation";
 
 export interface ChordTapInfo {
   chord: string;
@@ -22,7 +24,32 @@ interface ChordProViewProps {
   onChordTap?: (info: ChordTapInfo) => void;
 }
 
-export function ChordProView({ content, transposition, onChordTap }: ChordProViewProps) {
+/** Song key (for key-aware transposed spelling) and device notation, read by every chord. */
+const ChordDisplayContext = createContext<{ songKey?: string; notation: Notation }>({
+  notation: "english",
+});
+
+export function ChordProView(props: ChordProViewProps) {
+  const notation = useNotation();
+  const songKey = useMemo(() => parse(props.content).metadata.key, [props.content]);
+  const display = useMemo(() => ({ songKey, notation }), [songKey, notation]);
+  return (
+    <ChordDisplayContext value={display}>
+      <ChordProBody {...props} />
+    </ChordDisplayContext>
+  );
+}
+
+/** Maps a chord to its played form (English, for diagram lookup) and its on-screen label. */
+function useChordDisplay(transposition = 0) {
+  const { songKey, notation } = useContext(ChordDisplayContext);
+  return (chord: string) => {
+    const played = transposeChord(chord, transposition, songKey);
+    return { played, label: formatChord(played, notation) };
+  };
+}
+
+function ChordProBody({ content, transposition, onChordTap }: ChordProViewProps) {
   const { t } = useTranslation();
   const parsed = useMemo(() => parse(content), [content]);
 
@@ -64,7 +91,7 @@ function ChordToken({
   onChordTap?: (info: ChordTapInfo) => void;
   className?: string;
 }) {
-  const displayChord = transposition ? transposeChord(chord, transposition) : chord;
+  const { played: displayChord, label } = useChordDisplay(transposition)(chord);
   const base = `text-perform-chord font-bold text-chord${onChordTap ? " cursor-pointer" : ""}`;
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: role is conditionally "button" when interactive
@@ -100,7 +127,7 @@ function ChordToken({
           : undefined
       }
     >
-      {displayChord}
+      {label}
     </span>
   );
 }
@@ -232,6 +259,7 @@ function LyricLineView({
   transposition?: number;
   onChordTap?: (info: ChordTapInfo) => void;
 }) {
+  const chordDisplay = useChordDisplay(transposition);
   return (
     <div className="leading-relaxed">
       {line.segments.every((s) => s.text === "" && !s.chord) ? (
@@ -294,7 +322,7 @@ function LyricLineView({
                   className="absolute bottom-full left-0 leading-none"
                 />
               )}
-              {seg.chord && seg.text.length < seg.chord.length + 2 ? (
+              {seg.chord && seg.text.length < chordDisplay(seg.chord).label.length + 2 ? (
                 // Short fragment: overlay text and an invisible chord-width spacer in one grid
                 // cell so the segment is as wide as the wider of the two (no chord overlap).
                 <span className="inline-grid">
@@ -305,7 +333,7 @@ function LyricLineView({
                     className="invisible col-start-1 row-start-1 text-perform-chord font-bold"
                     aria-hidden="true"
                   >
-                    {transposition ? transposeChord(seg.chord, transposition) : seg.chord}
+                    {chordDisplay(seg.chord).label}
                     {" "}
                   </span>
                 </span>
