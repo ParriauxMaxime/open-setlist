@@ -47,6 +47,7 @@ export function ChordProHelp() {
           <p className="mt-1 text-text-faint">
             <Mono>for=instrument</Mono> scopes a section to a specific player.
           </p>
+          <p className="mt-1 text-text-faint">{t("myPart.editorHelp")}</p>
         </Section>
 
         <Section title="Comments" last>

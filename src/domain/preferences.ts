@@ -1,3 +1,5 @@
+import type { PartView } from "@domain/chordpro/visibility";
+import { ALL_PARTS, normalizePart } from "@domain/parts";
 import { z } from "zod";
 import { NOTATIONS } from "./chords/notation";
 
@@ -27,6 +29,12 @@ export const appPreferencesSchema = z.object({
   verseColor: hexColor.default("#4a9eff"),
   chorusColor: hexColor.default("#f0a050"),
   bridgeColor: hexColor.default("#a07cf0"),
+
+  // --- My part (performance filter, personal to this device) ---
+  /** Chosen part (`for=` value) or "all"; unset until picked in performance mode. */
+  partInstrument: z.string().optional(),
+  partShowCues: z.boolean().default(true),
+  partShowChords: z.boolean().default(true),
 });
 
 export type AppPreferences = z.infer<typeof appPreferencesSchema>;
@@ -155,6 +163,8 @@ export const DEFAULT_PREFERENCES: AppPreferences = {
   verseColor: "#4a9eff",
   chorusColor: "#f0a050",
   bridgeColor: "#a07cf0",
+  partShowCues: true,
+  partShowChords: true,
 };
 
 // ---------------------------------------------------------------------------
@@ -175,6 +185,33 @@ export function loadPreferences(): AppPreferences {
 
 export function savePreferences(prefs: AppPreferences): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+}
+
+// ---------------------------------------------------------------------------
+// My part (performance filter)
+// ---------------------------------------------------------------------------
+
+export function resolvePartView(prefs: AppPreferences): PartView {
+  // favoriteInstrument (chord diagrams) always has a value: only a non-default
+  // choice tells us what this musician plays, otherwise show every part.
+  const fallback =
+    prefs.favoriteInstrument !== DEFAULT_PREFERENCES.favoriteInstrument
+      ? normalizePart(prefs.favoriteInstrument)
+      : ALL_PARTS;
+  return {
+    instrument: prefs.partInstrument ? normalizePart(prefs.partInstrument) : fallback,
+    showCues: prefs.partShowCues,
+    showChords: prefs.partShowChords,
+  };
+}
+
+export function savePartView(view: PartView): void {
+  savePreferences({
+    ...loadPreferences(),
+    partInstrument: view.instrument,
+    partShowCues: view.showCues,
+    partShowChords: view.showChords,
+  });
 }
 
 // ---------------------------------------------------------------------------

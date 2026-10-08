@@ -144,10 +144,12 @@ Sections are assigned to a layer based on two things: their environment type and
 | Has `for=`? | Environment type | Layer | Example |
 |-------------|-----------------|-------|---------|
 | No | `verse`, `chorus`, `bridge` | Core | `{start_of_verse: Verse 1}` |
+| No | Bracket labels (`[Intro]`, `[Solo]`, `[Verse 1 :]`) | Core | Section markers of imported charts |
+| No | Lines outside any section | Core | A chart with no section markers |
 | No | `tab`, `note`, or any custom | Band | `{start_of_note: Arrangement}` |
 | Yes | Any | Instrument | `{start_of_tab: Solo, for=guitar}` |
 
-Comment directives (`{comment}`, `{ci}`, `{cb}`) are **band** layer by default. A `for` attribute could scope them to an instrument too: `{comment: Palm mute the verse, for=guitar}`.
+Comment directives (`{comment}`, `{ci}`, `{cb}`, `{highlight}`) are **band** layer by default. A `for` attribute scopes them to an instrument: `{comment: Palm mute the verse, for=guitar}`. An untagged comment inside an instrument section belongs to that part. The setup line (first comment, see §5) is always shown.
 
 ### The `for` attribute
 
@@ -162,10 +164,26 @@ Any section directive can carry `for=<instrument>` to scope it to a specific pla
 
 Instrument names are **free-form strings** — we don't enforce a fixed list. The band decides their own vocabulary. Common ones: `guitar`, `bass`, `keys`, `drums`, `sax`, `vocals`, `trumpet`, `violin`.
 
-In performance mode, each musician picks their instrument. The display logic:
-1. **Always show** core layer (song structure)
-2. **Show by default** band layer (can toggle off for a clean lyrics-only view)
-3. **Show if matching** instrument layer (guitarist sees `for=guitar` sections)
+Matching is case-insensitive and accepts common synonyms (EN/FR/emoji), so `for=gtr`, `for=Guitare` and `for=🎸` all mean `guitar`; `piano`/`clavier` mean `keys`; `voice`/`chant` mean `vocals`. The table lives in `src/domain/parts.ts`. Unknown names (`for=trombone`) still work, matched as-is.
+
+### In performance mode: My part
+
+The ⋮ menu of the performance header has a **My part** block (stored per device, not synced, like the theme):
+
+| Control | Default | Effect |
+|---------|---------|--------|
+| Instrument | Favourite instrument if changed in Settings, else **All** | Choices: All, every `for=` value found in the setlist, the favourite instrument. |
+| Show band cues | On | Off hides the band layer: untagged comments and `tab`/`note`/custom sections. |
+| Show chords | On | Off = **lyrics only** for singers (see below). |
+
+The display logic (`src/domain/chordpro/visibility.ts`):
+1. **Always show** core layer (song structure) and the setup line
+2. **Show by default** band layer (can toggle off)
+3. **Show if matching** instrument layer (guitarist sees `for=guitar` sections; "All" shows every part)
+
+**Lyrics only** removes the chords of lyrics and prose sections: no chord row height, and lines holding only chords (`[Am] [F]`, `[Em G C B] [x4]`) disappear. Section headers stay, so an `[Intro]` or `[Solo]` is still visible as a marker. Tab (monospace) sections are notation, not chord rows: they are left as written, and their layer decides whether they show.
+
+When a filter is active, a chip in the header shows it (e.g. `🎸 Guitar · Lyrics only`); tapping it opens the menu.
 
 ### `for` syntax
 
@@ -466,7 +484,7 @@ The current parser discards unknown directives and `#` comments. The serializer 
 ## 11. Implementation Priorities
 
 ### Phase 1 — Solid foundation (current focus)
-- [ ] Visibility layers: `for` attribute parsing on sections and comments
+- [x] Visibility layers: `for` attribute parsing on sections and comments, "My part" filter in performance mode
 - [ ] Render modes: lyrics / monospace / prose based on environment type
 - [ ] Arbitrary custom environments (`{start_of_anything}`)
 - [ ] `{start_of_note}` / `{end_of_note}` environment

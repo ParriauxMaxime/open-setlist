@@ -1,4 +1,5 @@
 import type { Song } from "@db";
+import type { PartView } from "@domain/chordpro/visibility";
 import type { CSSProperties, RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { ChordProView, type ChordTapInfo } from "./chordpro-view";
@@ -18,6 +19,7 @@ interface SongStripProps {
   currentSongStyle?: CSSProperties;
   nextSongStyle?: CSSProperties;
   onChordTap?: (info: ChordTapInfo) => void;
+  partView?: PartView;
 }
 
 export function SongStrip({
@@ -35,6 +37,7 @@ export function SongStrip({
   currentSongStyle,
   nextSongStyle,
   onChordTap,
+  partView,
 }: SongStripProps) {
   const { t } = useTranslation();
 
@@ -53,6 +56,7 @@ export function SongStrip({
               content={prevSong.content}
               transposition={prevTransposition}
               onChordTap={onChordTap}
+              partView={partView}
             />
           )}
         </div>
@@ -67,6 +71,7 @@ export function SongStrip({
               content={currentSong.content}
               transposition={currentTransposition}
               onChordTap={onChordTap}
+              partView={partView}
             />
           ) : (
             <p className="text-text-faint">{t("perform.songNotFound")}</p>
@@ -82,6 +87,7 @@ export function SongStrip({
               content={nextSong.content}
               transposition={nextTransposition}
               onChordTap={onChordTap}
+              partView={partView}
             />
           )}
         </div>

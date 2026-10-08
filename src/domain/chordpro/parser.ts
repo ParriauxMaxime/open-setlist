@@ -335,8 +335,8 @@ export function parse(source: string): ChordProSong {
     if (currentSection) {
       currentSection.lines.push(songLine);
     } else {
-      // Lines outside sections go into an implicit section
-      openSection({ type: "custom", renderMode: "prose", layer: "band", lines: [songLine] }, true);
+      // Lines outside sections go into an implicit section (song content: core layer)
+      openSection({ type: "custom", renderMode: "prose", layer: "core", lines: [songLine] }, true);
     }
   };
 
@@ -445,7 +445,8 @@ export function parse(source: string): ChordProSong {
         type: bracketSection.type,
         label: bracketSection.label,
         renderMode: getRenderMode(bracketSection.type),
-        layer: getLayer(bracketSection.type),
+        // Bracket labels ([Intro], [Solo]) are song structure markers
+        layer: "core",
         lines: [],
       });
       continue;
