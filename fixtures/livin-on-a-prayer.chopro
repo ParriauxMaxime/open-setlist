@@ -7,7 +7,7 @@
 {tags: rock, anthem, singalong, crowd-pleaser}
 {tech_notes: Talk box needs DI channel 3. Strobes on the key change. House lights up on final chorus for singalong.}
 
-{comment: Talk box intro on Em}
+{comment: 24B 🎸🎹🥁🎙️ · Talk box}
 
 {start_of_verse: Verse 1}
 [Em]Tommy used to work on the docks
@@ -18,6 +18,8 @@ It's [C]tough, [D]so [Em]tough
 [C]Love, [D]for [Em]love
 {end_of_verse}
 
+{c: Lead vocals only, band drops out}
+
 {start_of_bridge: Pre-Chorus}
 [C]She says we've got to [D]hold on to what we've [Em]got
 It [C]doesn't make a [D]difference if we make it or [Em]not
@@ -27,7 +29,7 @@ We've [C]got each other [D]and that's a lot for
 
 {start_of_chorus: Chorus}
 [Em]Woah, we're [C]half way [D]there
-[Em]Woah, [C]livin' on a [D]prayer
+[Em]{soh}Woah, [C]livin' on a [D]prayer{eoh}
 [Em]Take my [C]hand, we'll [D]make it I swear
 [Em]Woah, [C]livin' on a [D]prayer
 {end_of_chorus}
