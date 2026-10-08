@@ -17,36 +17,29 @@ Conventions and decisions for contributing to Open Setlist.
 src/
 ├── app.tsx               # Root component (router switch)
 ├── main.tsx              # Entry point + SW registration
+├── sw.ts                 # Service worker (built in production only)
 ├── router.ts             # Route definitions (chicane)
-├── models/               # One interface per file
-│   ├── song.ts
-│   └── setlist.ts
-├── db/                   # Dexie database setup
-│   └── index.ts
-├── core/                 # Business logic, parsers, pure functions
-│   └── chordpro/
-│       └── parser.ts
-├── components/           # Reusable UI components
-│   ├── common/           # Shared (buttons, inputs, layout)
-│   ├── catalog/          # Song catalog components
-│   ├── editor/           # ChordPro editor
-│   ├── setlist/          # Setlist builder
-│   └── performance/      # Performance mode
-├── hooks/                # Custom React hooks
-├── routes/               # Page-level components (one per route)
-│   ├── catalog-page.tsx
-│   ├── edit-song-page.tsx
-│   ├── setlist-page.tsx
-│   └── perform-page.tsx
+├── db/                   # Dexie setup + data interfaces (song.ts, setlist.ts, snapshot.ts)
+├── domain/               # Business logic, pure functions, enums, zod schemas
+│   ├── chordpro/         # Parser + directives
+│   ├── chords/           # Theory, transpose, diagrams data
+│   ├── import/           # Setlist Helper importers
+│   ├── sync/             # Orchestrator, merge, diff, adapters
+│   └── schemas/          # Zod schemas
+├── modules/<module>/     # One folder per feature: page.tsx, components/, hooks/
+│   ├── design-system/    # Reusable UI (data table, form fields)
+│   └── shared/           # Layout, navigation
+├── i18n/                 # i18next setup + en/fr locales
 └── styles/
     └── global.css        # Tailwind import + @theme design tokens
 ```
 
 ## Models
 
-- One interface per file in `src/models/`
+- Data interfaces live in `src/db/` (one per file), zod schemas in `src/domain/schemas/`
 - Named after the domain concept: `song.ts`, `setlist.ts`
 - Keep models flat — avoid deeply nested types unless the domain demands it
+- Adding a field: update the interface, the zod schema (sync strips unknown keys) and the editor form defaults (the editor saves the whole form)
 
 ## Routing
 

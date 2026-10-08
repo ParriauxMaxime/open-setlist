@@ -19,7 +19,7 @@ Open Setlist is that tool.
 
 - **Song catalog** — title, artist, key, BPM, duration, tags, notes, and full ChordPro content
 - **ChordPro editor** — write chord charts in the standard format
-- **Song lookup** — search by title, pull metadata from MusicBrainz, import chords from Ultimate Guitar
+- **Song lookup** — search by title, pull metadata from iTunes, import chords from Ultimate Guitar
 - **Setlist builder** — organize songs into sets, reorder, plan your show
 - **Performance mode** — clean, distraction-free view for playing live
 - **Chord reference** — built-in chord diagrams
@@ -68,7 +68,7 @@ Opens at `http://localhost:3000`.
 
 ```
 src/
-  domain/           Business logic — music theory, ChordPro parser, validation schemas, song lookup
+  domain/           Business logic — music theory, ChordPro parser, validation schemas, sync, importers
   db/               Dexie (IndexedDB) schema and data interfaces
   modules/          Feature modules, each owns its page and components
     catalog/          Song listing and search
@@ -114,9 +114,9 @@ To deploy your own:
    cd worker
    wrangler deploy
    ```
-5. Paste the printed URL into `src/domain/lookup/config.ts`
+5. Paste the printed URL into `src/modules/lookup/adapters/proxy.ts`
 
-Free tier covers 100K requests/day. The proxy is only hit when importing chords — metadata comes directly from MusicBrainz, which supports CORS natively.
+Free tier covers 100K requests/day. The proxy is only hit when importing chords — metadata comes directly from the iTunes Search API, which supports CORS natively.
 
 ### Conventions
 

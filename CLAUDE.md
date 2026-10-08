@@ -34,7 +34,7 @@ Before considering any plan complete, run these checks and ensure they pass:
 
 ## CORS Proxy Worker (`worker/`)
 
-The app runs entirely in the browser — no backend. Most external APIs we call (like MusicBrainz) ship CORS headers and work fine from `fetch()`. Ultimate Guitar does not. Browsers block those responses, so we need a thin proxy that forwards the request and adds `Access-Control-Allow-Origin: *`.
+The app runs entirely in the browser — no backend. Most external APIs we call (like the iTunes Search API) ship CORS headers and work fine from `fetch()`. Ultimate Guitar does not. Browsers block those responses, so we need a thin proxy that forwards the request and adds `Access-Control-Allow-Origin: *`.
 
 That's all the worker does. It accepts `?url=<encoded>`, checks the hostname against an allowlist (`www.ultimate-guitar.com`, `tabs.ultimate-guitar.com`), fetches upstream, and returns the response with CORS headers. No parsing, no transformation — the browser handles everything else.
 
@@ -61,8 +61,8 @@ It runs on Cloudflare Workers (free tier: 100K requests/day, no credit card requ
    ```
    This prints a URL like `https://open-setlist-proxy.<your-account>.workers.dev`.
 
-5. **Paste the URL** into `src/domain/lookup/config.ts` as the `PROXY_URL` constant. The app uses this at runtime when fetching UG tabs.
+5. **Paste the URL** into `src/modules/lookup/adapters/proxy.ts` as the `PROXY_URL` constant. The app uses this at runtime when fetching UG tabs.
 
 ### How it's used
 
-The song lookup flow (`src/domain/lookup/`) searches MusicBrainz directly (CORS-enabled) for metadata, then optionally fetches chord content from Ultimate Guitar through the proxy. The proxy is only contacted when a user clicks "Import" on a search result. If the proxy is down or the fetch times out (5s), the form still populates with metadata — chords are just left empty.
+The song lookup flow (`src/modules/lookup/`) searches the iTunes Search API directly (CORS-enabled) for metadata, then optionally fetches chord content from Ultimate Guitar through the proxy. The proxy is only contacted when a user clicks "Import" on a search result. If the proxy is down or the fetch times out (8s), the form still populates with metadata — chords are just left empty.
