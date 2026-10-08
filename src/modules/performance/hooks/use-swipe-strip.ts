@@ -82,16 +82,7 @@ export function useSwipeStrip(options: UseSwipeStripOptions) {
   const goPrev = useCallback(() => commitSlide("prev"), [commitSlide]);
   const goNext = useCallback(() => commitSlide("next"), [commitSlide]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") goPrev();
-      else if (e.key === "ArrowRight") goNext();
-      else if (e.key === "Escape") onToggleChromeRef.current();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [goPrev, goNext]);
+  // Keyboard / pedal navigation lives in usePerformKeys
 
   // Imperative touch handlers on the container (passive: false for preventDefault)
   // biome-ignore lint/correctness/useExhaustiveDependencies: deps trigger re-attach when container DOM appears after loading

@@ -1,3 +1,4 @@
+import { createId } from "@domain/id";
 import { addProfile, ensureDefaultProfile, setActiveProfileId } from "@domain/profiles";
 import { migrateUnkeyedConfig } from "@domain/sync/config";
 import { migrateUnkeyedTombstones } from "@domain/sync/tombstones";
@@ -38,7 +39,7 @@ async function migrateOldDatabase(): Promise<{ db: AppDatabase; profileId: strin
   const [songs, setlists] = await Promise.all([oldDb.songs.toArray(), oldDb.setlists.toArray()]);
 
   // Create a default profile
-  const profileId = crypto.randomUUID();
+  const profileId = createId();
   addProfile({ id: profileId, name: "Personal", avatar: "\u{1F3B5}", createdAt: Date.now() });
   setActiveProfileId(profileId);
 

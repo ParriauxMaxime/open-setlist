@@ -1,4 +1,5 @@
 import { MAJOR_KEYS, MINOR_KEYS } from "@domain/music";
+import { SCROLL_SPEED_MAX, SCROLL_SPEED_MIN } from "@domain/perform-stage";
 import type { SongDisplayPrefs } from "@domain/preferences";
 import type { SongFormValues } from "@domain/schemas/song";
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
@@ -73,7 +74,7 @@ export function MetadataPanel({
         <Input {...register("artist")} placeholder={t("editor.artistPlaceholder")} />
       </Field>
 
-      {/* Key / BPM / Duration / Transposition — 2x2 grid for narrow panel */}
+      {/* Key / BPM / Duration / Transposition / Scroll speed — 2-col grid for narrow panel */}
       <div className="grid grid-cols-2 gap-3">
         <Field label={t("editor.keyLabel")} error={errors.key?.message}>
           <Select {...register("key", { setValueAs: (v: string) => v || undefined })}>
@@ -122,6 +123,18 @@ export function MetadataPanel({
               setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
             })}
             placeholder="0"
+          />
+        </Field>
+
+        <Field label={t("performStage.scrollSpeedLabel")} error={errors.scrollSpeed?.message}>
+          <Input
+            type="number"
+            min={SCROLL_SPEED_MIN}
+            max={SCROLL_SPEED_MAX}
+            {...register("scrollSpeed", {
+              setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
+            })}
+            placeholder={t("performStage.scrollSpeedAuto")}
           />
         </Field>
       </div>

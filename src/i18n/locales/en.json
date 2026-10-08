@@ -156,6 +156,18 @@
       "dismiss": "Tap anywhere to dismiss"
     }
   },
+  "performStage": {
+    "startAutoScroll": "Start auto-scroll",
+    "pauseAutoScroll": "Pause auto-scroll",
+    "scrollSlower": "Scroll slower",
+    "scrollFaster": "Scroll faster",
+    "scrollSpeedLabel": "Scroll speed",
+    "scrollSpeedAuto": "Auto",
+    "enterFullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen",
+    "hintPedal": "Pedal or keyboard: Page Down, Space or ↓ to scroll forward, Page Up or ↑ to scroll back, ← → to change song",
+    "hintAutoScroll": "S starts or pauses auto-scroll"
+  },
   "sync": {
     "title": "Sync",
     "description": "Export your songs and setlists as a JSON file, or import from a previously exported file.",
@@ -199,6 +211,38 @@
       "goToSettings": "Go to Settings",
       "lastSync": "Last synced: {{time}}"
     }
+  },
+  "importSetlistHelper": {
+    "button": "Import from Setlist Helper",
+    "reading": "Reading...",
+    "previewTitle": "Import from Setlist Helper",
+    "newCount_one": "{{count}} new song",
+    "newCount_other": "{{count}} new songs",
+    "matchCount_one": "{{count}} song already in your catalog",
+    "matchCount_other": "{{count}} songs already in your catalog",
+    "warningCount_one": "{{count}} warning",
+    "warningCount_other": "{{count}} warnings",
+    "matchLegend": "Songs already in your catalog",
+    "strategy": {
+      "skip": "Skip them (keep my version)",
+      "update": "Update them from Setlist Helper"
+    },
+    "warningRow": "Row {{row}} {{title}}:",
+    "warning": {
+      "missingTitle": "no title, row skipped.",
+      "unparseableKey": "unknown key \"{{value}}\", left empty.",
+      "invalidTempo": "invalid tempo \"{{value}}\", ignored.",
+      "invalidDuration": "invalid length \"{{value}}\", ignored.",
+      "transposeClamped": "transposition {{value}} out of range, clamped.",
+      "duplicateInFile": "duplicate in file, skipped."
+    },
+    "safeNote": "Nothing is deleted. Export the catalog CSV from Setlist Helper web (Song Catalog > Export CSV).",
+    "confirm": "Import",
+    "importing": "Importing...",
+    "cancel": "Cancel",
+    "success": "Setlist Helper import: {{added}} added, {{updated}} updated.",
+    "invalidFile": "This file is not a Setlist Helper catalog CSV.",
+    "failed": "Setlist Helper import failed."
   },
   "tuner": {
     "title": "Tuner",
@@ -379,5 +423,10 @@
     "titleRequired": "Title is required",
     "setNameRequired": "Set name is required",
     "nameRequired": "Name is required"
+  },
+  "chordpro": {
+    "setup": "Setup",
+    "chorus": "Chorus",
+    "repeat": "repeat"
   }
 }

@@ -1,3 +1,4 @@
+import { createId } from "@domain/id";
 import {
   addProfile,
   type Profile,
@@ -30,7 +31,7 @@ export function ProfileManager() {
   const activeId = useActiveProfileId();
 
   const handleAdd = useCallback(() => {
-    const id = crypto.randomUUID();
+    const id = createId();
     addProfile({ id, name: t("settings.profile.newName"), createdAt: Date.now() });
     setActiveProfileId(id);
   }, [t]);

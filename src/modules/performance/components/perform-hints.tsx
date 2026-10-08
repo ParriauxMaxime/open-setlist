@@ -53,6 +53,11 @@ export function PerformHints() {
           <span className="text-2xl">👈 👉</span>
           <p className="text-xs text-white/80">{t("perform.hints.swipe")}</p>
         </div>
+        <div className="flex max-w-56 flex-col items-center gap-1 text-center">
+          <span className="text-2xl">⌨️</span>
+          <p className="text-xs text-white/80">{t("performStage.hintPedal")}</p>
+          <p className="text-xs text-white/80">{t("performStage.hintAutoScroll")}</p>
+        </div>
         <p className="text-xs text-white/50">{t("perform.hints.dismiss")}</p>
       </div>
 

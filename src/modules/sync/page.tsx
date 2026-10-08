@@ -25,6 +25,7 @@ import { Router } from "../../router";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { GitHubIcon, GoogleDriveIcon } from "../design-system/components/icons";
 import { SETTINGS_SCROLL_KEY } from "../settings/page";
+import { SetlistHelperImport } from "./components/setlist-helper-import";
 import { SyncReview } from "./components/sync-review";
 import { TranspositionAlert } from "./components/transposition-alert";
 
@@ -234,6 +235,12 @@ export function SyncPage() {
         >
           {status.type === "importing" ? t("sync.importing") : t("sync.importFile")}
         </button>
+
+        <SetlistHelperImport
+          disabled={busy}
+          onSuccess={(message) => setStatus({ type: "success", message })}
+          onError={(message) => setStatus({ type: "error", message })}
+        />
       </div>
 
       <div aria-live="polite">

@@ -1,4 +1,5 @@
 import { useDb } from "@db/provider";
+import { SCROLL_SPEED_DEFAULT, stepScrollSpeed } from "@domain/perform-stage";
 import {
   getSongOverrides,
   loadPreferences,
@@ -18,9 +19,13 @@ import { PerformHeader } from "./components/perform-header";
 import { PerformHints } from "./components/perform-hints";
 import { clearPerformReturn, PerformSidebar } from "./components/perform-sidebar";
 import { SongStrip } from "./components/song-strip";
+import { useAutoScroll } from "./hooks/use-auto-scroll";
+import { useFullscreen } from "./hooks/use-fullscreen";
+import { usePerformKeys } from "./hooks/use-perform-keys";
 import { useSetlistNavigation } from "./hooks/use-setlist-navigation";
 import { useSingleSongNavigation } from "./hooks/use-single-song-navigation";
 import { useSwipeStrip } from "./hooks/use-swipe-strip";
+import { useWakeLock } from "./hooks/use-wake-lock";
 
 interface PerformPageProps {
   setlistId?: string;
@@ -90,6 +95,45 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
     doubleTapScaleEnabled: globalPrefs.performDoubleTapScale,
   });
 
+  useWakeLock();
+  const fullscreen = useFullscreen();
+
+  const autoScroll = useAutoScroll({
+    panelRef: swipe.currentPanelRef,
+    songKey: nav.currentSong?.id,
+    scrollSpeed: nav.currentSong?.scrollSpeed,
+    duration: nav.currentSong?.duration,
+  });
+  // Once auto-scroll has been used, keep its speed controls in the header
+  const [autoScrollUsed, setAutoScrollUsed] = useState(false);
+  const { toggle: toggleAutoScrollRaw, stop: stopAutoScroll } = autoScroll;
+  const toggleAutoScroll = useCallback(() => {
+    setAutoScrollUsed(true);
+    toggleAutoScrollRaw();
+  }, [toggleAutoScrollRaw]);
+
+  const currentScrollSpeed = autoScroll.speed;
+  const handleScrollSpeed = useCallback(
+    async (delta: number) => {
+      const song = nav.currentSong;
+      if (!song) return;
+      await db.songs.update(song.id, {
+        scrollSpeed: stepScrollSpeed(currentScrollSpeed ?? SCROLL_SPEED_DEFAULT, delta),
+        updatedAt: Date.now(),
+      });
+    },
+    [nav.currentSong, currentScrollSpeed, db],
+  );
+
+  usePerformKeys({
+    panelRef: swipe.currentPanelRef,
+    goPrev: swipe.goPrev,
+    goNext: swipe.goNext,
+    onToggleChrome: toggleChrome,
+    onToggleAutoScroll: toggleAutoScroll,
+    onManualNavigation: stopAutoScroll,
+  });
+
   // Compute per-song CSS custom-property overrides
   // biome-ignore lint/correctness/useExhaustiveDependencies: overrideVersion forces recomputation after double-tap scale change
   const prevSongStyle = useMemo(
@@ -157,6 +201,17 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         transposeOpen={transposeOpen}
         onTranspose={handleTranspose}
         onToggleTranspose={toggleTranspose}
+        autoScrolling={autoScroll.active}
+        showScrollSpeed={
+          autoScroll.active || autoScrollUsed || nav.currentSong?.scrollSpeed !== undefined
+        }
+        scrollSpeed={currentScrollSpeed}
+        scrollSpeedDerived={autoScroll.isDerived}
+        onToggleAutoScroll={toggleAutoScroll}
+        onScrollSpeed={handleScrollSpeed}
+        fullscreenSupported={fullscreen.supported}
+        isFullscreen={fullscreen.isFullscreen}
+        onToggleFullscreen={fullscreen.toggle}
         onPrev={swipe.goPrev}
         onNext={swipe.goNext}
         onOpenSidebar={() => setSidebarOpen(true)}

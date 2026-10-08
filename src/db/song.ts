@@ -16,6 +16,7 @@ export interface Song {
   techNotes?: string;
   links?: SongLinks;
   transposition?: number; // semitones to transpose chords at render time
+  scrollSpeed?: number; // auto-scroll speed 1–10; unset = derived from duration
   content: string; // raw ChordPro body
   createdAt: number;
   updatedAt: number;

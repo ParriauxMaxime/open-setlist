@@ -1,3 +1,4 @@
+import { createId } from "@domain/id";
 import { useSyncExternalStore } from "react";
 
 export interface Profile {
@@ -69,7 +70,7 @@ export function setActiveProfileId(id: string): void {
 export function ensureDefaultProfile(): string {
   let profiles = loadProfiles();
   if (profiles.length === 0) {
-    const id = crypto.randomUUID();
+    const id = createId();
     profiles = [{ id, name: "Demo", avatar: "\u{1F3AF}", isDemo: true, createdAt: Date.now() }];
     saveProfiles(profiles);
   }

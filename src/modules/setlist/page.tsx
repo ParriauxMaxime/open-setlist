@@ -1,5 +1,6 @@
 import type { Setlist } from "@db";
 import { useDb } from "@db/provider";
+import { createId } from "@domain/id";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
@@ -51,7 +52,7 @@ function SetlistListPage() {
   ];
 
   const createSetlist = async () => {
-    const id = crypto.randomUUID();
+    const id = createId();
     const now = Date.now();
     await db.setlists.put({
       id,
