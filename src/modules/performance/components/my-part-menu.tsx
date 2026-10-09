@@ -1,7 +1,9 @@
-import { isPartViewActive } from "@domain/chordpro/visibility";
-import { ALL_PARTS, isKnownPart, PART_EMOJI } from "@domain/parts";
+import { isPartViewActive, viewPitch } from "@domain/chordpro/visibility";
+import { formatPitch } from "@domain/chords/notation";
+import { ALL_PARTS, INSTRUMENT_PITCH, isKnownPart, PART_EMOJI, partPitch } from "@domain/parts";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
+import { useNotation } from "../../shared/hooks/use-notation";
 import type { MyPart } from "../hooks/use-my-part";
 
 function partLabel(part: string, t: TFunction): string {
@@ -10,10 +12,20 @@ function partLabel(part: string, t: TFunction): string {
   return part.charAt(0).toUpperCase() + part.slice(1);
 }
 
+function choiceClass(selected: boolean): string {
+  return `min-h-11 rounded-md border px-3 text-base transition-colors ${
+    selected
+      ? "border-accent bg-accent-muted text-accent"
+      : "border-border text-text-muted hover:border-text-faint hover:text-text"
+  }`;
+}
+
 /** "My part" controls for the perform header ⋮ menu. */
 export function MyPartMenu({ myPart }: { myPart: MyPart }) {
   const { t } = useTranslation();
+  const notation = useNotation();
   const { view, choices, update } = myPart;
+  const pitch = partPitch(view.instrument);
 
   return (
     <div className="w-72 border-b border-border px-4 pt-2 pb-1">
@@ -29,17 +41,34 @@ export function MyPartMenu({ myPart }: { myPart: MyPart }) {
               type="button"
               aria-pressed={selected}
               onClick={() => update({ instrument: part })}
-              className={`min-h-11 rounded-md border px-3 text-base transition-colors ${
-                selected
-                  ? "border-accent bg-accent-muted text-accent"
-                  : "border-border text-text-muted hover:border-text-faint hover:text-text"
-              }`}
+              className={choiceClass(selected)}
             >
               {partLabel(part, t)}
             </button>
           );
         })}
       </div>
+      {pitch !== INSTRUMENT_PITCH.concert && (
+        <fieldset className="mt-2 flex flex-wrap gap-2">
+          <legend className="sr-only">{t("myPart.pitch")}</legend>
+          <button
+            type="button"
+            aria-pressed={view.writtenPitch}
+            onClick={() => update({ writtenPitch: true })}
+            className={choiceClass(view.writtenPitch)}
+          >
+            {t("myPart.writtenPitch", { pitch: formatPitch(pitch, notation) })}
+          </button>
+          <button
+            type="button"
+            aria-pressed={!view.writtenPitch}
+            onClick={() => update({ writtenPitch: false })}
+            className={choiceClass(!view.writtenPitch)}
+          >
+            {t("myPart.concertPitch")}
+          </button>
+        </fieldset>
+      )}
       <label className="mt-1 flex min-h-11 cursor-pointer items-center gap-3 text-base text-text">
         <input
           type="checkbox"
@@ -65,11 +94,14 @@ export function MyPartMenu({ myPart }: { myPart: MyPart }) {
 /** Header hint shown while a "My part" filter hides something. */
 export function MyPartChip({ myPart, onClick }: { myPart: MyPart; onClick: () => void }) {
   const { t } = useTranslation();
+  const notation = useNotation();
   const { view } = myPart;
   if (!isPartViewActive(view)) return null;
 
+  const pitch = viewPitch(view);
   const summary = [
     view.instrument !== ALL_PARTS && partLabel(view.instrument, t),
+    pitch !== INSTRUMENT_PITCH.concert && formatPitch(pitch, notation),
     !view.showChords && t("myPart.lyricsOnly"),
     !view.showCues && t("myPart.noCues"),
   ]

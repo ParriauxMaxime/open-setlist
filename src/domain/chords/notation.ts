@@ -64,3 +64,8 @@ export function formatChord(chord: string, notation: Notation): string {
 export function formatKey(key: string, notation: Notation): string {
   return formatChord(normalizeKey(key) ?? key, notation);
 }
+
+/** An instrument's pitch the way players name it, with a flat sign: "B♭", "Si♭", "Fa". */
+export function formatPitch(pitch: string, notation: Notation): string {
+  return formatChord(pitch, notation).replace(/b$/, "♭");
+}

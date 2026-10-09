@@ -1,4 +1,4 @@
-import { formatChord, formatKey, NOTATION_LIST, type Notation } from "./notation";
+import { formatChord, formatKey, formatPitch, NOTATION_LIST, type Notation } from "./notation";
 
 /** [english, solfege, german] for the 12 pitch classes, plus the other common spellings. */
 const ROOTS: [string, string, string][] = [
@@ -141,5 +141,16 @@ describe("formatKey", () => {
 
   it.each(["", "Hello", "?"])("leaves unparseable key %p unchanged", (key) => {
     expect(formatKey(key, "solfege")).toBe(key);
+  });
+});
+
+describe("formatPitch", () => {
+  it("names instrument pitches with a flat sign", () => {
+    expect(formatPitch("Bb", "english")).toBe("B♭");
+    expect(formatPitch("Eb", "english")).toBe("E♭");
+    expect(formatPitch("F", "english")).toBe("F");
+    expect(formatPitch("Bb", "solfege")).toBe("Si♭");
+    expect(formatPitch("F", "solfege")).toBe("Fa");
+    expect(formatPitch("Bb", "german")).toBe("B");
   });
 });

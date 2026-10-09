@@ -162,9 +162,9 @@ Any section directive can carry `for=<instrument>` to scope it to a specific pla
 {comment: Use brush sticks, for=drums}
 ```
 
-Instrument names are **free-form strings** — we don't enforce a fixed list. The band decides their own vocabulary. Common ones: `guitar`, `bass`, `keys`, `drums`, `sax`, `vocals`, `trumpet`, `violin`.
+Instrument names are **free-form strings** — we don't enforce a fixed list. The band decides their own vocabulary. Known ones: `vocals`, `guitar`, `bass`, `keys`, `drums`, `flute`, `clarinet`, `sax`, `soprano-sax`, `alto-sax`, `tenor-sax`, `baritone-sax`, `horn`, `trumpet`, `trombone`, `tuba`, `violin`. A `for=` value stops at the first space: write multi-word names with a dash (`for=sax-alto`).
 
-Matching is case-insensitive and accepts common synonyms (EN/FR/emoji), so `for=gtr`, `for=Guitare` and `for=🎸` all mean `guitar`; `piano`/`clavier` mean `keys`; `voice`/`chant` mean `vocals`. The table lives in `src/domain/parts.ts`. Unknown names (`for=trombone`) still work, matched as-is.
+Matching is case-insensitive and accepts common synonyms (EN/FR/emoji), so `for=gtr`, `for=Guitare` and `for=🎸` all mean `guitar`; `piano`/`clavier` mean `keys`; `voice`/`chant` mean `vocals`; `clarinette`, `sax-ténor`, `cor`, `flûte` mean `clarinet`, `tenor-sax`, `horn`, `flute`. The table lives in `src/domain/parts.ts`. Unknown names (`for=accordion`) still work, matched as-is.
 
 ### In performance mode: My part
 
@@ -175,6 +175,7 @@ The ⋮ menu of the performance header has a **My part** block (stored per devic
 | Instrument | Favourite instrument if changed in Settings, else **All** | Choices: All, every `for=` value found in the setlist, the favourite instrument. |
 | Show band cues | On | Off hides the band layer: untagged comments and `tab`/`note`/custom sections. |
 | Show chords | On | Off = **lyrics only** for singers (see below). |
+| Written pitch / Concert pitch | Written | Only for transposing parts (see below). |
 
 The display logic (`src/domain/chordpro/visibility.ts`):
 1. **Always show** core layer (song structure) and the setup line
@@ -184,6 +185,17 @@ The display logic (`src/domain/chordpro/visibility.ts`):
 **Lyrics only** removes the chords of lyrics and prose sections: no chord row height, and lines holding only chords (`[Am] [F]`, `[Em G C B] [x4]`) disappear. Section headers stay, so an `[Intro]` or `[Solo]` is still visible as a marker. Tab (monospace) sections are notation, not chord rows: they are left as written, and their layer decides whether they show.
 
 When a filter is active, a chip in the header shows it (e.g. `🎸 Guitar · Lyrics only`); tapping it opens the menu.
+
+**Written pitch.** Charts are written in concert pitch. Transposing instruments read every chord and key shifted by their pitch, on top of the song's transposition, spelled for the written key:
+
+| Pitch | Written vs concert | Parts |
+|-------|--------------------|-------|
+| C (concert) | — | vocals, guitar, bass, keys, drums, flute, trombone, tuba, violin, unknown parts |
+| B♭ | +2 (tenor sax +14, same note names) | trumpet, clarinet, soprano sax, tenor sax |
+| E♭ | +9 (−3) | alto sax, baritone sax, plain `sax` (taken as an alto, the most common) |
+| F | +7 (−5) | horn |
+
+A B♭ trumpet sees a concert Dm song in Em, the key chip reads `Concert Dm · B♭ Em` and the header chip `🎺 Trumpet · B♭`. Chord diagrams follow the displayed chord. On a capo chart the chords are shapes: a transposing part reads from the sounding key (shapes + capo). Free text (prose notes, tabs) is not transposed. Choosing **Concert pitch** shows the chart as written. Only this device changes; the song is untouched.
 
 ### `for` syntax
 

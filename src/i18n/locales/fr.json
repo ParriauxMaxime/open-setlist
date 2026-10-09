@@ -189,6 +189,11 @@
     "noCues": "Sans indications",
     "chipTitle": "Filtre Ma partie : {{summary}}",
     "editorHelp": "En mode performance, ⋮ → Ma partie n’affiche à chaque musicien que les sections et commentaires for= de son instrument.",
+    "pitch": "Hauteur",
+    "writtenPitch": "Transposé ({{pitch}})",
+    "concertPitch": "Son réel (en ut)",
+    "writtenKey": "Réel {{concert}} · {{pitch}} {{written}}",
+    "writtenKeyTitle": "Tonalité jouée par le groupe · tonalité écrite pour votre instrument",
     "parts": {
       "vocals": "Chant",
       "guitar": "Guitare",
@@ -197,7 +202,16 @@
       "drums": "Batterie",
       "sax": "Sax",
       "trumpet": "Trompette",
-      "violin": "Violon"
+      "violin": "Violon",
+      "flute": "Flûte",
+      "clarinet": "Clarinette",
+      "soprano-sax": "Sax soprano",
+      "alto-sax": "Sax alto",
+      "tenor-sax": "Sax ténor",
+      "baritone-sax": "Sax baryton",
+      "horn": "Cor",
+      "trombone": "Trombone",
+      "tuba": "Tuba"
     }
   },
   "performTempo": {

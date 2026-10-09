@@ -1,3 +1,4 @@
+import { transposeChord } from "../chords/transpose";
 import { type ChordProSong, parse, type Section, type SongLine } from "./parser";
 import {
   DEFAULT_PART_VIEW,
@@ -5,6 +6,8 @@ import {
   isPartViewActive,
   type PartView,
   songParts,
+  viewPitch,
+  writtenPitchShift,
 } from "./visibility";
 
 // ---------------------------------------------------------------------------
@@ -253,5 +256,86 @@ describe("songParts", () => {
 
   it("is empty for a song without for=", () => {
     expect(songParts(parse("[C]Hello\n{c: louder}"))).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Written pitch (transposing instruments)
+// ---------------------------------------------------------------------------
+
+describe("written pitch", () => {
+  /** Chords as the performance view shows them: song transposition + written pitch shift. */
+  function shown(chords: string[], songKey: string, v: PartView, transposition = 0, capo = 0) {
+    const semitones = transposition + writtenPitchShift(v, capo);
+    return chords.map((c) => transposeChord(c, semitones, songKey));
+  }
+
+  it("reads a transposing part at its own pitch, concert otherwise", () => {
+    expect(viewPitch(view({ instrument: "trumpet" }))).toBe("Bb");
+    expect(viewPitch(view({ instrument: "saxophone-alto" }))).toBe("Eb");
+    expect(viewPitch(view({ instrument: "cor" }))).toBe("F");
+    expect(viewPitch(view({ instrument: "guitar" }))).toBe("C");
+    expect(viewPitch(view({ instrument: "all" }))).toBe("C");
+    expect(viewPitch(undefined)).toBe("C");
+  });
+
+  it("shifts by the instrument offset", () => {
+    expect(writtenPitchShift(view({ instrument: "trumpet" }))).toBe(2);
+    expect(writtenPitchShift(view({ instrument: "tenor-sax" }))).toBe(2);
+    expect(writtenPitchShift(view({ instrument: "alto-sax" }))).toBe(9);
+    expect(writtenPitchShift(view({ instrument: "horn" }))).toBe(7);
+    expect(writtenPitchShift(view({ instrument: "trombone" }))).toBe(0);
+    expect(writtenPitchShift(undefined)).toBe(0);
+  });
+
+  it("adds the capo for transposing parts only: they read the sounding key", () => {
+    expect(writtenPitchShift(view({ instrument: "trumpet" }), 3)).toBe(5);
+    expect(writtenPitchShift(view({ instrument: "keys" }), 3)).toBe(0);
+  });
+
+  it("concert pitch leaves chords unchanged", () => {
+    const concert = view({ instrument: "trumpet", writtenPitch: false });
+    expect(viewPitch(concert)).toBe("C");
+    expect(writtenPitchShift(concert, 3)).toBe(0);
+    expect(shown(["Dm", "Gm", "A7", "Bb"], "Dm", concert)).toEqual(["Dm", "Gm", "A7", "Bb"]);
+    expect(shown(["Dm", "A7"], "Dm", concert, 2)).toEqual(["Em", "B7"]);
+  });
+
+  it("spells B♭ chords in the written key: concert Dm → Em", () => {
+    const trumpet = view({ instrument: "trumpet" });
+    expect(shown(["Dm", "Gm", "A7", "Bb", "C/E"], "Dm", trumpet)).toEqual([
+      "Em",
+      "Am",
+      "B7",
+      "C",
+      "D/F#",
+    ]);
+  });
+
+  it("spells E♭ chords in the written key: concert F → D", () => {
+    const alto = view({ instrument: "alto-sax" });
+    expect(shown(["F", "Bb", "C7", "Dm", "Gm7"], "F", alto)).toEqual(["D", "G", "A7", "Bm", "Em7"]);
+  });
+
+  it("uses flats in flat written keys: concert Ab on B♭ → Bb", () => {
+    const clarinet = view({ instrument: "clarinette" });
+    expect(shown(["Ab", "Db", "Eb7", "Fm"], "Ab", clarinet)).toEqual(["Bb", "Eb", "F7", "Gm"]);
+  });
+
+  it("stacks on the song's transposition: C +2 then B♭ reads in E", () => {
+    const trumpet = view({ instrument: "trumpet" });
+    expect(shown(["C", "F", "G7", "Am"], "C", trumpet, 2)).toEqual(["E", "A", "B7", "C#m"]);
+  });
+
+  it("handles shifts past the octave", () => {
+    // Concert Gm transposed +3 = Bbm, read by an alto (+9): Gm again
+    const alto = view({ instrument: "sax" });
+    expect(shown(["Gm", "D7", "Eb"], "Gm", alto, 3)).toEqual(["Gm", "D7", "Eb"]);
+  });
+
+  it("reads a capo chart from its sounding key", () => {
+    // Shapes in C, capo 3: the band sounds Eb, a B♭ trumpet reads F
+    const trumpet = view({ instrument: "trumpet" });
+    expect(shown(["C", "F", "G"], "C", trumpet, 0, 3)).toEqual(["F", "Bb", "C"]);
   });
 });

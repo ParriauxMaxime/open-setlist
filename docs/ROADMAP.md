@@ -11,7 +11,7 @@ Last update: 2026-10-09. Health: `yarn lint`, `typecheck`, `test` (800+ tests), 
 | Song catalog | Works — search, filters, readiness status column with quick change | `src/modules/catalog/` |
 | ChordPro editor | Works — highlighted editor, metadata ⇄ directives sync | `src/modules/editor/` |
 | Chart rendering | Works — setup banner, comments (`c`/`ci`/`cb`/`highlight`), `{soh}…{eoh}`, chorus recall (`{chorus}` and empty chorus), tab indentation, short lyrics under chords | `src/domain/chordpro/parser.ts`, `src/modules/performance/components/chordpro-view.tsx` |
-| My part | Works — per-instrument filter (`for=`), cues toggle, lyrics-only, private per-song notes | `src/domain/chordpro/visibility.ts`, `src/domain/parts.ts` |
+| My part | Works — per-instrument filter (`for=`), cues toggle, lyrics-only, written pitch for B♭/E♭/F instruments, private per-song notes | `src/domain/chordpro/visibility.ts`, `src/domain/parts.ts` |
 | Notation & transpose | Works — English / solfège / German display, key-aware spelling, transposed key and capo chips | `src/domain/chords/notation.ts`, `transpose.ts` |
 | Setlists | Works — sets, drag and drop, durations, unready-song warnings | `src/modules/setlist/` |
 | Performance mode | Works — swipe, pedals, auto-scroll, wake lock, fullscreen, tempo pulse/click/count-in, next-song preview, set breaks | `src/modules/performance/` |
