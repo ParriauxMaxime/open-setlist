@@ -1,4 +1,5 @@
 import { NOTATION_LIST } from "@domain/chords/notation";
+import { INSTRUMENT_VALUES } from "@domain/chords/types";
 import {
   ACCENT_PRESETS,
   type AppPreferences,
@@ -44,11 +45,6 @@ const ACCENT_KEYS: Record<string, string> = {
   Green: "settings.accent.green",
   Orange: "settings.accent.orange",
   Pink: "settings.accent.pink",
-};
-
-const INSTRUMENT_KEYS: Record<string, string> = {
-  guitar: "settings.instrument.guitar",
-  piano: "settings.instrument.piano",
 };
 
 const THEME_NAME_KEYS: Record<string, string> = {
@@ -331,8 +327,8 @@ export function SettingsPage() {
           <legend className="mb-2 text-sm font-semibold uppercase tracking-wide text-text-muted">
             {t("settings.instrument.label")}
           </legend>
-          <div className="flex gap-2">
-            {(["guitar", "piano"] as const).map((inst) => (
+          <div className="flex flex-wrap gap-2">
+            {INSTRUMENT_VALUES.map((inst) => (
               <button
                 key={inst}
                 type="button"
@@ -344,7 +340,7 @@ export function SettingsPage() {
                     : "border-border text-text-muted hover:border-text-faint hover:text-text",
                 ].join(" ")}
               >
-                {t(INSTRUMENT_KEYS[inst])}
+                {t(`settings.instrument.${inst}`)}
               </button>
             ))}
           </div>

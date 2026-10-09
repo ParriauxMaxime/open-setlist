@@ -442,7 +442,34 @@
   },
   "chordLib": {
     "title": "Chord Library",
-    "allRoots": "All roots"
+    "allRoots": "All roots",
+    "allQualities": "All chord types",
+    "instrument": "Instrument",
+    "root": "Root",
+    "quality": "Chord type",
+    "noDiagram": "No diagram available",
+    "qualities": {
+      "major": "Major",
+      "minor": "Minor",
+      "dom7": "7th",
+      "min7": "Minor 7th",
+      "maj7": "Major 7th",
+      "sus2": "Sus2",
+      "sus4": "Sus4",
+      "dom7sus4": "7sus4",
+      "dim": "Diminished",
+      "dim7": "Diminished 7th",
+      "aug": "Augmented",
+      "maj6": "6th",
+      "min6": "Minor 6th",
+      "dom9": "9th",
+      "add9": "Add9",
+      "min9": "Minor 9th",
+      "maj9": "Major 9th",
+      "halfDim": "Half-diminished (m7♭5)",
+      "dom11": "11th",
+      "dom13": "13th"
+    }
   },
   "notation": {
     "label": "Chord notation",
@@ -486,7 +513,9 @@
     "instrument": {
       "label": "Favorite Instrument",
       "guitar": "Guitar",
-      "piano": "Piano"
+      "piano": "Piano",
+      "ukulele": "Ukulele",
+      "bass": "Bass"
     },
     "display": {
       "heading": "Display",

@@ -320,23 +320,23 @@ Start/end of highlight. Can open and close within one line (`Guitarisé, {soh}(o
 {define: Cmaj7 base-fret 1 frets x 3 2 0 0 0 fingers 0 3 2 0 0 0}
 ```
 
-**Status:** Not yet implemented in the parser.
+**Status:** Parsed (`src/domain/chordpro/chord-definitions.ts`) into `ChordProSong.chordDefinitions` (only present when the song has some). In performance mode, tapping a chord shows the song's own voicing instead of the built-in diagram — last `{define}` of that chord wins, matched by chord (`Db` = `C#`, `Cmaj7` = `CΔ7`).
 
-**Plan:** Parse and store chord definitions. Render as chord diagrams (SVG) in the editor and performance mode. This is a high-value feature — musicians often use non-standard voicings and want to communicate them.
-
-Fields to extract:
+Fields extracted:
 - `name` — chord identifier
-- `base-fret` — starting fret (default 1)
+- `base-fret` — starting fret (default 1); `frets` are relative to it, as in the standard
 - `frets` — one value per string: number (fret), `0` (open), `x`/`N`/`-1` (muted)
-- `fingers` — optional, one value per string
+- `fingers` — optional, one value per string; dropped when the count doesn't match `frets`. Used to draw barres (one finger on several strings at the same fret); without it, barres are inferred from the frets
 
-We skip `keys` (keyboard layout), `copy`/`copyall`, `display`, `format` for now.
+The string count picks the instrument: 6 frets → guitar, 4 frets → ukulele (a 4-string bass define would be read as ukulele; bass shows its root–fifth–octave box instead). Invalid defines are ignored: no name, no frets, a non-numeric fret, `base-fret` below 1, all strings muted, a bare value with no attribute.
+
+We accept and skip `keys` (keyboard layout), `copy`/`copyall`, `display`, `format`, `diagram`. Fingers are not drawn on the diagram yet.
 
 ### `{chord}` — Inline chord diagram
 
 Same syntax as `define` but only displays at that position, doesn't persist.
 
-**Status:** Skip for MVP. `{define}` covers the core need.
+**Status:** Parsed with the same rules and kept in `chordDefinitions` with `inline: true`; it does not override the popover diagram. Not drawn in place yet.
 
 ---
 
@@ -389,12 +389,13 @@ We should display:
 source string
   → split by \n
   → for each line:
-      directive? → metadata, section start/end, comment, chorus recall, highlight toggle
+      directive? → metadata, section start/end, comment, chorus recall, highlight toggle,
+                   chord definition ({define} / {chord})
       song line? → extract [chords] + text segments (+ trailing inline comments)
-  → ChordProSong { metadata, sections[], setup? }
+  → ChordProSong { metadata, sections[], setup?, chordDefinitions? }
 ```
 
-Section lines already use the `SongLine` union below (`lyric` / `comment` / `chorus-recall`); `chorus-recall` also carries a reference to the recalled `chorus` section, and `Segment` has an optional `highlight` flag. The rest of the target AST (multi-value metadata, chord definitions) is not implemented yet.
+Section lines already use the `SongLine` union below (`lyric` / `comment` / `chorus-recall`); `chorus-recall` also carries a reference to the recalled `chorus` section, and `Segment` has an optional `highlight` flag. Chord definitions are a flat song-level list (`{chord}` entries flagged `inline`, not yet placed in the lines). The rest of the target AST (multi-value metadata) is not implemented yet.
 
 ### Target: richer AST
 
@@ -516,9 +517,9 @@ The current parser discards unknown directives and `#` comments. The serializer 
 - [ ] Capo-aware key display
 
 ### Phase 3 — Chord diagrams
-- [ ] `{define}` parsing and storage
-- [ ] SVG chord diagram renderer
-- [ ] Built-in chord library (common voicings)
+- [x] `{define}` parsing and storage (performance popover override; `{chord}` parsed)
+- [x] SVG chord diagram renderer (fretboard + keyboard)
+- [x] Built-in chord library (common voicings): guitar, ukulele, bass, piano
 - [ ] Inline `{chord}` display
 
 ### Phase 4 — Advanced

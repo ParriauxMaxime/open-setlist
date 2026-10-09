@@ -2,14 +2,19 @@
  * SVG piano keyboard diagram for chord visualization.
  *
  * Renders a 2-octave keyboard (C4–B5) with highlighted keys
- * for the chord's MIDI notes. Accent color for active keys.
+ * for the chord's MIDI notes (chord color) and its slash bass (accent color).
  */
 
 interface KeyboardDiagramProps {
   name: string;
   midi: number[];
+  /** Slash bass note, set apart from the chord tones */
+  bass?: number;
   width?: number;
 }
+
+const CHORD_FILL = "var(--color-chord, #f0a050)";
+const BASS_FILL = "var(--color-accent, #4a9eff)";
 
 /** MIDI range: C4 (60) to B5 (83) = 2 octaves, 14 white keys */
 const MIDI_START = 60;
@@ -44,8 +49,10 @@ function blackKeyX(midi: number, keyW: number, blackW: number): number {
   return pos * keyW - blackW / 2 + keyW / 2;
 }
 
-export function KeyboardDiagram({ name, midi, width = 120 }: KeyboardDiagramProps) {
+export function KeyboardDiagram({ name, midi, bass, width = 120 }: KeyboardDiagramProps) {
   const activeSet = new Set(midi);
+  const keyFill = (note: number, idle: string) =>
+    note === bass ? BASS_FILL : activeSet.has(note) ? CHORD_FILL : idle;
 
   const keyW = width / WHITE_KEYS_COUNT;
   const keyH = width * 0.5;
@@ -96,9 +103,7 @@ export function KeyboardDiagram({ name, midi, width = 120 }: KeyboardDiagramProp
           width={keyW - 1}
           height={keyH}
           rx={1}
-          fill={
-            activeSet.has(k.midi) ? "var(--color-chord, #f0a050)" : "var(--color-bg-white, #f8f8f8)"
-          }
+          fill={keyFill(k.midi, "var(--color-bg-white, #f8f8f8)")}
           stroke="var(--color-border, #2a2a2a)"
           strokeWidth={0.5}
         />
@@ -113,9 +118,7 @@ export function KeyboardDiagram({ name, midi, width = 120 }: KeyboardDiagramProp
           width={blackW}
           height={blackH}
           rx={1}
-          fill={
-            activeSet.has(k.midi) ? "var(--color-chord, #f0a050)" : "var(--color-bg-black, #1a1a1a)"
-          }
+          fill={keyFill(k.midi, "var(--color-bg-black, #1a1a1a)")}
           stroke="var(--color-border, #2a2a2a)"
           strokeWidth={0.5}
         />

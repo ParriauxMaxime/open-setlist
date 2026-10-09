@@ -1,72 +1,74 @@
-import { getGuitarFingerings } from "@domain/chords/guitar";
+import { getFingerings } from "@domain/chords/fingerings";
 import { formatChord } from "@domain/chords/notation";
 import {
   CHORD_GROUPS,
   CHROMATIC_ROOTS,
-  chordMidi,
   chordName,
+  parseChord,
+  pianoVoicing,
   QUALITIES,
+  QUALITY_IDS,
+  type QualityId,
 } from "@domain/chords/theory";
-import { INSTRUMENT_OPTIONS, type InstrumentType } from "@domain/chords/types";
+import { INSTRUMENT_VALUES, type InstrumentType } from "@domain/chords/types";
+import { loadPreferences } from "@domain/preferences";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNotation } from "../shared/hooks/use-notation";
 import { FretboardDiagram } from "./components/fretboard-diagram";
 import { KeyboardDiagram } from "./components/keyboard-diagram";
 
-const INSTRUMENT_KEYS: Record<string, string> = {
-  Guitar: "settings.instrument.guitar",
-  Piano: "settings.instrument.piano",
-};
+function pianoNotes(name: string) {
+  const parsed = parseChord(name);
+  return parsed ? pianoVoicing(parsed) : undefined;
+}
 
 export function ChordsPage() {
   const { t } = useTranslation();
   const notation = useNotation();
-  const [instrument, setInstrument] = useState<InstrumentType>("guitar");
+  const [instrument, setInstrument] = useState<InstrumentType>(
+    () => loadPreferences().favoriteInstrument,
+  );
   const [rootFilter, setRootFilter] = useState<string>("");
+  const [qualityFilter, setQualityFilter] = useState<QualityId | "">("");
 
   const groups = useMemo(() => {
-    return CHORD_GROUPS.map((group) => {
-      const quality = QUALITIES[group.qualityId];
-
-      let chords = group.roots.map((root) => ({
-        root,
-        name: chordName(root, group.qualityId),
-      }));
-
-      if (rootFilter) {
-        chords = chords.filter((c) => c.root === rootFilter);
-      }
-
-      // For guitar: skip chords without fingerings
-      if (instrument === "guitar") {
-        chords = chords.filter((c) => getGuitarFingerings(c.name).length > 0);
-      }
-
-      return { label: quality.label, quality, chords };
-    }).filter((g) => g.chords.length > 0);
-  }, [instrument, rootFilter]);
+    return CHORD_GROUPS.filter((g) => !qualityFilter || g.qualityId === qualityFilter)
+      .map((group) => {
+        const roots = rootFilter ? group.roots.filter((r) => r === rootFilter) : group.roots;
+        const chords = roots.map((root) => {
+          const name = chordName(root, group.qualityId);
+          return instrument === "piano"
+            ? { name, fingerings: [], piano: pianoNotes(name) }
+            : { name, fingerings: getFingerings(instrument, name) };
+        });
+        return { qualityId: group.qualityId, quality: QUALITIES[group.qualityId], chords };
+      })
+      .filter((g) => g.chords.length > 0);
+  }, [instrument, rootFilter, qualityFilter]);
 
   return (
     <div className="p-page">
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <h1 className="text-2xl font-bold">{t("chordLib.title")}</h1>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <select
             className="field-sm"
+            aria-label={t("chordLib.instrument")}
             value={instrument}
             onChange={(e) => setInstrument(e.target.value as InstrumentType)}
           >
-            {INSTRUMENT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {t(INSTRUMENT_KEYS[opt.label] ?? opt.label)}
+            {INSTRUMENT_VALUES.map((value) => (
+              <option key={value} value={value}>
+                {t(`settings.instrument.${value}`)}
               </option>
             ))}
           </select>
 
           <select
             className="field-sm"
+            aria-label={t("chordLib.root")}
             value={rootFilter}
             onChange={(e) => setRootFilter(e.target.value)}
           >
@@ -77,35 +79,54 @@ export function ChordsPage() {
               </option>
             ))}
           </select>
+
+          <select
+            className="field-sm"
+            aria-label={t("chordLib.quality")}
+            value={qualityFilter}
+            onChange={(e) => setQualityFilter(e.target.value as QualityId | "")}
+          >
+            <option value="">{t("chordLib.allQualities")}</option>
+            {QUALITY_IDS.map((id) => (
+              <option key={id} value={id}>
+                {t(`chordLib.qualities.${id}`)}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
       {groups.map((group) => (
-        <section key={group.label} className="mb-8">
-          <h2 className="mb-4 text-lg font-semibold text-text-muted" title={group.quality.formula}>
-            {group.label}
+        <section key={group.qualityId} className="mb-8">
+          <h2 className="mb-4 text-lg font-semibold text-text-muted">
+            {t(`chordLib.qualities.${group.qualityId}`)}
+            <span className="ml-2 text-sm font-normal text-text-faint">
+              {group.quality.formula}
+            </span>
           </h2>
           <div className="flex flex-wrap gap-4">
-            {instrument === "guitar" &&
-              group.chords.flatMap((chord) =>
-                getGuitarFingerings(chord.name).map((f) => (
-                  <FretboardDiagram
-                    key={`${chord.name}-${f.baseFret}${f.barres?.length ? "b" : ""}`}
-                    name={formatChord(chord.name, notation)}
-                    frets={f.frets}
-                    baseFret={f.baseFret}
-                    barres={f.barres}
-                  />
-                )),
-              )}
-            {instrument === "piano" &&
-              group.chords.map((chord) => (
-                <KeyboardDiagram
-                  key={chord.name}
+            {group.chords.flatMap((chord) =>
+              chord.fingerings.map((f) => (
+                <FretboardDiagram
+                  key={`${chord.name}-${f.frets.join(".")}`}
                   name={formatChord(chord.name, notation)}
-                  midi={chordMidi(chord.root, group.quality.intervals)}
+                  frets={f.frets}
+                  baseFret={f.baseFret}
+                  barres={f.barres}
                 />
-              ))}
+              )),
+            )}
+            {group.chords.map(
+              (chord) =>
+                chord.piano && (
+                  <KeyboardDiagram
+                    key={chord.name}
+                    name={formatChord(chord.name, notation)}
+                    midi={chord.piano.notes}
+                    bass={chord.piano.bass}
+                  />
+                ),
+            )}
           </div>
         </section>
       ))}

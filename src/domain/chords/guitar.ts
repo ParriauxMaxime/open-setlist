@@ -1,18 +1,23 @@
 /**
  * Guitar chord fingerings.
  *
- * Keyed by chord name. Each chord has 1+ fingerings (open, barre, etc.).
+ * Hand-written voicings keyed by chord name (open chords and the usual barres), then
+ * movable E-shape / A-shape barre templates for any root × quality they don't cover.
  * Frets array: [lowE(6), A(5), D(4), G(3), B(2), highE(1)]
  *   null = muted, 0 = open, 1+ = fret number
  */
 
-import { canonicalRoot } from "./theory";
+import {
+  byPosition,
+  type Fingering,
+  pitchClass,
+  TUNINGS,
+  toFingering,
+  uniqueFingerings,
+} from "./fretted";
+import { canonicalRoot, chordName, parseChord, type QualityId, ROOT_MIDI } from "./theory";
 
-export interface GuitarFingering {
-  frets: (number | null)[];
-  baseFret: number;
-  barres?: number[];
-}
+export type GuitarFingering = Fingering;
 
 export const GUITAR_FINGERINGS: Record<string, GuitarFingering[]> = {
   // -- Major ----------------------------------------------------------------
@@ -269,17 +274,124 @@ export const GUITAR_FINGERINGS: Record<string, GuitarFingering[]> = {
   ],
 };
 
-/** Look up fingerings by chord name (resolves enharmonic aliases) */
+// -- Open voicings for the other qualities -----------------------------------
+// The barre templates below also give the open E and A forms (root fret 0).
+const OPEN_EXTRAS: Record<string, (number | null)[][]> = {
+  Csus2: [[null, 3, 0, 0, 1, null]],
+  Dsus2: [[null, null, 0, 2, 3, 0]],
+  Gsus2: [[3, 0, 0, 0, 3, 3]],
+  Csus4: [[null, 3, 3, 0, 1, 1]],
+  Dsus4: [[null, null, 0, 2, 3, 3]],
+  Gsus4: [[3, 3, 0, 0, 1, 3]],
+  C7sus4: [[null, 3, 3, 3, 1, 1]],
+  D7sus4: [[null, null, 0, 2, 1, 3]],
+  G7sus4: [[3, 3, 0, 0, 1, 1]],
+  Ddim: [[null, null, 0, 1, 3, 1]],
+  Ddim7: [[null, null, 0, 1, 0, 1]],
+  Edim7: [[0, 1, 2, 0, 2, 0]],
+  Bdim7: [[null, 2, 3, 1, 3, 1]],
+  Caug: [[null, 3, 2, 1, 1, 0]],
+  Daug: [[null, null, 0, 3, 3, 2]],
+  Gaug: [[3, 2, 1, 0, 0, 3]],
+  C6: [[null, 3, 2, 2, 1, 0]],
+  D6: [[null, null, 0, 2, 0, 2]],
+  G6: [[3, 2, 0, 0, 0, 0]],
+  Dm6: [[null, null, 0, 2, 0, 1]],
+  G9: [[3, null, 0, 2, 0, 1]],
+  A9: [[null, 0, 2, 4, 2, 3]],
+  Cadd9: [[null, 3, 2, 0, 3, 0]],
+  Dadd9: [[null, 5, 4, 2, 3, 0]],
+  Gadd9: [[3, null, 0, 2, 0, 3]],
+  Cmaj9: [[null, 3, 2, 4, 3, 0]],
+  Dmaj9: [[null, null, 0, 2, 2, 0]],
+  Fmaj9: [[null, null, 3, 2, 1, 3]],
+  Gmaj9: [[3, null, 0, 2, 0, 2]],
+  Amaj9: [[null, 0, 2, 1, 0, 0]],
+  Dm7b5: [[null, null, 0, 1, 1, 1]],
+  Em7b5: [[0, 1, 0, 0, 3, 0]],
+  A13: [[null, 0, 2, 0, 2, 2]],
+  E13: [[0, 2, 0, 1, 2, 0]],
+};
+
+// -- Movable barre templates -------------------------------------------------
+// Fret offsets from the root fret; the root is on the low E (E-shape) or A string (A-shape).
+type Template = (number | null)[];
+
+const E_SHAPES: Partial<Record<QualityId, Template>> = {
+  major: [0, 2, 2, 1, 0, 0],
+  minor: [0, 2, 2, 0, 0, 0],
+  dom7: [0, 2, 0, 1, 0, 0],
+  min7: [0, 2, 0, 0, 0, 0],
+  maj7: [0, 2, 1, 1, 0, 0],
+  sus4: [0, 2, 2, 2, 0, 0],
+  dom7sus4: [0, 2, 0, 2, 0, 0],
+  dim: [0, 1, 2, 0, null, null],
+  dim7: [0, null, -1, 0, -1, null],
+  aug: [0, 3, 2, 1, 1, 0],
+  maj6: [0, 2, 2, 1, 2, 0],
+  min6: [0, 2, 2, 0, 2, 0],
+  dom9: [0, 2, 0, 1, 0, 2],
+  add9: [0, 2, 4, 1, 0, 0],
+  min9: [0, 2, 0, 0, 0, 2],
+  maj9: [0, null, 1, 1, 0, 2],
+  halfDim: [0, null, 0, 0, -1, null],
+  dom11: [0, 0, 0, 1, 0, 2],
+  dom13: [0, null, 0, 1, 2, null],
+};
+
+const A_SHAPES: Record<QualityId, Template> = {
+  major: [null, 0, 2, 2, 2, 0],
+  minor: [null, 0, 2, 2, 1, 0],
+  dom7: [null, 0, 2, 0, 2, 0],
+  min7: [null, 0, 2, 0, 1, 0],
+  maj7: [null, 0, 2, 1, 2, 0],
+  sus2: [null, 0, 2, 2, 0, 0],
+  sus4: [null, 0, 2, 2, 3, 0],
+  dom7sus4: [null, 0, 2, 0, 3, 0],
+  dim: [null, 0, 1, 2, 1, null],
+  dim7: [null, 0, 1, 2, 1, 2],
+  aug: [null, 0, 3, 2, 2, 1],
+  maj6: [null, 0, 2, 2, 2, 2],
+  min6: [null, 0, 2, 2, 1, 2],
+  dom9: [null, 0, -1, 0, 0, 0],
+  add9: [null, 0, 2, 4, 2, 0],
+  min9: [null, 0, -2, 0, 0, 0],
+  maj9: [null, 0, -1, 1, 0, null],
+  halfDim: [null, 0, 1, 0, 1, null],
+  dom11: [null, 0, 0, 0, 0, 0],
+  dom13: [null, 0, -1, 0, 2, 2],
+};
+
+/** Place a template so its root string sounds `root`. */
+function placeTemplate(template: Template, rootString: number, root: string): Fingering {
+  let rootFret = pitchClass(ROOT_MIDI[root] - TUNINGS.guitar[rootString]);
+  const lowest = Math.min(...template.filter((o): o is number => o !== null));
+  // A shape reaching below its root fret needs room: move it up an octave
+  if (lowest < 0 && rootFret + lowest <= 0) rootFret += 12;
+  return toFingering(template.map((o) => (o === null ? null : rootFret + o)));
+}
+
+/** E-shape and A-shape voicings of a chord, lowest on the neck first. */
+export function barreFingerings(root: string, qualityId: QualityId): Fingering[] {
+  if (ROOT_MIDI[root] === undefined) return [];
+  const eShape = E_SHAPES[qualityId];
+  const shapes = [
+    ...(eShape ? [placeTemplate(eShape, 0, root)] : []),
+    placeTemplate(A_SHAPES[qualityId], 1, root),
+  ];
+  return uniqueFingerings(shapes).sort(byPosition);
+}
+
+/**
+ * Fingerings for a chord name (enharmonic roots and suffix spellings resolved).
+ * Slash chords show the base chord. Hand-written voicings come first; barre templates
+ * fill in when there are fewer than two.
+ */
 export function getGuitarFingerings(name: string): GuitarFingering[] {
-  if (GUITAR_FINGERINGS[name]) return GUITAR_FINGERINGS[name];
-  // Try canonical root: "Dbm" → "C#m"
-  const root = name.match(/^[A-G][#b]?/)?.[0];
-  if (root) {
-    const canon = canonicalRoot(root);
-    if (canon !== root) {
-      const canonical = canon + name.slice(root.length);
-      if (GUITAR_FINGERINGS[canonical]) return GUITAR_FINGERINGS[canonical];
-    }
-  }
-  return [];
+  const chord = parseChord(name);
+  if (!chord) return [];
+  const key = chordName(canonicalRoot(chord.root), chord.qualityId);
+  const written = GUITAR_FINGERINGS[key] ?? (OPEN_EXTRAS[key] ?? []).map(toFingering);
+  if (written.length >= 2) return written;
+  return uniqueFingerings([...written, ...barreFingerings(chord.root, chord.qualityId)]);
 }

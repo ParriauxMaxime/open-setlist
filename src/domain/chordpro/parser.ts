@@ -12,7 +12,12 @@
  *   lyric is the band's setup line (patch code, instruments, capo...)
  * - Chorus recall: `{chorus}` or an empty `{soc}{eoc}` pair
  * - Highlight: `{soh}`…`{eoh}` (Setlist Helper), inline or across lines
+ * - Chord definitions: `{define}` (song-wide voicing) and `{chord}` (in place)
  */
+
+import { type ChordDefinition, parseChordDefinition } from "./chord-definitions";
+
+export type { ChordDefinition } from "./chord-definitions";
 
 export type RenderMode = "lyrics" | "monospace" | "prose";
 export type Layer = "core" | "band" | "instrument";
@@ -22,6 +27,8 @@ export interface ChordProSong {
   sections: Section[];
   /** First comment of the song when it comes before any lyric (e.g. `12B 🎸`). */
   setup?: string;
+  /** `{define}` and `{chord}` voicings, in source order (only when there are any). */
+  chordDefinitions?: ChordDefinition[];
 }
 
 export interface Section {
@@ -314,6 +321,7 @@ export function parse(source: string): ChordProSong {
   let seenComment = false;
   let setup: string | undefined;
   let highlightOn = false;
+  const chordDefinitions: ChordDefinition[] = [];
 
   const closeSection = () => {
     if (!currentSection) return;
@@ -388,6 +396,11 @@ export function parse(source: string): ChordProSong {
         pushComment(makeComment(COMMENT_STYLES[lower], value));
       } else if (lower === "soh" || lower === "eoh") {
         highlightOn = lower === "soh";
+      } else if (lower === "define" || lower === "chord") {
+        const definition = value ? parseChordDefinition(value) : null;
+        if (definition) {
+          chordDefinitions.push(lower === "chord" ? { ...definition, inline: true } : definition);
+        }
       } else if (lower === "chorus") {
         const label = value?.trim() || undefined;
         if (currentSection && !currentImplicit) {
@@ -478,7 +491,9 @@ export function parse(source: string): ChordProSong {
   // Close any unclosed section
   closeSection();
 
-  return { metadata, sections, setup };
+  return chordDefinitions.length > 0
+    ? { metadata, sections, setup, chordDefinitions }
+    : { metadata, sections, setup };
 }
 
 function parseLine(raw: string): { segments: Segment[] } {
