@@ -145,6 +145,8 @@
     "allSongs": "Toutes les chansons"
   },
   "perform": {
+    "noChart": "Pas encore de grille pour ce morceau.",
+    "addChart": "Ajouter la grille",
     "noSongsInSetlist": "Cette setlist ne contient aucune chanson.",
     "editSetlist": "Modifier la setlist",
     "editSong": "Modifier la chanson",
@@ -307,6 +309,8 @@
     "reviewRefreshed": "Les données ont changé pendant votre vérification (autre synchro ou autre onglet). Rien n'a été écrasé. Vérifiez les changements mis à jour."
   },
   "importSetlistHelper": {
+    "fillCount_one": "{{count}} chanson de votre catalogue sans grille : elle la reçoit",
+    "fillCount_other": "{{count}} chansons de votre catalogue sans grille : elles reçoivent la leur",
     "button": "Importer depuis Setlist Helper",
     "reading": "Lecture...",
     "previewTitle": "Importer depuis Setlist Helper",
@@ -362,6 +366,8 @@
     "failed": "L'import des setlists a échoué."
   },
   "chartImport": {
+    "fillCount_one": "{{count}} chanson de votre catalogue sans grille : elle la reçoit",
+    "fillCount_other": "{{count}} chansons de votre catalogue sans grille : elles reçoivent la leur",
     "pasteButton": "Coller une grille",
     "pasteTitle": "Coller une grille",
     "pasteHint": "Copiez une grille depuis un site, un PDF ou une autre appli et collez-la ici. Les accords écrits au-dessus des paroles sont placés dans les paroles, les noms de parties et les tablatures sont reconnus. Le ChordPro est gardé tel quel.",

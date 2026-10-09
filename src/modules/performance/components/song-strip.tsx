@@ -57,6 +57,7 @@ export function SongStrip({
           {prevSong && (
             <ChordProView
               content={prevSong.content}
+              songId={prevSong.id}
               transposition={prevTransposition}
               note={renderNote?.(prevSong)}
               onChordTap={onChordTap}
@@ -73,6 +74,7 @@ export function SongStrip({
           {currentSong ? (
             <ChordProView
               content={currentSong.content}
+              songId={currentSong.id}
               transposition={currentTransposition}
               note={renderNote?.(currentSong)}
               onChordTap={onChordTap}
@@ -90,6 +92,7 @@ export function SongStrip({
           {nextSong && (
             <ChordProView
               content={nextSong.content}
+              songId={nextSong.id}
               transposition={nextTransposition}
               note={renderNote?.(nextSong)}
               onChordTap={onChordTap}

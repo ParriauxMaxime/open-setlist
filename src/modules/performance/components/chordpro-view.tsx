@@ -1,3 +1,4 @@
+import { hasChart } from "@domain/chordpro/has-chart";
 import {
   type ChorusRecallLine,
   type CommentLine,
@@ -10,8 +11,10 @@ import {
 import { filterSong, type PartView, writtenPitchShift } from "@domain/chordpro/visibility";
 import { formatChord, type Notation } from "@domain/chords/notation";
 import { parseCapo, transposeChord } from "@domain/chords/transpose";
+import { Link } from "@swan-io/chicane";
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { Router } from "../../../router";
 import { useNotation } from "../../shared/hooks/use-notation";
 
 export interface ChordTapInfo {
@@ -27,6 +30,8 @@ interface ChordProViewProps {
   partView?: PartView;
   /** Shown under the setup line, above the chart (the musician's private "My note"). */
   note?: ReactNode;
+  /** Lets the empty state link to the editor. */
+  songId?: string;
 }
 
 /** Song key (for key-aware transposed spelling) and device notation, read by every chord. */
@@ -58,16 +63,28 @@ function useChordDisplay(transposition = 0) {
   };
 }
 
-function ChordProBody({ content, transposition, onChordTap, partView, note }: ChordProViewProps) {
+function ChordProBody({
+  content,
+  transposition,
+  onChordTap,
+  partView,
+  note,
+  songId,
+}: ChordProViewProps) {
   const { t } = useTranslation();
   const song = useMemo(() => parse(content), [content]);
   const parsed = useMemo(() => (partView ? filterSong(song, partView) : song), [song, partView]);
 
-  if (parsed.sections.length === 0 && content.trim() === "") {
+  if (!hasChart(song)) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col items-start gap-4">
         {note}
-        <p className="text-text-faint italic">{t("perform.noContent")}</p>
+        <p className="text-text-faint italic">{t("perform.noChart")}</p>
+        {songId && (
+          <Link to={Router.SongEdit({ songId })} className="btn btn-primary">
+            {t("perform.addChart")}
+          </Link>
+        )}
       </div>
     );
   }

@@ -140,10 +140,13 @@ function ChartImportPreviewModal({
   const [strategy, setStrategy] = useState<MatchStrategy>(MATCH_STRATEGIES.skip);
   const { plan, warnings } = preview;
   const nothingToDo =
-    plan.newSongs.length === 0 && (strategy === MATCH_STRATEGIES.skip || plan.matches.length === 0);
+    plan.newSongs.length === 0 &&
+    plan.fills.length === 0 &&
+    (strategy === MATCH_STRATEGIES.skip || plan.matches.length === 0);
 
   const rows = [
     ...plan.newSongs.map((imported) => ({ imported, inCatalog: false })),
+    ...plan.fills.map(({ imported }) => ({ imported, inCatalog: false })),
     ...plan.matches.map(({ imported }) => ({ imported, inCatalog: true })),
   ].sort((a, b) => a.imported.row - b.imported.row);
 
@@ -172,6 +175,11 @@ function ChartImportPreviewModal({
           <li className="text-accent">
             {t("chartImport.newCount", { count: plan.newSongs.length })}
           </li>
+          {plan.fills.length > 0 && (
+            <li className="text-accent">
+              {t("chartImport.fillCount", { count: plan.fills.length })}
+            </li>
+          )}
           <li className="text-text-muted">
             {t("chartImport.matchCount", { count: plan.matches.length })}
           </li>
