@@ -15,7 +15,9 @@ import {
 import { hasChart } from "../chordpro/has-chart";
 import { parse } from "../chordpro/parser";
 import { decodeTextBytes, parseCsv } from "./csv";
+import { restoreLineBreaks } from "./flattened-lyrics";
 import { decodeHtmlEntities } from "./html-entities";
+import { looksLikeHtml, parseHtmlTable } from "./html-table";
 import { normalizeKey } from "./normalize-key";
 
 export type ImportedSongFields = Omit<Song, "id" | "createdAt" | "updatedAt">;
@@ -55,7 +57,8 @@ export interface SetlistHelperImport {
 
 export class SetlistHelperFormatError extends Error {}
 
-const REQUIRED_COLUMNS = ["Name", "Lyrics"] as const;
+const LYRICS_COLUMN = "Lyrics";
+const REQUIRED_COLUMNS = ["Name", LYRICS_COLUMN] as const;
 
 /** Directives removed from the body: title/artist + everything Setlist Helper appends. */
 const STRIPPED_DIRECTIVES = new Set([
@@ -262,7 +265,8 @@ export function readSetlistHelperRecords(
   required: readonly string[],
 ): { columns: string[]; records: Record<string, string>[] } {
   const text = typeof input === "string" ? input : decodeTextBytes(input);
-  const [header, ...records] = parseCsv(text);
+  const html = looksLikeHtml(text);
+  const [header, ...records] = html ? parseHtmlTable(text) : parseCsv(text);
   const columns = (header ?? []).map((h) => h.trim());
   for (const col of required) {
     if (!columns.includes(col)) {
@@ -272,8 +276,10 @@ export function readSetlistHelperRecords(
   const decoded = records.map((fields) => {
     const record: Record<string, string> = {};
     columns.forEach((col, i) => {
-      record[col] = decodeHtmlEntities(fields[i] ?? "");
+      const value = fields[i] ?? "";
+      record[col] = html ? value : decodeHtmlEntities(value);
     });
+    if (record[LYRICS_COLUMN]) record[LYRICS_COLUMN] = restoreLineBreaks(record[LYRICS_COLUMN]);
     return record;
   });
   return { columns, records: decoded };

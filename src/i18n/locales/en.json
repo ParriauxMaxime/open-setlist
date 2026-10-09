@@ -336,7 +336,7 @@
       "invalidSequence": "invalid sequence number \"{{value}}\", placed at the end.",
       "ambiguousMatch": "matches {{value}} catalog songs, the oldest one is used."
     },
-    "safeNote": "Nothing is deleted. Export the catalog CSV from Setlist Helper web (Song Catalog > Export CSV).",
+    "safeNote": "Nothing is deleted. Export the catalog from Setlist Helper web: Song Catalog > Export > Html (keeps line breaks exactly) or CSV.",
     "confirm": "Import",
     "importing": "Importing...",
     "cancel": "Cancel",

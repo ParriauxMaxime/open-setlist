@@ -86,7 +86,7 @@ export function SetlistHelperImport({ disabled, onSuccess, onError }: SetlistHel
       <input
         ref={inputRef}
         type="file"
-        accept=".csv,text/csv"
+        accept=".csv,.htm,.html,text/csv,text/html"
         className="hidden"
         onChange={handleFile}
       />

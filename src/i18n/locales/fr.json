@@ -336,7 +336,7 @@
       "invalidSequence": "numéro d'ordre invalide « {{value}} », placé à la fin.",
       "ambiguousMatch": "correspond à {{value}} chansons du catalogue, la plus ancienne est utilisée."
     },
-    "safeNote": "Rien n'est supprimé. Exportez le CSV du catalogue depuis Setlist Helper web (Song Catalog > Export CSV).",
+    "safeNote": "Rien n'est supprimé. Exportez le catalogue depuis Setlist Helper web : Song Catalog > Export > Html (garde exactement les retours à la ligne) ou CSV.",
     "confirm": "Importer",
     "importing": "Import en cours...",
     "cancel": "Annuler",
