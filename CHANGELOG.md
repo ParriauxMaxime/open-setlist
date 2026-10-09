@@ -9,6 +9,7 @@ Everything a small band or orchestra needs to leave Setlist Helper, without turn
 - Short lyrics under a chord are no longer hidden.
 - Paste any chart: chords written above lyrics are converted to ChordPro, with title, key and capo detected.
 - Import `.cho`, `.chopro`, `.crd`, `.pro`, `.txt` files, several at once.
+- Chord diagrams: 20 chord types for guitar, piano, ukulele and bass; `{define}` shapes from the chart win on stage.
 - Chord notation: English, solfège (Do Ré Mi) or German; transposed chords spelled for the target key; transposed key and capo shown on stage.
 
 ### Each musician
@@ -30,6 +31,10 @@ Everything a small band or orchestra needs to leave Setlist Helper, without turn
 - Sync never silently loses data: re-pull on conflicts, remote deletions applied, per-song "keep mine / take theirs".
 - Invites are passphrase-encrypted, or carry no token at all.
 - Import from Setlist Helper: catalog CSV and setlist CSVs (solfège keys converted, accents decoded, comments kept).
+
+### First run
+- One-screen setup (instrument, chord names, language) and a "What's new" card for returning band members.
+- Print a chart booklet for one part (`?part=trumpet`), transposed to written pitch.
 
 ### Under the hood
 - Offline first: the whole app is cached on first visit; sync requests are never served from cache.
