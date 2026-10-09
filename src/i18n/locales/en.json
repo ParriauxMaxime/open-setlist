@@ -211,6 +211,20 @@
     "setNumber": "Set {{number}}",
     "hint": "Tap the BPM for a beat pulse, hold it for count-in and click sound"
   },
+  "myNotes": {
+    "title": "My note",
+    "panelTitle": "My note (only on this device)",
+    "privateHint": "Private to you: never synced or shared with the band.",
+    "autosaved": "Saved as you type. Leave empty to delete.",
+    "placeholder": "Capo 2 here, watch the singer for the stop, use the 12-string...",
+    "add": "Add my note",
+    "edit": "Edit my note",
+    "editorTitle": "My note: {{title}}",
+    "emptyToDelete": "Leave empty and save to delete it.",
+    "collapse": "Hide my note",
+    "expand": "Show my note",
+    "hasNote": "Has a personal note"
+  },
   "sync": {
     "title": "Sync",
     "description": "Export your songs and setlists as a JSON file, or import from a previously exported file.",

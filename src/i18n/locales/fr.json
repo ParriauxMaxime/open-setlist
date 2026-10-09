@@ -211,6 +211,20 @@
     "setNumber": "Set {{number}}",
     "hint": "Touchez le BPM pour la pulsation, maintenez-le pour le décompte et le clic"
   },
+  "myNotes": {
+    "title": "Ma note",
+    "panelTitle": "Ma note (uniquement sur cet appareil)",
+    "privateHint": "Rien que pour vous : jamais synchronisée ni partagée avec le groupe.",
+    "autosaved": "Enregistrée pendant la saisie. Videz-la pour la supprimer.",
+    "placeholder": "Capo 2 ici, regarder le chanteur pour le stop, prendre la 12 cordes...",
+    "add": "Ajouter ma note",
+    "edit": "Modifier ma note",
+    "editorTitle": "Ma note : {{title}}",
+    "emptyToDelete": "Videz-la et enregistrez pour la supprimer.",
+    "collapse": "Masquer ma note",
+    "expand": "Afficher ma note",
+    "hasNote": "Contient une note perso"
+  },
   "sync": {
     "title": "Synchro",
     "description": "Exportez vos chansons et setlists en fichier JSON, ou importez depuis un fichier précédemment exporté.",

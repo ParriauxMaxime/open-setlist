@@ -1,4 +1,5 @@
 import { createId } from "@domain/id";
+import { clearMyNotes } from "@domain/my-notes";
 import {
   addProfile,
   type Profile,
@@ -85,6 +86,7 @@ function ProfileRow({
     // Remove profile-keyed localStorage entries
     localStorage.removeItem(`open-setlist-sync-config-${profile.id}`);
     localStorage.removeItem(`open-setlist-tombstones-${profile.id}`);
+    clearMyNotes(profile.id);
     removeProfile(profile.id);
     setConfirmDelete(false);
   }, [profile.id]);

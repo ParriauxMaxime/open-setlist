@@ -178,7 +178,7 @@ export function useSwipeStrip(options: UseSwipeStripOptions) {
         }
       } else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
         const target = e.target as HTMLElement;
-        if (!target.closest("[data-chord-tap]")) {
+        if (!target.closest("[data-chord-tap], button")) {
           const rect = el.getBoundingClientRect();
           const zone: "left" | "right" = t.clientX < rect.left + rect.width / 2 ? "left" : "right";
 

@@ -46,6 +46,11 @@ button:not(:disabled) {
   /* Highlight — {soh}…{eoh} and {highlight} text (backing vocals, hooks, x3) */
   --color-highlight: #facc1540;
 
+  /* My notes — a musician's private per-song reminders: muted sticky-note yellow */
+  --color-note-bg: #2a2614;
+  --color-note-border: #5c5224;
+  --color-note-text: #e9d58a;
+
   /* Status */
   --color-success: #4ade80;
   --color-warning: #fbbf24;
@@ -98,6 +103,10 @@ button:not(:disabled) {
   --color-success: #4ade80;
   --color-warning: #fbbf24;
   --color-status-idea: #a78bfa;
+
+  --color-note-bg: #2a2614;
+  --color-note-border: #5c5224;
+  --color-note-text: #e9d58a;
 }
 
 [data-theme="light"] {
@@ -117,6 +126,10 @@ button:not(:disabled) {
   --color-success: #16a34a;
   --color-warning: #ca8a04;
   --color-status-idea: #7c3aed;
+
+  --color-note-bg: #fdf6d3;
+  --color-note-border: #e3d08a;
+  --color-note-text: #7a5e0a;
 }
 
 /* --- Base resets --- */

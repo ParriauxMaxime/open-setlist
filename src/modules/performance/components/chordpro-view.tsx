@@ -10,7 +10,7 @@ import {
 import { filterSong, type PartView } from "@domain/chordpro/visibility";
 import { formatChord, type Notation } from "@domain/chords/notation";
 import { transposeChord } from "@domain/chords/transpose";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, type ReactNode, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNotation } from "../../shared/hooks/use-notation";
 
@@ -25,6 +25,8 @@ interface ChordProViewProps {
   onChordTap?: (info: ChordTapInfo) => void;
   /** "My part" filter (performance mode); everything is shown when omitted. */
   partView?: PartView;
+  /** Shown under the setup line, above the chart (the musician's private "My note"). */
+  note?: ReactNode;
 }
 
 /** Song key (for key-aware transposed spelling) and device notation, read by every chord. */
@@ -52,13 +54,18 @@ function useChordDisplay(transposition = 0) {
   };
 }
 
-function ChordProBody({ content, transposition, onChordTap, partView }: ChordProViewProps) {
+function ChordProBody({ content, transposition, onChordTap, partView, note }: ChordProViewProps) {
   const { t } = useTranslation();
   const song = useMemo(() => parse(content), [content]);
   const parsed = useMemo(() => (partView ? filterSong(song, partView) : song), [song, partView]);
 
   if (parsed.sections.length === 0 && content.trim() === "") {
-    return <p className="text-text-faint italic">{t("perform.noContent")}</p>;
+    return (
+      <div className="flex flex-col gap-4">
+        {note}
+        <p className="text-text-faint italic">{t("perform.noContent")}</p>
+      </div>
+    );
   }
 
   return (
@@ -71,6 +78,7 @@ function ChordProBody({ content, transposition, onChordTap, partView }: ChordPro
           {parsed.setup}
         </div>
       )}
+      {note}
       {parsed.sections.map((section, si) => (
         <SectionView
           // biome-ignore lint/suspicious/noArrayIndexKey: sections are static parsed output

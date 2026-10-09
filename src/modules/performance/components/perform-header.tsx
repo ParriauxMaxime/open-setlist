@@ -34,6 +34,8 @@ interface PerformHeaderProps {
   onNext: () => void;
   onOpenSidebar: () => void;
   myPart: MyPart;
+  hasMyNote: boolean;
+  onEditMyNote: () => void;
 }
 
 export function PerformHeader({
@@ -60,6 +62,8 @@ export function PerformHeader({
   onNext,
   onOpenSidebar,
   myPart,
+  hasMyNote,
+  onEditMyNote,
 }: PerformHeaderProps) {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -225,6 +229,18 @@ export function PerformHeader({
               {menuOpen && (
                 <div className="absolute right-0 top-full z-50 mt-1 max-h-[80dvh] min-w-40 overflow-y-auto rounded-md border border-border bg-bg-surface py-1 shadow-lg">
                   <MyPartMenu myPart={myPart} />
+                  {song && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onEditMyNote();
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full px-4 py-2.5 text-left text-base text-text hover:bg-bg-hover"
+                    >
+                      📌 {hasMyNote ? t("myNotes.edit") : t("myNotes.add")}
+                    </button>
+                  )}
                   {setlistId && (
                     <Link
                       to={Router.SetlistEdit({ setlistId })}
