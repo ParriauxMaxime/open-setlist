@@ -9,7 +9,7 @@ What we support from the [ChordPro standard](https://www.chordpro.org/), what we
 | Aspect | Spec | Open Setlist |
 |--------|------|--------------|
 | Extensions | `.cho`, `.crd`, `.chopro`, `.chordpro`, `.chord`, `.pro` | Accept all on import. Internal storage is IndexedDB (raw text in `content` field). |
-| Encoding | UTF-8 | UTF-8 only. |
+| Encoding | UTF-8 | UTF-8. File import also reads UTF-16 (Setlist Helper exports). |
 | Line types | Song lines, directives `{}`, comments `#` | All three supported. |
 | Line continuation | `\` at end of line | **Not supported.** Each line stands alone. Rare in practice, adds parser complexity for no user value. |
 
@@ -356,7 +356,7 @@ We should display:
 
 | Feature | Reason |
 |---------|--------|
-| `{new_song}` / `ns` | We store one song per record. Multi-song files aren't relevant. On import, we could split — but it's an edge case. |
+| `{new_song}` / `ns` | We store one song per record. File import splits multi-song files into several songs. |
 | Pango markup (`<b>`, `<i>`, `<span>`) | We control rendering via our own component tree. Inline HTML-like markup in ChordPro content adds complexity. If needed, we'd use our own annotation system. |
 | Conditional directives (`{comment-guitar: ...}`) | ChordPro's selector syntax postfixes the directive name. We use `for=<instrument>` instead — cleaner, works on any section or comment, and doesn't require per-directive parsing. |
 | Grid environment | Significant standalone feature. Post-MVP. |
@@ -511,4 +511,4 @@ The current parser discards unknown directives and `#` comments. The serializer 
 - [ ] Grid environment (`sog`/`eog`)
 - [ ] `{image}` directive (for embedded diagrams or notation snippets)
 - [ ] Import/export with `x_` prefix mapping for interop
-- [ ] Multi-song file splitting on import (`{new_song}`)
+- [x] Multi-song file splitting on import (`{new_song}`)

@@ -26,10 +26,13 @@ Every setlist app is closed-source, locked to a platform, or paywalled — and t
 - **Band conventions rendered faithfully** — setup line banner (patch codes, instruments, capo), inline cues `{comment}`, highlighted backing vocals `{soh}…{eoh}`, chorus recall (`{chorus}` or an empty chorus), tab blocks
 - **Per-instrument parts** — `for=guitar`, `for=keys`… each musician picks "My part"; lyrics-only mode for singers
 - **Notation** — English (C D E), solfège (Do Ré Mi) or German (H); key-aware transposition, capo display
+- **Paste any chart** — chords written above lyrics (websites, PDFs) are converted to ChordPro, with title/key/capo detection
+- **Import files** — `.cho`, `.chopro`, `.crd`, `.pro`, `.txt`, several at once (multi-song files split)
 - **Song lookup** — search by title, metadata from iTunes, chords from Ultimate Guitar
 
 **Setlists**
 - **Setlist builder** — multiple sets, drag and drop, durations vs expected show length
+- **My notes** — private per-song reminders on your device, shown on stage, never shared
 - **Readiness** — mark songs to learn / rehearsing / ready / retired; setlists warn about unready songs
 - **Print / PDF** — big-font stage sheet for the floor, chart booklet as a paper backup
 

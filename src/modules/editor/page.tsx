@@ -25,6 +25,7 @@ import { ChordProEditor } from "./components/chordpro-editor";
 import { ChordProHelp } from "./components/chordpro-help";
 import { MetadataPanel } from "./components/metadata-panel";
 import { MyNotePanel } from "./components/my-note-panel";
+import { PasteChartModal } from "./components/paste-chart-modal";
 import { SongLookupModal } from "./components/song-lookup-modal";
 import { useChordProSync } from "./hooks/use-chordpro-sync";
 
@@ -61,6 +62,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const [showLookup, setShowLookup] = useState(false);
+  const [showPasteChart, setShowPasteChart] = useState(false);
   const [enrichStatus, setEnrichStatus] = useState<EnrichmentStatus>("idle");
   const [enrichDetail, setEnrichDetail] = useState("");
   const enrichAbortRef = useRef<AbortController | null>(null);
@@ -391,6 +393,15 @@ export function EditSongPage({ songId }: EditSongPageProps) {
             register={register}
             value={watch("content")}
             error={errors.content?.message}
+            toolbar={
+              <button
+                type="button"
+                onClick={() => setShowPasteChart(true)}
+                className="btn btn-ghost btn-sm"
+              >
+                {t("chartImport.pasteButton")}
+              </button>
+            }
           />
           <ChordProHelp />
         </div>
@@ -467,6 +478,18 @@ export function EditSongPage({ songId }: EditSongPageProps) {
 
       {showLookup && (
         <SongLookupModal onSelect={onLookupSelect} onClose={() => setShowLookup(false)} />
+      )}
+
+      {showPasteChart && (
+        <PasteChartModal
+          existing={getValues("content")}
+          filled={getValues()}
+          onInsert={(content) => {
+            setValue("content", content, { shouldDirty: true });
+            setShowPasteChart(false);
+          }}
+          onClose={() => setShowPasteChart(false)}
+        />
       )}
 
       {confirmDelete && (

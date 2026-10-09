@@ -16,12 +16,14 @@ import {
 import { Link } from "@swan-io/chicane";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
 import { DataTable } from "../design-system/components/data-table";
 import { SongStatusDot } from "../shared/components/song-status-dot";
 import { useMyNotes } from "../shared/hooks/use-my-notes";
 import { useNotation } from "../shared/hooks/use-notation";
+import { ChartFileImport } from "./components/chart-file-import";
 
 const col = createColumnHelper<Song>();
 
@@ -49,6 +51,7 @@ export function CatalogPage() {
   const notation = useNotation();
   const songs = useLiveQuery(() => db.songs.orderBy("title").toArray(), [db]);
   const myNotes = useMyNotes(useActiveProfileId());
+  const [importStatus, setImportStatus] = useState<{ ok: boolean; message: string } | null>(null);
 
   const columns: ColumnDef<Song, unknown>[] = [
     col.accessor("title", {
@@ -155,10 +158,22 @@ export function CatalogPage() {
     <div className="p-page">
       <div className="mb-4 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">{t("catalog.title")}</h1>
-        <Link to={Router.SongNew()} className="btn btn-primary">
-          {t("catalog.addSong")}
-        </Link>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ChartFileImport
+            onSuccess={(message) => setImportStatus({ ok: true, message })}
+            onError={(message) => setImportStatus({ ok: false, message })}
+          />
+          <Link to={Router.SongNew()} className="btn btn-primary">
+            {t("catalog.addSong")}
+          </Link>
+        </div>
       </div>
+
+      {importStatus && (
+        <output className={`mb-4 block text-sm ${importStatus.ok ? "text-accent" : "text-danger"}`}>
+          {importStatus.message}
+        </output>
+      )}
 
       {songs === undefined ? (
         <p className="text-text-muted">{t("common.loading")}</p>
