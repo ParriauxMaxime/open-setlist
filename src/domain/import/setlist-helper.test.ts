@@ -390,3 +390,61 @@ describe("planImport — songs without a chart", () => {
     expect(p.matches).toHaveLength(1);
   });
 });
+
+describe("Setlist Helper exports with flattened or HTML lyrics", () => {
+  const flatLyrics =
+    "{t:Mille Coeurs}  {st:Les Synthetiques}  {comment:37C 🎹}    [Intro :]   [A] [A]    " +
+    "[Verse 1 :]  Est-ce que [A]tu vois  {soc}  Nous [D]sommes  {eoc}    " +
+    "{genre:Rock}  {tempo:150}  {key:A}  {scrollspeed:2}  ";
+
+  it("rebuilds lines from a CSV export", () => {
+    const { songs } = parseSetlistHelperCsv(
+      buildCsv([{ ...FULL_ROW, Name: "Mille Coeurs", Lyrics: flatLyrics }]),
+    );
+    const song = songs[0].song;
+    const chart = parse(song.content);
+    expect(chart.setup).toBe("37C 🎹");
+    expect(chart.sections.map((s) => s.type)).toContain("chorus");
+    expect(song.content).toContain("Est-ce que [A]tu vois");
+    expect(song.content).not.toContain("{st:");
+    expect(song.content).not.toContain("{scrollspeed:");
+    expect(songs[0].song.scrollSpeed).toBe(2);
+  });
+
+  it("reads the HTML export (Song Catalog > Export > Html)", () => {
+    const html =
+      '<div><table cellspacing="0" rules="all" border="1"><tr>' +
+      HEADER.map((h) => `<th scope="col">${h}</th>`).join("") +
+      "</tr><tr>" +
+      [
+        "Mille Coeurs",
+        "Vari&#233;t&#233;",
+        "Les Synthetiques",
+        "A",
+        "🎙️ Alice",
+        "{t:Mille Coeurs}\r\n{st:Les Synthetiques}\r\n{comment:37C 🎹}\r\n\r\n[Verse 1 :]\r\nEst-ce que [A]tu vois &amp; toi\r\n{tempo:150}",
+        "150",
+        "3:30",
+        "&nbsp;",
+      ]
+        .map((v) => `<td>${v}</td>`)
+        .join("") +
+      "</tr></table></div>";
+    const { songs } = parseSetlistHelperCsv(utf16le(html));
+    expect(songs).toHaveLength(1);
+    expect(songs[0].song).toMatchObject({ title: "Mille Coeurs", tags: ["Variété"], bpm: 150 });
+    expect(songs[0].song.content).toContain("\nEst-ce que [A]tu vois & toi");
+    expect(parse(songs[0].song.content).setup).toBe("37C 🎹");
+  });
+
+  it("refills songs broken by an earlier flattened import", () => {
+    const broken = existingSong({
+      id: "broken-1",
+      content:
+        "{title: Ete Indien}\n\n{t:Ete Indien}  {st:Les Synthetiques}  [Am]la la  {scrollspeed:2}",
+    });
+    const { songs } = parseSetlistHelperCsv(buildCsv([FULL_ROW]));
+    const plan = planImport(songs, [broken]);
+    expect(plan.fills.map((m) => m.existing.id)).toEqual(["broken-1"]);
+  });
+});
