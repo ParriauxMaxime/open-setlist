@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#07090f;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif;color:#f5f5f7}
+.bg{position:absolute;inset:0;background:radial-gradient(1200px 700px at 78% 55%,rgba(245,158,11,.16),transparent 60%),radial-gradient(900px 600px at 10% 10%,rgba(99,102,241,.16),transparent 60%),linear-gradient(160deg,#0a0d16,#06070b)}
+.tablet{position:absolute;left:620px;top:96px;width:1228px;height:868px;border-radius:44px;background:#16181f;padding:24px;box-shadow:0 40px 120px rgba(0,0,0,.65),0 0 0 2px #2a2d36 inset,0 0 0 1px #000;transition:transform .9s cubic-bezier(.2,.8,.2,1),opacity .6s}
+.tablet.dim iframe{opacity:0}
+.tablet iframe{transition:opacity .25s;width:1180px;height:820px;border:0;border-radius:20px;background:#000;display:block}
+.cam{position:absolute;left:50%;top:9px;width:8px;height:8px;border-radius:50%;background:#2b2f3a;transform:translateX(-50%)}
+.panel{position:absolute;left:84px;top:0;bottom:0;width:480px;display:flex;flex-direction:column;justify-content:center}
+.kicker{font-size:22px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#f59e0b;opacity:0;transform:translateY(16px);transition:all .5s ease}
+.title{margin-top:18px;font-size:64px;line-height:1.04;font-weight:800;letter-spacing:-.02em;opacity:0;transform:translateY(22px);transition:all .6s cubic-bezier(.2,.8,.2,1) .08s}
+.sub{margin-top:24px;font-size:28px;line-height:1.35;color:#a1a1aa;opacity:0;transform:translateY(22px);transition:all .6s cubic-bezier(.2,.8,.2,1) .16s}
+.show .kicker,.show .title,.show .sub{opacity:1;transform:none}
+.brand{position:absolute;left:84px;top:56px;display:flex;align-items:center;gap:14px;font-weight:700;font-size:24px;color:#e4e4e7}
+.brand i{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#ef4444);display:grid;place-items:center;font-style:normal;color:#111;font-weight:900}
+#world{position:absolute;inset:0;transition:transform 1s cubic-bezier(.3,.7,.2,1);transform-origin:0 0}
+.card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(160deg,#0a0d16,#06070b);opacity:0;transition:opacity .7s ease;pointer-events:none;z-index:10}
+.card.on{opacity:1}
+.card .big{font-size:120px;font-weight:900;letter-spacing:-.04em;line-height:1}
+.card .big span{background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;color:transparent}
+.card .line{margin-top:28px;font-size:40px;color:#d4d4d8;font-weight:600}
+.card .small{margin-top:40px;font-size:28px;color:#a1a1aa}
+.card .url{margin-top:22px;font-size:30px;font-weight:700;color:#f59e0b}
+.pulse{position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,.22),transparent 65%);animation:p 2s ease-in-out infinite}
+@keyframes p{50%{transform:scale(1.15);opacity:.6}}
+.tap{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid rgba(255,255,255,.8);pointer-events:none;z-index:5;opacity:0;transform:scale(.6)}
+.tap.go{animation:tap .55s ease-out}
+@keyframes tap{0%{opacity:1;transform:scale(.6)}100%{opacity:0;transform:scale(1.6)}}
+</style></head><body>
+<div class="bg"></div>
+<div id="world"><div class="brand"><i>♪</i>Open Setlist</div>
+<div class="panel" id="panel"><div class="kicker" id="k"></div><div class="title" id="t"></div><div class="sub" id="s"></div></div>
+<div class="tablet" id="tablet"><div class="cam"></div><iframe id="app" src="about:blank"></iframe></div></div>
+<div class="tap" id="tap"></div>
+<div class="card" id="card"><div class="pulse"></div><div class="big" id="cb"></div><div class="line" id="cl"></div><div class="small" id="cs"></div><div class="url" id="cu"></div></div>
+<script>
+window.caption=(k,t,s)=>{const p=document.getElementById('panel');p.classList.remove('show');setTimeout(()=>{document.getElementById('k').textContent=k;document.getElementById('t').innerHTML=t;document.getElementById('s').innerHTML=s||'';p.classList.add('show')},k===null?0:350)};
+window.card=(on,b,l,s,u)=>{const c=document.getElementById('card');if(b!==undefined){document.getElementById('cb').innerHTML=b;document.getElementById('cl').innerHTML=l||'';document.getElementById('cs').innerHTML=s||'';document.getElementById('cu').innerHTML=u||''}c.classList.toggle('on',on)};
+window.zoom=(x,y,sc)=>{const w=document.getElementById('world');if(!sc||sc===1){w.style.transform='';return}w.style.transformOrigin='0 0';w.style.transform=`translate(${960-x*sc}px,${540-y*sc}px) scale(${sc})`};
+window.tapAt=(x,y)=>{const e=document.getElementById('tap');e.style.left=x+'px';e.style.top=y+'px';e.classList.remove('go');void e.offsetWidth;e.classList.add('go')};
+</script></body></html>
