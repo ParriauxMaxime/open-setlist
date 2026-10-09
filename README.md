@@ -4,6 +4,10 @@ The setlist manager for small bands and orchestras. Song charts, setlists and st
 
 **Try it:** https://parriauxmaxime.github.io/open-setlist/ (a demo profile with songs and setlists is preloaded)
 
+[![Watch the 60-second demo](docs/media/open-setlist-demo.jpg)](docs/media/open-setlist-demo.mp4)
+
+*60-second tour, recorded on the real app in tablet mode (French UI).*
+
 Your data stays on your devices. No account, no subscription, no lock-in.
 
 ## Why
