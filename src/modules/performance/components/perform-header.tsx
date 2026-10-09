@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
 import type { MyPart } from "../hooks/use-my-part";
+import type { Tempo } from "../hooks/use-tempo";
 import { KeyChips } from "./key-chips";
 import { MyPartChip, MyPartMenu } from "./my-part-menu";
+import { TempoChip } from "./tempo-chip";
 
 interface PerformHeaderProps {
   visible: boolean;
@@ -17,6 +19,7 @@ interface PerformHeaderProps {
   transposeOpen: boolean;
   onTranspose: (delta: number) => void;
   onToggleTranspose: () => void;
+  tempo: Tempo;
   autoScrolling: boolean;
   showScrollSpeed: boolean;
   scrollSpeed: number | null;
@@ -43,6 +46,7 @@ export function PerformHeader({
   transposeOpen,
   onTranspose,
   onToggleTranspose,
+  tempo,
   autoScrolling,
   showScrollSpeed,
   scrollSpeed,
@@ -105,6 +109,7 @@ export function PerformHeader({
           </div>
 
           <MyPartChip myPart={myPart} onClick={() => setMenuOpen(true)} />
+          <TempoChip tempo={tempo} />
 
           {/* Transpose control — shown via menu toggle or when transposition is non-zero */}
           {showTranspose && (

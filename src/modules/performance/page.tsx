@@ -18,7 +18,9 @@ import { PerformFooter } from "./components/perform-footer";
 import { PerformHeader } from "./components/perform-header";
 import { PerformHints } from "./components/perform-hints";
 import { clearPerformReturn, PerformSidebar } from "./components/perform-sidebar";
+import { SetInterstitial } from "./components/set-interstitial";
 import { SongStrip } from "./components/song-strip";
+import { TempoOverlay } from "./components/tempo-overlay";
 import { useAutoScroll } from "./hooks/use-auto-scroll";
 import { useFullscreen } from "./hooks/use-fullscreen";
 import { useMyPart } from "./hooks/use-my-part";
@@ -26,6 +28,7 @@ import { usePerformKeys } from "./hooks/use-perform-keys";
 import { useSetlistNavigation } from "./hooks/use-setlist-navigation";
 import { useSingleSongNavigation } from "./hooks/use-single-song-navigation";
 import { useSwipeStrip } from "./hooks/use-swipe-strip";
+import { useTempo } from "./hooks/use-tempo";
 import { useWakeLock } from "./hooks/use-wake-lock";
 
 interface PerformPageProps {
@@ -113,6 +116,17 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
     setAutoScrollUsed(true);
     toggleAutoScrollRaw();
   }, [toggleAutoScrollRaw]);
+  const autoScrollArmed = autoScrollUsed || nav.currentSong?.scrollSpeed !== undefined;
+
+  const tempo = useTempo({
+    bpm: nav.currentSong?.bpm,
+    content: nav.currentSong?.content,
+    songKey: nav.currentSong?.id,
+    // A count-in ends on the song's first downbeat: start scrolling if it's set up
+    onCountInEnd: () => {
+      if (autoScrollArmed && !autoScroll.active) toggleAutoScroll();
+    },
+  });
 
   const currentScrollSpeed = autoScroll.speed;
   const handleScrollSpeed = useCallback(
@@ -203,10 +217,9 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         transposeOpen={transposeOpen}
         onTranspose={handleTranspose}
         onToggleTranspose={toggleTranspose}
+        tempo={tempo}
         autoScrolling={autoScroll.active}
-        showScrollSpeed={
-          autoScroll.active || autoScrollUsed || nav.currentSong?.scrollSpeed !== undefined
-        }
+        showScrollSpeed={autoScroll.active || autoScrollArmed}
         scrollSpeed={currentScrollSpeed}
         scrollSpeedDerived={autoScroll.isDerived}
         onToggleAutoScroll={toggleAutoScroll}
@@ -247,9 +260,12 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
       <PerformFooter
         visible={chromeVisible}
         current={nav.current}
+        next={setlistId ? nav.flatSongs[nav.currentIndex + 1] : undefined}
         prevSong={nav.prevSong}
         nextSong={nav.nextSong}
       />
+      <TempoOverlay beats={tempo.beats} />
+      {setlistId && <SetInterstitial current={nav.current} />}
       <PerformHints />
     </div>
   );

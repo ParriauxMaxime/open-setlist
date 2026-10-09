@@ -231,6 +231,60 @@ body {
   cursor: default;
 }
 
+/* Tempo pulse — elements are re-keyed per beat so the animation restarts */
+.tempo-flash {
+  --tempo-flash-peak: 1;
+  opacity: 0;
+  animation: tempo-flash 0.18s ease-out;
+}
+
+.tempo-flash[data-accent="false"] {
+  --tempo-flash-peak: 0.45;
+}
+
+@keyframes tempo-flash {
+  from {
+    opacity: var(--tempo-flash-peak);
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.tempo-count {
+  animation: tempo-count 0.15s ease-out;
+}
+
+@keyframes tempo-count {
+  from {
+    transform: scale(1.15);
+  }
+}
+
+/* Set break label — fades in, holds, fades out (lifetime set in set-interstitial.tsx) */
+.set-interstitial {
+  animation: set-interstitial 1.8s ease-in-out forwards;
+}
+
+@keyframes set-interstitial {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tempo-count {
+    animation: none;
+  }
+}
+
 /* ============================================================
  * Component classes
  *

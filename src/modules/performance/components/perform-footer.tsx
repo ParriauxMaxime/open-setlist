@@ -1,14 +1,17 @@
 import type { Song } from "@db";
 import type { FlatEntry } from "../hooks/use-setlist-navigation";
+import { NextSongPreview } from "./next-song-preview";
 
 interface PerformFooterProps {
   visible: boolean;
   current: FlatEntry;
+  /** Next setlist entry; when given, the footer previews the next song and set breaks. */
+  next?: FlatEntry;
   prevSong: Song | undefined;
   nextSong: Song | undefined;
 }
 
-export function PerformFooter({ visible, current, prevSong, nextSong }: PerformFooterProps) {
+export function PerformFooter({ visible, current, next, prevSong, nextSong }: PerformFooterProps) {
   return (
     <div className="perform-footer" data-visible={visible}>
       <div className="perform-footer-inner">
@@ -32,7 +35,8 @@ export function PerformFooter({ visible, current, prevSong, nextSong }: PerformF
 
           {/* Next song */}
           <div className="min-w-0 text-right text-text-faint">
-            {nextSong && (
+            {nextSong && next && <NextSongPreview current={current} next={next} song={nextSong} />}
+            {nextSong && !next && (
               <>
                 <div className="truncate font-medium">{nextSong.title}</div>
                 {nextSong.artist && (

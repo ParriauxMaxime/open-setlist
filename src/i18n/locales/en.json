@@ -200,6 +200,17 @@
       "violin": "Violin"
     }
   },
+  "performTempo": {
+    "chipLabel": "Tempo {{bpm}} BPM: tap for beat pulse",
+    "chipHint": "Tap: beat pulse · Hold: count-in and click sound",
+    "pulse": "Beat pulse",
+    "clickSound": "Click sound",
+    "countIn_one": "Count in ({{count}} beat)",
+    "countIn_other": "Count in ({{count}} beats)",
+    "bpmValue": "{{bpm}} BPM",
+    "setNumber": "Set {{number}}",
+    "hint": "Tap the BPM for a beat pulse, hold it for count-in and click sound"
+  },
   "sync": {
     "title": "Sync",
     "description": "Export your songs and setlists as a JSON file, or import from a previously exported file.",
