@@ -178,6 +178,12 @@ describe("Heuristic: meta directive aliases", () => {
     expect(metadata.key).toBe("Am");
     expect(metadata.bpm).toBe("140");
   });
+
+  it("{time: 3/4} becomes metadata.time", () => {
+    const { metadata, sections } = parse("{time: 3/4}\n[G]Hello");
+    expect(metadata.time).toBe("3/4");
+    expect(sections).toHaveLength(1);
+  });
 });
 
 // ---------------------------------------------------------------------------

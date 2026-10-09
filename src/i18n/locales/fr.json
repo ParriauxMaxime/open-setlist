@@ -200,6 +200,17 @@
       "violin": "Violon"
     }
   },
+  "performTempo": {
+    "chipLabel": "Tempo {{bpm}} BPM : toucher pour la pulsation",
+    "chipHint": "Toucher : pulsation · Maintenir : décompte et clic",
+    "pulse": "Pulsation",
+    "clickSound": "Clic sonore",
+    "countIn_one": "Décompte ({{count}} temps)",
+    "countIn_other": "Décompte ({{count}} temps)",
+    "bpmValue": "{{bpm}} BPM",
+    "setNumber": "Set {{number}}",
+    "hint": "Touchez le BPM pour la pulsation, maintenez-le pour le décompte et le clic"
+  },
   "sync": {
     "title": "Synchro",
     "description": "Exportez vos chansons et setlists en fichier JSON, ou importez depuis un fichier précédemment exporté.",

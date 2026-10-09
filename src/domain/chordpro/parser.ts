@@ -158,6 +158,7 @@ const META_DIRECTIVES = new Set([
   "tech_notes",
   "capo",
   "tempo",
+  "time",
   "youtube",
 ]);
 

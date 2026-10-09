@@ -1,29 +1,43 @@
 # Open Setlist
 
-A setlist manager for musicians. Manage your songs, build setlists, and perform on stage — all from your browser.
+The setlist manager for small bands and orchestras. Song charts, setlists and stage mode — in the browser, offline, shared with your band.
 
-Your data stays on your device. No account, no cloud, no subscription.
+**Try it:** https://parriauxmaxime.github.io/open-setlist/ (a demo profile with songs and setlists is preloaded)
+
+Your data stays on your devices. No account, no subscription, no lock-in.
 
 ## Why
 
-Every setlist app is closed-source, locked to a platform, or paywalled. Musicians deserve a tool they actually own — one that runs anywhere, stores data locally, and doesn't vanish when a company pivots.
+Every setlist app is closed-source, locked to a platform, or paywalled — and the "one click sync" of the popular ones sometimes deletes the band's source of truth. Musicians deserve a tool they actually own.
 
-Open Setlist is that tool.
-
-- **You own your data.** Everything lives in your browser's IndexedDB. Nothing is sent anywhere. Export whenever you want.
+- **You own your data.** Everything lives in your browser's IndexedDB. Export whenever you want, in plain ChordPro and JSON.
 - **Free and open-source.** No premium tier, no ads, no tracking.
-- **Works offline.** Install it once as a PWA and it works without internet. Built for the stage, where wifi is never a given.
-- **Minimal by design.** Dark, high-contrast interface readable at arm's length on a music stand.
+- **Works offline.** Install it once as a PWA; it opens cold at a venue with no network.
+- **Granular, not bloated.** Per-musician views, readiness, private notes — without turning into band-management software.
 
 ## Features
 
-- **Song catalog** — title, artist, key, BPM, duration, tags, notes, and full ChordPro content
-- **ChordPro editor** — write chord charts in the standard format
-- **Song lookup** — search by title, pull metadata from iTunes, import chords from Ultimate Guitar
-- **Setlist builder** — organize songs into sets, reorder, plan your show
-- **Performance mode** — clean, distraction-free view for playing live
-- **Chord reference** — built-in chord diagrams
-- **Sync** — export/import as files, or sync across devices via remote storage
+**Charts**
+- **ChordPro editor** with live metadata sync (title, artist, key, BPM, duration, tags, notes)
+- **Band conventions rendered faithfully** — setup line banner (patch codes, instruments, capo), inline cues `{comment}`, highlighted backing vocals `{soh}…{eoh}`, chorus recall (`{chorus}` or an empty chorus), tab blocks
+- **Per-instrument parts** — `for=guitar`, `for=keys`… each musician picks "My part"; lyrics-only mode for singers
+- **Notation** — English (C D E), solfège (Do Ré Mi) or German (H); key-aware transposition, capo display
+- **Song lookup** — search by title, metadata from iTunes, chords from Ultimate Guitar
+
+**Setlists**
+- **Setlist builder** — multiple sets, drag and drop, durations vs expected show length
+- **Readiness** — mark songs to learn / rehearsing / ready / retired; setlists warn about unready songs
+- **Print / PDF** — big-font stage sheet for the floor, chart booklet as a paper backup
+
+**On stage**
+- **Performance mode** — swipe or pedal between songs, per-song zoom, chord diagrams on tap
+- **Hands-free** — Bluetooth pedals (Page Up/Down, arrows, space), per-song auto-scroll, screen stays awake, fullscreen
+- **Tempo** — BPM pulse, click and count-in; next song's key, tempo and setup shown in the footer
+
+**Band**
+- **Sync** through a GitHub repo or Google Drive — review incoming/outgoing changes, per-song conflict resolution, deletions that never silently win
+- **Safe invites** — passphrase-encrypted invite links, or links without any token
+- **Coming from Setlist Helper?** Import your catalog CSV and your setlist CSVs (Sync page). Keys in solfège (`RÉm`) are converted, your comments and highlights are kept.
 
 ## Install
 

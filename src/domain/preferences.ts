@@ -15,6 +15,7 @@ export const appPreferencesSchema = z.object({
   colorScheme: z.enum(["light", "dark", "system"]).default("dark"),
   performForceDark: z.boolean().default(true),
   performDoubleTapScale: z.boolean().default(true),
+  performClickSound: z.boolean().default(false),
   accentColor: hexColor.default("#4a9eff"),
   favoriteInstrument: z.enum(["guitar", "piano"]).default("guitar"),
   /** Chord name display (per device, not synced). Stored content stays English. */
@@ -152,6 +153,7 @@ export const DEFAULT_PREFERENCES: AppPreferences = {
   colorScheme: "dark",
   performForceDark: true,
   performDoubleTapScale: true,
+  performClickSound: false,
   accentColor: "#4a9eff",
   favoriteInstrument: "guitar",
   notation: "english",
