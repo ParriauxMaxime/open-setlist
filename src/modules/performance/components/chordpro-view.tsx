@@ -7,9 +7,9 @@ import {
   type Segment,
   type SongLine,
 } from "@domain/chordpro/parser";
-import { filterSong, type PartView } from "@domain/chordpro/visibility";
+import { filterSong, type PartView, writtenPitchShift } from "@domain/chordpro/visibility";
 import { formatChord, type Notation } from "@domain/chords/notation";
-import { transposeChord } from "@domain/chords/transpose";
+import { parseCapo, transposeChord } from "@domain/chords/transpose";
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNotation } from "../../shared/hooks/use-notation";
@@ -36,11 +36,15 @@ const ChordDisplayContext = createContext<{ songKey?: string; notation: Notation
 
 export function ChordProView(props: ChordProViewProps) {
   const notation = useNotation();
-  const songKey = useMemo(() => parse(props.content).metadata.key, [props.content]);
+  const metadata = useMemo(() => parse(props.content).metadata, [props.content]);
+  const songKey = metadata.key;
   const display = useMemo(() => ({ songKey, notation }), [songKey, notation]);
+  // Transposing parts see every chord (and its diagram) at their written pitch
+  const transposition =
+    (props.transposition ?? 0) + writtenPitchShift(props.partView, parseCapo(metadata.capo));
   return (
     <ChordDisplayContext value={display}>
-      <ChordProBody {...props} />
+      <ChordProBody {...props} transposition={transposition} />
     </ChordDisplayContext>
   );
 }

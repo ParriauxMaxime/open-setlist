@@ -109,7 +109,7 @@ export function PerformHeader({
               {song?.title ?? t("common.unknown")}
             </div>
             {song?.artist && <div className="truncate text-sm text-text-muted">{song.artist}</div>}
-            <KeyChips song={song} transposition={transposition} />
+            <KeyChips song={song} transposition={transposition} partView={myPart.view} />
           </div>
 
           <MyPartChip myPart={myPart} onClick={() => setMenuOpen(true)} />

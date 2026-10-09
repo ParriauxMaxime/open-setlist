@@ -36,6 +36,8 @@ export const appPreferencesSchema = z.object({
   partInstrument: z.string().optional(),
   partShowCues: z.boolean().default(true),
   partShowChords: z.boolean().default(true),
+  /** Transposing parts (B♭, E♭, F) read chords and keys at their written pitch. */
+  partWrittenPitch: z.boolean().default(true),
 });
 
 export type AppPreferences = z.infer<typeof appPreferencesSchema>;
@@ -167,6 +169,7 @@ export const DEFAULT_PREFERENCES: AppPreferences = {
   bridgeColor: "#a07cf0",
   partShowCues: true,
   partShowChords: true,
+  partWrittenPitch: true,
 };
 
 // ---------------------------------------------------------------------------
@@ -204,6 +207,7 @@ export function resolvePartView(prefs: AppPreferences): PartView {
     instrument: prefs.partInstrument ? normalizePart(prefs.partInstrument) : fallback,
     showCues: prefs.partShowCues,
     showChords: prefs.partShowChords,
+    writtenPitch: prefs.partWrittenPitch,
   };
 }
 
@@ -213,6 +217,7 @@ export function savePartView(view: PartView): void {
     partInstrument: view.instrument,
     partShowCues: view.showCues,
     partShowChords: view.showChords,
+    partWrittenPitch: view.writtenPitch,
   });
 }
 

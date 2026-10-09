@@ -24,7 +24,7 @@ Every setlist app is closed-source, locked to a platform, or paywalled — and t
 **Charts**
 - **ChordPro editor** with live metadata sync (title, artist, key, BPM, duration, tags, notes)
 - **Band conventions rendered faithfully** — setup line banner (patch codes, instruments, capo), inline cues `{comment}`, highlighted backing vocals `{soh}…{eoh}`, chorus recall (`{chorus}` or an empty chorus), tab blocks
-- **Per-instrument parts** — `for=guitar`, `for=keys`… each musician picks "My part"; lyrics-only mode for singers
+- **Per-instrument parts** — `for=guitar`, `for=keys`… each musician picks "My part"; lyrics-only mode for singers; B♭/E♭/F horns read chords and keys at their written pitch
 - **Notation** — English (C D E), solfège (Do Ré Mi) or German (H); key-aware transposition, capo display
 - **Paste any chart** — chords written above lyrics (websites, PDFs) are converted to ChordPro, with title/key/capo detection
 - **Import files** — `.cho`, `.chopro`, `.crd`, `.pro`, `.txt`, several at once (multi-song files split)

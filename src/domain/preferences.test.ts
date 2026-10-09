@@ -1,4 +1,4 @@
-import { DEFAULT_PREFERENCES, resolvePartView } from "./preferences";
+import { appPreferencesSchema, DEFAULT_PREFERENCES, resolvePartView } from "./preferences";
 
 describe("resolvePartView", () => {
   it("defaults to every part, cues and chords on", () => {
@@ -6,6 +6,7 @@ describe("resolvePartView", () => {
       instrument: "all",
       showCues: true,
       showChords: true,
+      writtenPitch: true,
     });
   });
 
@@ -25,7 +26,18 @@ describe("resolvePartView", () => {
       instrument: "guitar",
       showCues: true,
       showChords: false,
+      writtenPitch: true,
     });
+  });
+
+  it("keeps concert pitch when picked", () => {
+    const prefs = { ...DEFAULT_PREFERENCES, partInstrument: "trompette", partWrittenPitch: false };
+    expect(resolvePartView(prefs)).toMatchObject({ instrument: "trumpet", writtenPitch: false });
+  });
+
+  it("reads older saved preferences with written pitch on", () => {
+    const { partWrittenPitch: _, ...older } = DEFAULT_PREFERENCES;
+    expect(appPreferencesSchema.parse(older).partWrittenPitch).toBe(true);
   });
 
   it("keeps an explicit 'all'", () => {

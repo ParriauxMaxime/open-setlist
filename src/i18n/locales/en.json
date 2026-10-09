@@ -189,6 +189,11 @@
     "noCues": "No cues",
     "chipTitle": "My part filter: {{summary}}",
     "editorHelp": "In performance mode, ⋮ → My part shows each musician only the for= sections and comments of their instrument.",
+    "pitch": "Pitch",
+    "writtenPitch": "Written pitch ({{pitch}})",
+    "concertPitch": "Concert pitch",
+    "writtenKey": "Concert {{concert}} · {{pitch}} {{written}}",
+    "writtenKeyTitle": "Key the band plays · key written for your instrument",
     "parts": {
       "vocals": "Vocals",
       "guitar": "Guitar",
@@ -197,7 +202,16 @@
       "drums": "Drums",
       "sax": "Sax",
       "trumpet": "Trumpet",
-      "violin": "Violin"
+      "violin": "Violin",
+      "flute": "Flute",
+      "clarinet": "Clarinet",
+      "soprano-sax": "Soprano sax",
+      "alto-sax": "Alto sax",
+      "tenor-sax": "Tenor sax",
+      "baritone-sax": "Baritone sax",
+      "horn": "Horn",
+      "trombone": "Trombone",
+      "tuba": "Tuba"
     }
   },
   "performTempo": {

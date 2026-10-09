@@ -8,9 +8,18 @@
  *   that only held chords disappear. Tab (monospace) sections are notation and stay
  *   untouched — whether they show is decided by their layer.
  * - The setup banner always stays.
+ * - `writtenPitch` does not filter: a transposing part reads chords and keys at its
+ *   written pitch (B♭ trumpet: concert Dm shows as Em), see `writtenPitchShift`.
  */
 
-import { ALL_PARTS, normalizePart } from "@domain/parts";
+import {
+  ALL_PARTS,
+  INSTRUMENT_PITCH,
+  type InstrumentPitch,
+  normalizePart,
+  partPitch,
+  WRITTEN_PITCH_OFFSET,
+} from "@domain/parts";
 import type { ChordProSong, Layer, LyricLine, Section, Segment, SongLine } from "./parser";
 
 export interface PartView {
@@ -18,16 +27,34 @@ export interface PartView {
   instrument: string;
   showCues: boolean;
   showChords: boolean;
+  /** Transposing parts read at their written pitch (off = concert pitch). */
+  writtenPitch: boolean;
 }
 
 export const DEFAULT_PART_VIEW: PartView = {
   instrument: ALL_PARTS,
   showCues: true,
   showChords: true,
+  writtenPitch: true,
 };
 
 export function isPartViewActive(view: PartView): boolean {
   return view.instrument !== ALL_PARTS || !view.showCues || !view.showChords;
+}
+
+/** Pitch the chart is shown in: the part's own when written pitch is on, else concert. */
+export function viewPitch(view: PartView | undefined): InstrumentPitch {
+  return view?.writtenPitch ? partPitch(view.instrument) : INSTRUMENT_PITCH.concert;
+}
+
+/**
+ * Semitones to add on top of the song's transposition to show what the player reads.
+ * Capo charts are written in chord shapes, the band sounds `capo` semitones higher:
+ * a transposing player reads from that sounding key.
+ */
+export function writtenPitchShift(view: PartView | undefined, capo = 0): number {
+  const pitch = viewPitch(view);
+  return pitch === INSTRUMENT_PITCH.concert ? 0 : WRITTEN_PITCH_OFFSET[pitch] + capo;
 }
 
 /** Normalized, de-duplicated `for=` values of a song (sections and comments). */
