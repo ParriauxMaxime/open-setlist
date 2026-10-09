@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react";
 import { CatalogPage } from "./modules/catalog/page";
 import { ChordsPage } from "./modules/chords/page";
 import { EditSongPage } from "./modules/editor/page";
@@ -7,6 +8,7 @@ import { QualityPage } from "./modules/quality/page";
 import { SetlistPage } from "./modules/setlist/page";
 import { SettingsPage } from "./modules/settings/page";
 import { AdminLayout } from "./modules/shared/components/admin-layout";
+import { FirstRunSetup } from "./modules/shared/components/first-run-setup";
 import { JoinPrompt } from "./modules/shared/components/join-prompt";
 
 import { SyncPage } from "./modules/sync/page";
@@ -32,6 +34,10 @@ export function App() {
     "Settings",
     "Quality",
   ]);
+
+  // Remounts the pages after the first-run setup: they read notation once per mount
+  const [layoutKey, setLayoutKey] = useState(0);
+  const remountLayout = useCallback(() => setLayoutKey((k) => k + 1), []);
 
   if (!route) {
     Router.replace("Catalog");
@@ -59,7 +65,8 @@ export function App() {
   return (
     <>
       <JoinPrompt />
-      <AdminLayout>
+      <FirstRunSetup onDone={remountLayout} />
+      <AdminLayout key={layoutKey}>
         <AdminRoutes route={route} />
       </AdminLayout>
     </>

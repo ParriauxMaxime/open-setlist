@@ -165,6 +165,7 @@
       "swipe": "Glissez pour changer de chanson",
       "doubleTapLeft": "Double-tap pour dézoomer",
       "doubleTapRight": "Double-tap pour zoomer",
+      "myPart": "⋮ → Ma partie : votre instrument seul, ou les paroles seules",
       "dismiss": "Touchez pour fermer"
     }
   },
@@ -562,17 +563,17 @@
         "title": "Bienvenue sur Open Setlist\u00a0!",
         "body": "Open Setlist est un gestionnaire de setlists gratuit et open-source qui fonctionne enti\u00e8rement dans votre navigateur. Vos donn\u00e9es restent sur votre appareil \u2014 aucun compte n\u00e9cessaire."
       },
-      "profile": {
-        "title": "Profils",
-        "body": "Chaque profil poss\u00e8de ses propres chansons, setlists et param\u00e8tres de synchronisation. Vous \u00eates actuellement sur le profil D\u00e9mo avec des chansons d\u2019exemple. Cr\u00e9ez votre propre profil dans les Param\u00e8tres pour repartir de z\u00e9ro."
+      "import": {
+        "title": "Importez vos chansons",
+        "body": "Vous venez de Setlist Helper ? Importez vos CSV de catalogue et de setlists depuis la page Synchro. Dans l\u2019\u00e9diteur, \u00ab Coller une grille \u00bb transforme une grille copi\u00e9e d\u2019un site ou d\u2019un PDF en ChordPro. Cr\u00e9ez d\u2019abord votre propre profil dans les Param\u00e8tres pour garder les chansons de d\u00e9mo \u00e0 part."
+      },
+      "stage": {
+        "title": "Sur sc\u00e8ne",
+        "body": "En mode performance, \u22ee \u2192 Ma partie n\u2019affiche que les sections de votre instrument : le chant peut masquer les accords, les cuivres en Si\u266d/Mi\u266d/Fa lisent en tonalit\u00e9 \u00e9crite. Besoin de papier ? Imprimez une feuille de sc\u00e8ne ou un livret des grilles depuis n\u2019importe quelle setlist."
       },
       "sync": {
-        "title": "Synchronisez vos donn\u00e9es",
-        "body": "Connectez GitHub ou Google Drive pour sauvegarder et synchroniser vos donn\u00e9es entre appareils. Configurez dans Param\u00e8tres > Synchronisation."
-      },
-      "band": {
-        "title": "Partagez avec votre groupe",
-        "body": "Partagez votre fichier Google Drive avec vos coll\u00e8gues musiciens pour que tout le monde reste \u00e0 jour. Chaque membre peut synchroniser ind\u00e9pendamment."
+        "title": "Synchronisez avec votre groupe",
+        "body": "Connectez GitHub ou Google Drive dans les Param\u00e8tres, puis envoyez un lien d\u2019invitation \u00e0 vos musiciens. Les modifications re\u00e7ues vous sont montr\u00e9es avant d\u2019\u00eatre appliqu\u00e9es."
       },
       "install": {
         "title": "Installer l\u2019appli",
@@ -586,6 +587,59 @@
       "resetTitle": "R\u00e9initialiser l\u2019appli\u00a0?",
       "resetMessage": "Cela supprimera toutes les donn\u00e9es locales \u2014 profils, chansons, setlists et pr\u00e9f\u00e9rences. Le stockage distant (GitHub, Google Drive) ne sera pas affect\u00e9.",
       "resetConfirm": "Oui, tout r\u00e9initialiser"
+    }
+  },
+  "welcome": {
+    "title": "Bienvenue sur Open Setlist",
+    "intro": "Trois r\u00e9glages rapides pour cet appareil, modifiables ensuite dans les Param\u00e8tres.",
+    "skip": "Passer",
+    "instrument": "Je joue de\u2026",
+    "instrumentHint": "Sur sc\u00e8ne, Ma partie affichera les sections de votre instrument.",
+    "notation": "Nom des accords",
+    "example": "Exemple :",
+    "language": "Langue",
+    "importSetlistHelper": "Importer depuis Setlist Helper",
+    "importHint": "Cr\u00e9e le profil de votre groupe. La d\u00e9mo reste dans le menu des profils.",
+    "exploreDemo": "Explorer la d\u00e9mo",
+    "bandProfile": "Mon groupe",
+    "whatsNew": {
+      "title": "Nouveaut\u00e9s",
+      "tryIt": "Essayer",
+      "close": "Fermer les nouveaut\u00e9s",
+      "items": {
+        "myPart": {
+          "title": "Ma partie",
+          "desc": "Sur sc\u00e8ne, \u22ee \u2192 Ma partie n\u2019affiche que votre instrument. Paroles seules pour le chant, tonalit\u00e9 \u00e9crite pour les cuivres en Si\u266d/Mi\u266d/Fa."
+        },
+        "myNotes": {
+          "title": "Mes notes",
+          "desc": "\u22ee \u2192 Ajouter ma note : des pense-b\u00eates perso par chanson, affich\u00e9s sur sc\u00e8ne, jamais partag\u00e9s."
+        },
+        "tempo": {
+          "title": "Tempo et mains libres",
+          "desc": "Touchez le BPM pour la pulsation, maintenez-le pour le d\u00e9compte. P\u00e9dales Bluetooth et d\u00e9filement auto tournent la page."
+        },
+        "notation": {
+          "title": "Do R\u00e9 Mi ou C D E H",
+          "desc": "Accords en solf\u00e8ge ou en notation allemande, et une transposition qui nomme correctement les tonalit\u00e9s."
+        },
+        "print": {
+          "title": "Impression / PDF",
+          "desc": "Une feuille de sc\u00e8ne en gros caract\u00e8res \u00e0 poser au sol, un livret des grilles en secours papier."
+        },
+        "readiness": {
+          "title": "\u00c9tat des chansons",
+          "desc": "\u00c0 apprendre, en rodage ou pr\u00eate : r\u00e9glez-le dans la colonne Statut. Les setlists signalent les chansons pas pr\u00eates."
+        },
+        "setlistHelper": {
+          "title": "Import Setlist Helper",
+          "desc": "Votre catalogue et vos setlists en CSV, depuis la page Synchro. Commentaires et surlignages conserv\u00e9s."
+        },
+        "pasteChart": {
+          "title": "Coller une grille",
+          "desc": "Les accords \u00e9crits au-dessus des paroles deviennent du ChordPro. Les fichiers .cho et .txt s\u2019importent depuis la page Chansons."
+        }
+      }
     }
   },
   "invite": {

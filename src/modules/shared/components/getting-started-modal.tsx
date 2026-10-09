@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFocusTrap } from "../hooks/use-focus-trap";
 
-const STEPS = ["welcome", "profile", "sync", "band", "install"] as const;
+const STEPS = ["welcome", "import", "stage", "sync", "install"] as const;
 type Step = (typeof STEPS)[number];
 
 interface GettingStartedModalProps {
