@@ -11,12 +11,12 @@ Last update: 2026-10-09. Health: `yarn lint`, `typecheck`, `test` (800+ tests), 
 | Song catalog | Works — search, filters, readiness status column with quick change | `src/modules/catalog/` |
 | ChordPro editor | Works — highlighted editor, metadata ⇄ directives sync | `src/modules/editor/` |
 | Chart rendering | Works — setup banner, comments (`c`/`ci`/`cb`/`highlight`), `{soh}…{eoh}`, chorus recall (`{chorus}` and empty chorus), tab indentation, short lyrics under chords | `src/domain/chordpro/parser.ts`, `src/modules/performance/components/chordpro-view.tsx` |
-| My part | Works — per-instrument filter (`for=`), cues toggle, lyrics-only | `src/domain/chordpro/visibility.ts`, `src/domain/parts.ts` |
+| My part | Works — per-instrument filter (`for=`), cues toggle, lyrics-only, private per-song notes | `src/domain/chordpro/visibility.ts`, `src/domain/parts.ts` |
 | Notation & transpose | Works — English / solfège / German display, key-aware spelling, transposed key and capo chips | `src/domain/chords/notation.ts`, `transpose.ts` |
 | Setlists | Works — sets, drag and drop, durations, unready-song warnings | `src/modules/setlist/` |
 | Performance mode | Works — swipe, pedals, auto-scroll, wake lock, fullscreen, tempo pulse/click/count-in, next-song preview, set breaks | `src/modules/performance/` |
 | Print / PDF | Works — stage floor sheet, chart booklet | `src/modules/print/` |
-| Importers | Works — Setlist Helper catalog CSV and setlist CSVs (HTML entities, solfège keys) | `src/domain/import/` |
+| Importers | Works — Setlist Helper catalog/setlist CSVs, ChordPro and text files (multi-file, `{new_song}` split, UTF-16), paste a chords-over-lyrics chart in the editor | `src/domain/import/` |
 | Sync | Works — GitHub / Drive snapshot, review, per-item conflicts, remote deletions via tombstones | `src/domain/sync/` |
 | Invites | Works — passphrase-encrypted or token-less links | `src/domain/invite.ts` |
 | Offline / PWA | Works — full precache per build, cross-origin untouched, PNG icons | `src/sw.ts`, `src/domain/pwa/` |
@@ -34,8 +34,6 @@ Last update: 2026-10-09. Health: `yarn lint`, `typecheck`, `test` (800+ tests), 
 ## Next
 
 1. **Validate with a real band** — import the real catalog, one rehearsal, one gig; collect friction.
-2. **Chart import from text and files** — chords-over-lyrics paste converter, `.cho`/`.txt` multi-file import (in progress).
-3. **Private per-song notes** — per-device reminders shown on stage, never synced (in progress).
-4. **`{define}` chord diagrams** and bass/ukulele shapes.
-5. **Per-line sync merge** for charts edited by two members at once.
-6. **Setlist sharing for non-members** (sound engineer): read-only link or PDF.
+2. **`{define}` chord diagrams** and bass/ukulele shapes.
+3. **Per-line sync merge** for charts edited by two members at once.
+4. **Setlist sharing for non-members** (sound engineer): read-only link or PDF.

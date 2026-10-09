@@ -96,7 +96,7 @@ function expandMultiChordBrackets(line: string): string {
  * - The bracket content does NOT look like a chord (A-G root + optional #/b/m/7/etc.)
  */
 const SECTION_KEYWORDS =
-  /^(verse|chorus|refrain|couplet|bridge|pont|intro|outro|solo|pre[- ]?chorus|interlude|instrumental|riff|fin|end|breakdown|hook|tag|outro)/i;
+  /^(verse|chorus|refrain|couplet|bridge|pont|intro|outro|solo|pre[- ]?chorus|interlude|instrumental|riff|fin|end|breakdown|hook|tag|outro|pr[eé][- ]?refrain|post[- ]?chorus|instru|break|coda)/i;
 
 const BRACKET_SECTION_RE = /^\[([^\]]+)\]\s*$/;
 

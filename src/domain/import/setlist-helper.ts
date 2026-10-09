@@ -314,24 +314,24 @@ export function parseSetlistHelperCsv(input: Uint8Array | string): SetlistHelper
 // Planning against the existing catalog
 // ---------------------------------------------------------------------------
 
-export interface ImportMatch {
-  imported: ImportedSong;
+export interface ImportMatch<T extends ImportedSong = ImportedSong> {
+  imported: T;
   existing: Song;
 }
 
-export interface ImportPlan {
-  newSongs: ImportedSong[];
-  matches: ImportMatch[];
+export interface ImportPlan<T extends ImportedSong = ImportedSong> {
+  newSongs: T[];
+  matches: ImportMatch<T>[];
 }
 
-export function planImport(imported: ImportedSong[], existing: Song[]): ImportPlan {
+export function planImport<T extends ImportedSong>(imported: T[], existing: Song[]): ImportPlan<T> {
   const byKey = new Map<string, Song>();
   for (const song of existing) {
     const k = songMatchKey(song.title, song.artist);
     if (!byKey.has(k)) byKey.set(k, song);
   }
 
-  const plan: ImportPlan = { newSongs: [], matches: [] };
+  const plan: ImportPlan<T> = { newSongs: [], matches: [] };
   for (const item of imported) {
     const match = byKey.get(songMatchKey(item.song.title, item.song.artist));
     if (match) plan.matches.push({ imported: item, existing: match });

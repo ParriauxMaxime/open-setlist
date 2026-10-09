@@ -1,5 +1,5 @@
 import type { SongFormValues } from "@domain/schemas/song";
-import { type RefCallback, useCallback, useEffect, useRef } from "react";
+import { type ReactNode, type RefCallback, useCallback, useEffect, useRef } from "react";
 import type { UseFormRegister } from "react-hook-form";
 
 /**
@@ -15,7 +15,7 @@ interface Token {
   value: string;
 }
 
-function tokenizeLine(line: string): Token[] {
+export function tokenizeLine(line: string): Token[] {
   // Full-line directive
   if (/^\{[^}]*\}\s*$/.test(line)) {
     return [{ type: "directive", value: line }];
@@ -81,9 +81,11 @@ interface ChordProEditorProps {
   /** Current content value — used to keep highlight layer in sync with programmatic changes. */
   value: string;
   error?: string;
+  /** Actions shown above the editor (e.g. "Paste chart"). */
+  toolbar?: ReactNode;
 }
 
-export function ChordProEditor({ register, value, error }: ChordProEditorProps) {
+export function ChordProEditor({ register, value, error, toolbar }: ChordProEditorProps) {
   const highlightRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -122,6 +124,7 @@ export function ChordProEditor({ register, value, error }: ChordProEditorProps) 
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-1">
+      {toolbar && <div className="flex items-center justify-end gap-2">{toolbar}</div>}
       <div className="chordpro-highlight-wrap relative min-h-[24rem] flex-1 lg:min-h-0">
         {/* Highlight layer (behind) */}
         <div
