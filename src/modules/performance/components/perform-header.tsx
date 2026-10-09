@@ -98,7 +98,7 @@ export function PerformHeader({
             type="button"
             onClick={onOpenSidebar}
             className="perform-btn shrink-0"
-            aria-label="Open menu"
+            aria-label={t("a11y.openMenu")}
           >
             ☰
           </button>
@@ -200,7 +200,7 @@ export function PerformHeader({
               onClick={onPrev}
               disabled={isFirst}
               className="perform-btn"
-              aria-label="Previous song"
+              aria-label={t("a11y.previousSong")}
             >
               ‹
             </button>
@@ -209,7 +209,7 @@ export function PerformHeader({
               onClick={onNext}
               disabled={isLast}
               className="perform-btn"
-              aria-label="Next song"
+              aria-label={t("a11y.nextSong")}
             >
               ›
             </button>
@@ -220,7 +220,7 @@ export function PerformHeader({
                 type="button"
                 onClick={() => setMenuOpen((v) => !v)}
                 className="perform-btn"
-                aria-label="More options"
+                aria-label={t("a11y.moreOptions")}
                 aria-expanded={menuOpen}
                 aria-haspopup="true"
               >

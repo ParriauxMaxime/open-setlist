@@ -581,5 +581,14 @@
     "setup": "Réglages",
     "chorus": "Refrain",
     "repeat": "reprise"
+  },
+  "a11y": {
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "navigationMenu": "Menu de navigation",
+    "moreOptions": "Plus d'options",
+    "previousSong": "Chanson précédente",
+    "nextSong": "Chanson suivante",
+    "close": "Fermer"
   }
 }

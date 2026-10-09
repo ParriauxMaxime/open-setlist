@@ -5,7 +5,7 @@ const { page, app } = s;
 let t0 = Date.now();
 const step = (msg) => console.log(`[${((Date.now() - t0) / 1000).toFixed(1)}s] ${msg}`);
 const safe = (p, label) => p.catch((e) => console.log(`! ${label}: ${e.message.split("\n")[0]}`));
-const menu = app.getByRole("button", { name: "More options" });
+const menu = app.getByRole("button", { name: "Plus d'options" });
 
 await s.card(true, "Open <span>Setlist</span>", "Le setlist manager des petits groupes", "", "");
 await s.go("/catalog", 3000);

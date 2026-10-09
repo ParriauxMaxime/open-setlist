@@ -181,7 +181,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           type="button"
           onClick={() => setMobileOpen(true)}
           className="flex h-9 w-9 items-center justify-center rounded-md text-xl text-text-muted hover:bg-bg-hover hover:text-text"
-          aria-label="Open menu"
+          aria-label={t("a11y.openMenu")}
         >
           ☰
         </button>
