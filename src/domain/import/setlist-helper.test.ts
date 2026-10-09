@@ -296,7 +296,7 @@ function existingSong(overrides: Partial<Song>): Song {
     tags: ["old"],
     techNotes: "Fog machine",
     links: { spotify: "spotify:track:1" },
-    content: "{title: Ete Indien}",
+    content: "{title: Ete Indien}\n\n[Am]Notre version",
     createdAt: 100,
     updatedAt: 200,
     ...overrides,
@@ -356,5 +356,37 @@ describe("planImport / buildImportWrites", () => {
       },
     });
     expect(updated.content).toContain("{comment:12B🎸}");
+  });
+});
+
+describe("planImport — songs without a chart", () => {
+  // A setlist import creates songs from row metadata only: no chart yet.
+  const stub = existingSong({
+    id: "stub-1",
+    content: "{title: Ete Indien}\n{artist: Les Synthetiques}\n{key: Dm}",
+  });
+  const { songs } = parseSetlistHelperCsv(buildCsv([FULL_ROW]));
+  const plan = planImport(songs, [stub]);
+  const createId = () => "unused";
+
+  it("classifies a chart-less match as a fill, not a match", () => {
+    expect(plan.matches).toEqual([]);
+    expect(plan.fills).toHaveLength(1);
+    expect(plan.fills[0].existing.id).toBe("stub-1");
+  });
+
+  it("fills the chart even with the skip strategy", () => {
+    const writes = buildImportWrites(plan, "skip", 1000, createId);
+    expect(writes.added).toEqual([]);
+    expect(writes.updated).toHaveLength(1);
+    expect(writes.updated[0]).toMatchObject({ id: "stub-1", createdAt: 100, updatedAt: 1000 });
+    expect(writes.updated[0].content).toContain("{comment:12B🎸}");
+  });
+
+  it("keeps a match when the imported song has no chart either", () => {
+    const { songs: empty } = parseSetlistHelperCsv(buildCsv([{ ...FULL_ROW, Lyrics: "" }]));
+    const p = planImport(empty, [stub]);
+    expect(p.fills).toEqual([]);
+    expect(p.matches).toHaveLength(1);
   });
 });

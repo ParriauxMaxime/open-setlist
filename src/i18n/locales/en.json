@@ -145,6 +145,8 @@
     "allSongs": "All songs"
   },
   "perform": {
+    "noChart": "No chart for this song yet.",
+    "addChart": "Add the chart",
     "noSongsInSetlist": "This setlist has no songs.",
     "editSetlist": "Edit setlist",
     "editSong": "Edit song",
@@ -307,6 +309,8 @@
     "reviewRefreshed": "Data changed while you were reviewing (another sync or another tab). Nothing was overwritten. Review the updated changes."
   },
   "importSetlistHelper": {
+    "fillCount_one": "{{count}} song in your catalog without a chart: it gets this one",
+    "fillCount_other": "{{count}} songs in your catalog without a chart: they get theirs",
     "button": "Import from Setlist Helper",
     "reading": "Reading...",
     "previewTitle": "Import from Setlist Helper",
@@ -362,6 +366,8 @@
     "failed": "Setlist import failed."
   },
   "chartImport": {
+    "fillCount_one": "{{count}} song in your catalog without a chart: it gets this one",
+    "fillCount_other": "{{count}} songs in your catalog without a chart: they get theirs",
     "pasteButton": "Paste chart",
     "pasteTitle": "Paste a chart",
     "pasteHint": "Copy a chart from a website, a PDF or another app and paste it here. Chords written above the lyrics are moved into the lyrics, section names and tabs are recognized. ChordPro is kept as is.",

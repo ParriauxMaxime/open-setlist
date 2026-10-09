@@ -224,7 +224,7 @@ describe("parseChartFiles", () => {
       title: "Midnight drive",
       artist: "the signals",
       tags: [],
-      content: "",
+      content: "[Am]Our own version",
       createdAt: 1,
       updatedAt: 1,
     };

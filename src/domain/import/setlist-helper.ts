@@ -12,6 +12,8 @@ import {
   setDirectives,
   tagsToDirective,
 } from "../chordpro/directives";
+import { hasChart } from "../chordpro/has-chart";
+import { parse } from "../chordpro/parser";
 import { decodeTextBytes, parseCsv } from "./csv";
 import { decodeHtmlEntities } from "./html-entities";
 import { normalizeKey } from "./normalize-key";
@@ -322,6 +324,12 @@ export interface ImportMatch<T extends ImportedSong = ImportedSong> {
 export interface ImportPlan<T extends ImportedSong = ImportedSong> {
   newSongs: T[];
   matches: ImportMatch<T>[];
+  /** Matches whose catalog song has no chart yet (e.g. created by a setlist import): always filled. */
+  fills: ImportMatch<T>[];
+}
+
+function contentHasChart(content: string | undefined): boolean {
+  return content ? hasChart(parse(content)) : false;
 }
 
 export function planImport<T extends ImportedSong>(imported: T[], existing: Song[]): ImportPlan<T> {
@@ -331,11 +339,13 @@ export function planImport<T extends ImportedSong>(imported: T[], existing: Song
     if (!byKey.has(k)) byKey.set(k, song);
   }
 
-  const plan: ImportPlan<T> = { newSongs: [], matches: [] };
+  const plan: ImportPlan<T> = { newSongs: [], matches: [], fills: [] };
   for (const item of imported) {
     const match = byKey.get(songMatchKey(item.song.title, item.song.artist));
-    if (match) plan.matches.push({ imported: item, existing: match });
-    else plan.newSongs.push(item);
+    if (!match) plan.newSongs.push(item);
+    else if (!contentHasChart(match.content) && contentHasChart(item.song.content)) {
+      plan.fills.push({ imported: item, existing: match });
+    } else plan.matches.push({ imported: item, existing: match });
   }
   return plan;
 }
@@ -369,25 +379,25 @@ export function buildImportWrites(
     updatedAt: now,
   }));
 
-  const updated =
-    strategy === MATCH_STRATEGIES.update
-      ? plan.matches.map(({ imported, existing }) => {
-          const defined = Object.fromEntries(
-            Object.entries(imported.song).filter(([, v]) => v !== undefined),
-          ) as Partial<ImportedSongFields>;
-          return {
-            ...existing,
-            ...defined,
-            tags: imported.song.tags.length > 0 ? imported.song.tags : existing.tags,
-            links: imported.song.links
-              ? { ...existing.links, ...imported.song.links }
-              : existing.links,
-            id: existing.id,
-            createdAt: existing.createdAt,
-            updatedAt: now,
-          };
-        })
-      : [];
+  const merge = ({ imported, existing }: ImportMatch): Song => {
+    const defined = Object.fromEntries(
+      Object.entries(imported.song).filter(([, v]) => v !== undefined),
+    ) as Partial<ImportedSongFields>;
+    return {
+      ...existing,
+      ...defined,
+      tags: imported.song.tags.length > 0 ? imported.song.tags : existing.tags,
+      links: imported.song.links ? { ...existing.links, ...imported.song.links } : existing.links,
+      id: existing.id,
+      createdAt: existing.createdAt,
+      updatedAt: now,
+    };
+  };
+
+  const updated = [
+    ...plan.fills.map(merge),
+    ...(strategy === MATCH_STRATEGIES.update ? plan.matches.map(merge) : []),
+  ];
 
   return { added, updated };
 }

@@ -124,7 +124,9 @@ function ImportPreviewModal({ preview, busy, onConfirm, onCancel }: ImportPrevie
   const [strategy, setStrategy] = useState<MatchStrategy>(MATCH_STRATEGIES.skip);
   const { plan, warnings } = preview;
   const nothingToDo =
-    plan.newSongs.length === 0 && (strategy === MATCH_STRATEGIES.skip || plan.matches.length === 0);
+    plan.newSongs.length === 0 &&
+    plan.fills.length === 0 &&
+    (strategy === MATCH_STRATEGIES.skip || plan.matches.length === 0);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -151,6 +153,11 @@ function ImportPreviewModal({ preview, busy, onConfirm, onCancel }: ImportPrevie
           <li className="text-accent">
             {t("importSetlistHelper.newCount", { count: plan.newSongs.length })}
           </li>
+          {plan.fills.length > 0 && (
+            <li className="text-accent">
+              {t("importSetlistHelper.fillCount", { count: plan.fills.length })}
+            </li>
+          )}
           <li className="text-text-muted">
             {t("importSetlistHelper.matchCount", { count: plan.matches.length })}
           </li>
