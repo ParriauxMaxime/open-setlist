@@ -21,7 +21,7 @@ Last update: 2026-10-09. Health: `yarn lint`, `typecheck`, `test` (800+ tests), 
 | Invites | Works — passphrase-encrypted or token-less links | `src/domain/invite.ts` |
 | Onboarding | Works — one-screen first-run setup (instrument → My part, notation, language), versioned What's new card for returning users, Getting Started tour, perform hints | `src/domain/welcome.ts`, `src/modules/shared/components/` |
 | Offline / PWA | Works — full precache per build, cross-origin untouched, PNG icons | `src/sw.ts`, `src/domain/pwa/` |
-| Chord reference | Partial — 60 guitar shapes + computed piano; no bass/ukulele, no `{define}` | `src/domain/chords/` |
+| Chord reference | Works — 20 chord types × 12 roots on guitar (hand-written + E/A-shape barre templates), ukulele (hand-written + searched voicings), bass (root–fifth–octave box) and piano (slash bass highlighted); song `{define}` voicings override guitar/ukulele diagrams; favourite instrument picks the diagram. `{chord}` is parsed but not drawn inline | `src/domain/chords/`, `src/domain/chordpro/chord-definitions.ts` |
 | Song lookup | Partial — iTunes metadata + UG chords via proxy, new songs only | `src/modules/lookup/` |
 
 ## Known limitations
@@ -35,6 +35,6 @@ Last update: 2026-10-09. Health: `yarn lint`, `typecheck`, `test` (800+ tests), 
 ## Next
 
 1. **Validate with a real band** — import the real catalog, one rehearsal, one gig; collect friction.
-2. **`{define}` chord diagrams** and bass/ukulele shapes.
+2. **Inline `{chord}` diagrams** and finger numbers on diagrams (`{define}` and bass/ukulele shapes are done).
 3. **Per-line sync merge** for charts edited by two members at once.
 4. **Setlist sharing for non-members** (sound engineer): read-only link or PDF.

@@ -442,7 +442,34 @@
   },
   "chordLib": {
     "title": "Bibliothèque d\u2019accords",
-    "allRoots": "Toutes les notes"
+    "allRoots": "Toutes les notes",
+    "allQualities": "Tous les types",
+    "instrument": "Instrument",
+    "root": "Note",
+    "quality": "Type d’accord",
+    "noDiagram": "Pas de diagramme disponible",
+    "qualities": {
+      "major": "Majeur",
+      "minor": "Mineur",
+      "dom7": "Septième",
+      "min7": "Mineur septième",
+      "maj7": "Septième majeure",
+      "sus2": "Sus2",
+      "sus4": "Sus4",
+      "dom7sus4": "7sus4",
+      "dim": "Diminué",
+      "dim7": "Septième diminuée",
+      "aug": "Augmenté",
+      "maj6": "Sixte",
+      "min6": "Mineur sixte",
+      "dom9": "Neuvième",
+      "add9": "Add9",
+      "min9": "Mineur neuvième",
+      "maj9": "Neuvième majeure",
+      "halfDim": "Demi-diminué (m7♭5)",
+      "dom11": "Onzième",
+      "dom13": "Treizième"
+    }
   },
   "notation": {
     "label": "Notation des accords",
@@ -486,7 +513,9 @@
     "instrument": {
       "label": "Instrument favori",
       "guitar": "Guitare",
-      "piano": "Piano"
+      "piano": "Piano",
+      "ukulele": "Ukulélé",
+      "bass": "Basse"
     },
     "display": {
       "heading": "Affichage",

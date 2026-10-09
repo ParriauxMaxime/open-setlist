@@ -2,11 +2,16 @@
  * Instrument registry for chord diagrams.
  */
 
-export type InstrumentType = "guitar" | "piano"; // | "bass" | "ukulele" | ...
+export const INSTRUMENTS = {
+  guitar: "guitar",
+  piano: "piano",
+  ukulele: "ukulele",
+  bass: "bass",
+} as const;
 
-export const INSTRUMENT_OPTIONS: { value: InstrumentType; label: string }[] = [
-  { value: "guitar", label: "Guitar" },
-  { value: "piano", label: "Piano" },
-  // { value: "bass", label: "Bass" },
-  // { value: "ukulele", label: "Ukulele" },
-];
+export type InstrumentType = (typeof INSTRUMENTS)[keyof typeof INSTRUMENTS];
+
+export const INSTRUMENT_VALUES: InstrumentType[] = Object.values(INSTRUMENTS);
+
+/** Fretted instruments: their diagrams are chord boxes, the others a keyboard. */
+export type FrettedInstrument = Exclude<InstrumentType, "piano">;

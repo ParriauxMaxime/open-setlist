@@ -1,5 +1,6 @@
 import type { Song } from "@db";
 import { useDb } from "@db/provider";
+import { parse } from "@domain/chordpro/parser";
 import { setMyNote } from "@domain/my-notes";
 import { SCROLL_SPEED_DEFAULT, stepScrollSpeed } from "@domain/perform-stage";
 import {
@@ -55,6 +56,11 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
   const [transposeOpen, setTransposeOpen] = useState(false);
   const toggleTranspose = useCallback(() => setTransposeOpen((v) => !v), []);
   const [activeChord, setActiveChord] = useState<ChordTapInfo | null>(null);
+  // The song's own `{define}` voicings override the built-in diagrams
+  const chordDefinitions = useMemo(
+    () => parse(nav.currentSong?.content ?? "").chordDefinitions,
+    [nav.currentSong?.content],
+  );
   const myPart = useMyPart(nav.flatSongs);
   const handleChordTap = useCallback((info: ChordTapInfo) => setActiveChord(info), []);
 
@@ -309,6 +315,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
           chord={activeChord.chord}
           anchorRect={activeChord.anchorRect}
           instrument={globalPrefs.favoriteInstrument}
+          definitions={chordDefinitions}
           onClose={() => setActiveChord(null)}
         />
       )}

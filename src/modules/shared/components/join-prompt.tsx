@@ -303,7 +303,7 @@ export function JoinPrompt() {
               <legend className="mb-2 text-sm text-text-muted">
                 {t("invite.instrumentQuestion")}
               </legend>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {INSTRUMENTS.map((inst) => (
                   <button
                     key={inst}

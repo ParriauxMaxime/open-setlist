@@ -2,6 +2,7 @@ import type { PartView } from "@domain/chordpro/visibility";
 import { ALL_PARTS, normalizePart } from "@domain/parts";
 import { z } from "zod";
 import { NOTATIONS } from "./chords/notation";
+import { INSTRUMENTS } from "./chords/types";
 
 // ---------------------------------------------------------------------------
 // Schema & types
@@ -17,7 +18,8 @@ export const appPreferencesSchema = z.object({
   performDoubleTapScale: z.boolean().default(true),
   performClickSound: z.boolean().default(false),
   accentColor: hexColor.default("#4a9eff"),
-  favoriteInstrument: z.enum(["guitar", "piano"]).default("guitar"),
+  /** Chord diagrams in performance mode and the chord library */
+  favoriteInstrument: z.enum(INSTRUMENTS).default("guitar"),
   /** Chord name display (per device, not synced). Stored content stays English. */
   notation: z.enum(NOTATIONS).default("english"),
 

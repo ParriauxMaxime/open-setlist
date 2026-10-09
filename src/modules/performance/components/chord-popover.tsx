@@ -1,6 +1,8 @@
-import { getGuitarFingerings } from "@domain/chords/guitar";
+import type { ChordDefinition } from "@domain/chordpro/parser";
+import { definedFingerings, getFingerings } from "@domain/chords/fingerings";
 import { formatChord } from "@domain/chords/notation";
-import { chordMidi, parseChordSuffix } from "@domain/chords/theory";
+import { parseChord, pianoVoicing } from "@domain/chords/theory";
+import type { InstrumentType } from "@domain/chords/types";
 import { arrow, computePosition, flip, offset, shift } from "@floating-ui/dom";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -12,7 +14,9 @@ import { useNotation } from "../../shared/hooks/use-notation";
 interface ChordPopoverProps {
   chord: string;
   anchorRect: { x: number; y: number; width: number; height: number };
-  instrument: "guitar" | "piano";
+  instrument: InstrumentType;
+  /** The song's `{define}` voicings: they win over the built-in diagrams */
+  definitions?: readonly ChordDefinition[];
   onClose: () => void;
 }
 
@@ -24,7 +28,13 @@ interface Pos {
   placement: string;
 }
 
-export function ChordPopover({ chord, anchorRect, instrument, onClose }: ChordPopoverProps) {
+export function ChordPopover({
+  chord,
+  anchorRect,
+  instrument,
+  definitions,
+  onClose,
+}: ChordPopoverProps) {
   const { t } = useTranslation();
   const floatingRef = useRef<HTMLDivElement>(null);
   const arrowRef = useRef<HTMLDivElement>(null);
@@ -125,7 +135,12 @@ export function ChordPopover({ chord, anchorRect, instrument, onClose }: ChordPo
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <ChordDiagram chord={chord} label={label} instrument={instrument} />
+        <ChordDiagram
+          chord={chord}
+          label={label}
+          instrument={instrument}
+          definitions={definitions}
+        />
         <div
           ref={arrowRef}
           className="absolute h-2.5 w-2.5 rotate-45 border-white/10 bg-bg-raised/80 backdrop-blur-xl"
@@ -141,38 +156,40 @@ function ChordDiagram({
   chord,
   label,
   instrument,
+  definitions = [],
 }: {
   chord: string;
   label: string;
-  instrument: "guitar" | "piano";
+  instrument: InstrumentType;
+  definitions?: readonly ChordDefinition[];
 }) {
-  if (instrument === "guitar") {
-    const fingerings = getGuitarFingerings(chord);
-    if (fingerings.length === 0) return <NoData chord={label} />;
-    const f = fingerings[0];
-    return (
-      <FretboardDiagram
-        name={label}
-        frets={f.frets}
-        baseFret={f.baseFret}
-        barres={f.barres}
-        width={100}
-      />
-    );
+  if (instrument === "piano") {
+    const parsed = parseChord(chord);
+    if (!parsed) return <NoData chord={label} />;
+    const { notes, bass } = pianoVoicing(parsed);
+    return <KeyboardDiagram name={label} midi={notes} bass={bass} width={160} />;
   }
 
-  const parsed = parseChordSuffix(chord);
-  if (!parsed) return <NoData chord={label} />;
-  const midi = chordMidi(parsed.root, parsed.intervals);
-  if (midi.length === 0) return <NoData chord={label} />;
-  return <KeyboardDiagram name={label} midi={midi} width={160} />;
+  const f =
+    definedFingerings(definitions, instrument, chord)[0] ?? getFingerings(instrument, chord)[0];
+  if (!f) return <NoData chord={label} />;
+  return (
+    <FretboardDiagram
+      name={label}
+      frets={f.frets}
+      baseFret={f.baseFret}
+      barres={f.barres}
+      width={100}
+    />
+  );
 }
 
 function NoData({ chord }: { chord: string }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center gap-2 px-4 py-2 text-text-muted">
       <span className="text-lg font-bold">{chord}</span>
-      <span className="text-sm">No diagram available</span>
+      <span className="text-sm">{t("chordLib.noDiagram")}</span>
     </div>
   );
 }

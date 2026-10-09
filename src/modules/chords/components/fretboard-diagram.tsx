@@ -10,6 +10,7 @@ interface FretboardDiagramProps {
   frets: (number | null)[];
   baseFret?: number;
   barres?: number[];
+  /** Frets drawn: 4 by default, more when the voicing reaches further */
   fretCount?: number;
   width?: number;
 }
@@ -22,9 +23,11 @@ export function FretboardDiagram({
   frets,
   baseFret = 1,
   barres = [],
-  fretCount = 4,
+  fretCount: fretCountProp,
   width = 80,
 }: FretboardDiagramProps) {
+  const highest = Math.max(0, ...frets.map((f) => f ?? 0));
+  const fretCount = fretCountProp ?? Math.max(4, highest - baseFret + 1);
   const stringCount = frets.length;
   const strings = stringCount - 1;
 
