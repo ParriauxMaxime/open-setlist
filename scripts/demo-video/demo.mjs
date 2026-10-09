@@ -46,6 +46,18 @@ await s.unzoom();
 await s.wait(400);
 await safe(s.tap(app.getByRole("dialog").getByRole("button", { name: /^Importer/ }).first(), { post: 700 }), "confirm");
 
+// S2b paste a chart (≈5s)
+step("paste");
+await s.caption("N'importe quelle grille", "Colle,<br>c'est converti.", "Accords au-dessus des paroles, depuis un site ou un PDF. Titre, tonalité et capo détectés.");
+await s.go("/song/new", 900);
+await safe(s.tap(app.getByRole("button", { name: /Coller une grille/ }).first(), { post: 400 }), "paste open");
+await safe(app.locator("textarea").last().fill("Marée Haute - Les Goélands\nTonalité : Lam  Capo 2\n\nCouplet 1 :\nAm        F         C        G\nLa mer monte encore sur le quai\n     Am           F\nEt la nuit nous attend\n\nRefrain\nF     G      Am\nOh oh, marée haute\n"), "paste fill");
+await s.wait(600);
+await s.zoomApp(880, 300, 1.6);
+await s.wait(2000);
+await s.unzoom();
+await s.wait(300);
+
 // S3 setlist builder (≈5s)
 step("setlist");
 await s.caption("Setlists", "Construis tes sets<br>en glisser-déposer.", "Durée totale, plusieurs sets, alerte sur les morceaux pas prêts.");
@@ -84,18 +96,25 @@ await s.wait(1600);
 await s.unzoom();
 await s.scrollApp(-820, 16, 16);
 
-// S5 my part (≈7s)
+// S5 my part (≈9s)
 step("my part");
-await s.caption("Ma partie", "Chacun voit<br>sa partie.", "Clavier, guitare, chant… ou les paroles seules pour le chanteur.");
+await s.caption("Ma partie", "Chacun voit<br>sa partie.", "Clavier, trompette en Si♭, chant… ou les paroles seules pour le chanteur.");
 await s.tap(menu, { post: 450 });
 await s.tap(app.getByRole("button", { name: /Claviers/ }).first(), { post: 250 });
-await s.tap(menu, { post: 1500 });
+await s.tap(menu, { post: 1300 });
 await s.tap(menu, { post: 350 });
+await safe(s.tap(app.getByRole("button", { name: /Trompette/ }).first(), { post: 250 }), "trumpet");
+await s.tap(menu, { post: 300 });
+await s.zoomApp(260, 80, 2.0);
+await s.wait(1900);
+await s.unzoom();
+await s.wait(300);
+await s.tap(menu, { post: 300 });
+await s.tap(app.getByRole("button", { name: "Tous" }).first(), { post: 150 });
 await s.tap(app.getByText("Afficher les accords").first(), { post: 250 });
-await s.tap(menu, { post: 1500 });
+await s.tap(menu, { post: 1300 });
 await s.tap(menu, { post: 250 });
 await s.tap(app.getByText("Afficher les accords").first(), { post: 120 });
-await s.tap(app.getByRole("button", { name: "Tous" }).first(), { post: 120 });
 await s.tap(menu, { post: 250 });
 
 // S6 my notes (≈6s)
@@ -149,12 +168,10 @@ await s.caption("Plan B", "La setlist papier,<br>en un clic.", "Feuille de scèn
 await s.go("/print/seed-classic-rock-night", 1000);
 await s.wait(2600);
 
-// S10 band + outro
-step("band");
-await s.card(true, "Ton groupe, <span>synchro</span>.", "Revue des changements · conflits réglés morceau par morceau", "Invitations chiffrées · rien n'est écrasé en silence", "");
-await s.wait(3300);
-await s.card(true, "Open <span>Setlist</span>", "Le setlist manager des petits groupes", "Gratuit · Open source · Hors ligne · Tes données", "parriauxmaxime.github.io/open-setlist");
-await s.wait(4000);
+// S10 outro
+step("outro");
+await s.card(true, "Open <span>Setlist</span>", "Le setlist manager des petits groupes", "Sync de groupe sans perte · Hors ligne · Gratuit et open source", "parriauxmaxime.github.io/open-setlist");
+await s.wait(4600);
 step("end");
 console.log("frames", await stop("demo-raw.mp4"));
 await s.browser.close();
