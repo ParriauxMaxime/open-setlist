@@ -318,6 +318,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         next={setlistId ? nav.flatSongs[nav.currentIndex + 1] : undefined}
         prevSong={nav.prevSong}
         nextSong={nav.nextSong}
+        partView={myPart.view}
       />
       <TempoOverlay beats={tempo.beats} />
       {setlistId && <SetInterstitial current={nav.current} />}

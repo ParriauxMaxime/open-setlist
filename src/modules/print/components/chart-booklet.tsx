@@ -9,10 +9,12 @@ import { PrintPaper } from "./print-paper";
 interface ChartBookletProps {
   setlist: Setlist;
   printSetlist: PrintSetlist;
+  /** "Part: 🎺 Trumpet (B♭)" when printing for one part. */
+  partHeader?: string;
 }
 
 /** Contents page, then every chart in setlist order, each on a new page. */
-export function ChartBooklet({ setlist, printSetlist }: ChartBookletProps) {
+export function ChartBooklet({ setlist, printSetlist, partHeader }: ChartBookletProps) {
   const { t, i18n } = useTranslation();
   const details = [setlist.date && formatSetlistDate(setlist.date, i18n.language), setlist.venue]
     .filter(Boolean)
@@ -23,6 +25,7 @@ export function ChartBooklet({ setlist, printSetlist }: ChartBookletProps) {
     <>
       <PrintPaper style={{ fontSize: "12pt" }}>
         <h1 className="text-[2em] font-black leading-tight">{setlist.name}</h1>
+        {partHeader && <p className="text-[1.25em] font-bold">{partHeader}</p>}
         {details && <p className="text-text-muted">{details}</p>}
         <p className="text-text-muted">
           {t("setlist.songCount", { count: printSetlist.songCount })}
@@ -72,14 +75,14 @@ export function ChartBooklet({ setlist, printSetlist }: ChartBookletProps) {
         .flatMap((set) => set.songs)
         .map((entry) => (
           <PrintPaper key={entry.number} breakBefore style={{ fontSize: "12pt" }}>
-            <ChartPage entry={entry} />
+            <ChartPage entry={entry} partHeader={partHeader} />
           </PrintPaper>
         ))}
     </>
   );
 }
 
-function ChartPage({ entry }: { entry: PrintSong }) {
+function ChartPage({ entry, partHeader }: { entry: PrintSong; partHeader?: string }) {
   const { t } = useTranslation();
   const { song, key, chart } = entry;
 
@@ -95,6 +98,8 @@ function ChartPage({ entry }: { entry: PrintSong }) {
           {key && <span className="font-bold text-text">{t("print.key", { key })}</span>}
           {song.bpm ? <span>{t("print.bpm", { bpm: song.bpm })}</span> : null}
           {song.duration ? <span>{formatDuration(song.duration)}</span> : null}
+          {/* Loose pages still say whose part they are */}
+          {partHeader && <span className="ml-auto font-bold text-text">{partHeader}</span>}
         </p>
       </header>
       {chart.setup && (
@@ -103,7 +108,7 @@ function ChartPage({ entry }: { entry: PrintSong }) {
         </p>
       )}
       {chart.sections.length > 0 ? (
-        <PrintChart chart={chart} transposition={song.transposition} />
+        <PrintChart chart={chart} transposition={entry.transposition} />
       ) : (
         <p className="italic text-text-muted">{t("perform.noContent")}</p>
       )}

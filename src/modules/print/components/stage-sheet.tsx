@@ -12,13 +12,16 @@ import { PrintPaper } from "./print-paper";
 interface StageSheetProps {
   setlist: Setlist;
   printSetlist: PrintSetlist;
+  /** "Part: 🎺 Trumpet (B♭)" when the keys are a part's written keys. */
+  partHeader?: string;
 }
 
 /** Floor setlist: one page per set, titles as big as the set allows. */
-export function StageSheet({ setlist, printSetlist }: StageSheetProps) {
+export function StageSheet({ setlist, printSetlist, partHeader }: StageSheetProps) {
   const { i18n } = useTranslation();
   const details = [
     setlist.name,
+    partHeader,
     setlist.date && formatSetlistDate(setlist.date, i18n.language),
     setlist.venue,
   ]

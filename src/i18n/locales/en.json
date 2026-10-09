@@ -223,7 +223,8 @@
     "countIn_other": "Count in ({{count}} beats)",
     "bpmValue": "{{bpm}} BPM",
     "setNumber": "Set {{number}}",
-    "hint": "Tap the BPM for a beat pulse, hold it for count-in and click sound"
+    "hint": "Tap the BPM for a beat pulse, hold it for count-in and click sound",
+    "writtenKey": "{{pitch}} {{key}}"
   },
   "myNotes": {
     "title": "My note",
@@ -641,7 +642,11 @@
     "total": "Total {{duration}}",
     "contents": "Contents",
     "key": "Key: {{key}}",
-    "bpm": "{{bpm}} BPM"
+    "bpm": "{{bpm}} BPM",
+    "part": "Part",
+    "allParts": "All parts",
+    "partHeader": "Part: {{part}}",
+    "partWithPitch": "{{part}} ({{pitch}})"
   },
   "validation": {
     "titleRequired": "Title is required",

@@ -1,3 +1,4 @@
+import { DEFAULT_PART_VIEW, writtenPitchShift } from "./chordpro/visibility";
 import {
   beatInterval,
   beatsInWindow,
@@ -16,6 +17,11 @@ import {
   runEndTime,
   setLabel,
 } from "./perform-tempo";
+
+/** Shift of the device's "My part" (see visibility.ts), as the footer computes it. */
+function partShift(instrument: string, capo?: number, writtenPitch = true): number {
+  return writtenPitchShift({ ...DEFAULT_PART_VIEW, instrument, writtenPitch }, capo);
+}
 
 describe("isPlayableBpm", () => {
   it("accepts a normal tempo", () => {
@@ -222,6 +228,47 @@ describe("buildSongPreview", () => {
       key: undefined,
       bpm: undefined,
       setup: undefined,
+    });
+  });
+
+  describe("written key of a transposing part", () => {
+    const writtenKey = (song: { key?: string; transposition?: number }, shift: number) =>
+      buildSongPreview(song, undefined, shift).writtenKey;
+
+    it("gives each pitch the key it reads, next to the concert key", () => {
+      expect(buildSongPreview({ key: "Gm" }, undefined, partShift("trumpet"))).toMatchObject({
+        key: "Gm",
+        writtenKey: "Am",
+      });
+      expect(writtenKey({ key: "Gm" }, partShift("alto-sax"))).toBe("Em");
+      expect(writtenKey({ key: "Gm" }, partShift("horn"))).toBe("Dm");
+      expect(writtenKey({ key: "F" }, partShift("tenor-sax"))).toBe("G");
+    });
+
+    it("applies the song's transposition first", () => {
+      expect(
+        buildSongPreview({ key: "Gm", transposition: 2 }, undefined, partShift("trumpet")),
+      ).toMatchObject({ key: "Am", writtenKey: "Bm" });
+    });
+
+    it("reads from the sounding key on capo charts", () => {
+      // G shapes, capo 2: the band sounds A, a B♭ trumpet reads B
+      expect(buildSongPreview({ key: "G" }, undefined, partShift("trumpet", 2))).toMatchObject({
+        key: "G",
+        writtenKey: "B",
+      });
+    });
+
+    it("has none in concert pitch", () => {
+      expect(writtenKey({ key: "Gm" }, partShift("guitar"))).toBeUndefined();
+      expect(writtenKey({ key: "Gm" }, partShift("all"))).toBeUndefined();
+      expect(writtenKey({ key: "Gm" }, partShift("trumpet", undefined, false))).toBeUndefined();
+      expect(writtenKey({ key: "Gm" }, partShift("guitar", 3))).toBeUndefined();
+    });
+
+    it("has none when the key is missing or unreadable", () => {
+      expect(writtenKey({}, partShift("trumpet"))).toBeUndefined();
+      expect(writtenKey({ key: "Modal" }, partShift("trumpet"))).toBeUndefined();
     });
   });
 });

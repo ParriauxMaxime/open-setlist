@@ -223,7 +223,8 @@
     "countIn_other": "Décompte ({{count}} temps)",
     "bpmValue": "{{bpm}} BPM",
     "setNumber": "Set {{number}}",
-    "hint": "Touchez le BPM pour la pulsation, maintenez-le pour le décompte et le clic"
+    "hint": "Touchez le BPM pour la pulsation, maintenez-le pour le décompte et le clic",
+    "writtenKey": "{{pitch}} {{key}}"
   },
   "myNotes": {
     "title": "Ma note",
@@ -640,6 +641,10 @@
     "notFound": "Setlist introuvable.",
     "total": "Total {{duration}}",
     "contents": "Sommaire",
+    "part": "Partie",
+    "allParts": "Toutes les parties",
+    "partHeader": "Partie : {{part}}",
+    "partWithPitch": "{{part}} ({{pitch}})",
     "key": "Tonalité : {{key}}",
     "bpm": "{{bpm}} BPM"
   },

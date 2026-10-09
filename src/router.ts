@@ -13,7 +13,7 @@ export const Router = createRouter(
     TechSheet: "/tech/:setlistId",
     Perform: "/perform/:setlistId",
     PerformSong: "/perform-song/:songId",
-    Print: "/print/:setlistId?:mode{sheet|booklet}",
+    Print: "/print/:setlistId?:mode{sheet|booklet}&:part",
     Chords: "/chords",
     Tuner: "/tuner",
     Sync: "/sync",

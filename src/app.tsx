@@ -46,7 +46,13 @@ export function App() {
     return <PerformPage songId={route.params.songId} />;
   }
   if (route.name === "Print") {
-    return <PrintPage setlistId={route.params.setlistId} mode={route.params.mode} />;
+    return (
+      <PrintPage
+        setlistId={route.params.setlistId}
+        mode={route.params.mode}
+        part={route.params.part}
+      />
+    );
   }
 
   // Admin routes — wrapped in layout
