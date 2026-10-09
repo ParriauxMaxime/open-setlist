@@ -169,7 +169,7 @@ function SectionView({
 
   return (
     <div
-      className={`rounded-md px-3 py-2 ${bgClass}${section.renderMode === "monospace" ? " font-mono" : ""}`}
+      className={`rounded-md px-3 py-2 ${bgClass}${section.renderMode === "monospace" ? " font-mono overflow-x-auto [&_*]:whitespace-pre" : ""}`}
     >
       {!recallOnly && section.label && <div className={SECTION_HEADER_CLASS}>{section.label}</div>}
       {!recallOnly && section.type !== "custom" && !section.label && (

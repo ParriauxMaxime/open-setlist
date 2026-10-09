@@ -199,7 +199,7 @@ export function PerformHeader({
               type="button"
               onClick={onPrev}
               disabled={isFirst}
-              className="perform-btn"
+              className="perform-btn perform-nav"
               aria-label={t("a11y.previousSong")}
             >
               ‹
@@ -208,7 +208,7 @@ export function PerformHeader({
               type="button"
               onClick={onNext}
               disabled={isLast}
-              className="perform-btn"
+              className="perform-btn perform-nav"
               aria-label={t("a11y.nextSong")}
             >
               ›
