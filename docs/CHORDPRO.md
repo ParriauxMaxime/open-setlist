@@ -195,7 +195,9 @@ When a filter is active, a chip in the header shows it (e.g. `🎸 Guitar · Lyr
 | E♭ | +9 (−3) | alto sax, baritone sax, plain `sax` (taken as an alto, the most common) |
 | F | +7 (−5) | horn |
 
-A B♭ trumpet sees a concert Dm song in Em, the key chip reads `Concert Dm · B♭ Em` and the header chip `🎺 Trumpet · B♭`. Chord diagrams follow the displayed chord. On a capo chart the chords are shapes: a transposing part reads from the sounding key (shapes + capo). Free text (prose notes, tabs) is not transposed. Choosing **Concert pitch** shows the chart as written. Only this device changes; the song is untouched.
+A B♭ trumpet sees a concert Dm song in Em, the key chip reads `Concert Dm · B♭ Em` and the header chip `🎺 Trumpet · B♭`. Chord diagrams follow the displayed chord. On a capo chart the chords are shapes: a transposing part reads from the sounding key (shapes + capo). Free text (prose notes, tabs) is not transposed. Choosing **Concert pitch** shows the chart as written. Only this device changes; the song is untouched. The footer's next-song preview shows the written key too (`B♭ Am`).
+
+**Print per part.** The print page has a **Part** select (`/print/<setlist>?mode=booklet&part=trumpet`): the chart booklet keeps that part's sections, every band cue and every chord, read at its written pitch, with `Part: 🎺 Trumpet (B♭)` in the header. The stage sheet only switches its keys to written keys.
 
 ### `for` syntax
 

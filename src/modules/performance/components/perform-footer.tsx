@@ -1,4 +1,5 @@
 import type { Song } from "@db";
+import type { PartView } from "@domain/chordpro/visibility";
 import type { FlatEntry } from "../hooks/use-setlist-navigation";
 import { NextSongPreview } from "./next-song-preview";
 
@@ -9,9 +10,18 @@ interface PerformFooterProps {
   next?: FlatEntry;
   prevSong: Song | undefined;
   nextSong: Song | undefined;
+  /** "My part": the preview shows a transposing part's written key. */
+  partView?: PartView;
 }
 
-export function PerformFooter({ visible, current, next, prevSong, nextSong }: PerformFooterProps) {
+export function PerformFooter({
+  visible,
+  current,
+  next,
+  prevSong,
+  nextSong,
+  partView,
+}: PerformFooterProps) {
   return (
     <div className="perform-footer" data-visible={visible}>
       <div className="perform-footer-inner">
@@ -35,7 +45,9 @@ export function PerformFooter({ visible, current, next, prevSong, nextSong }: Pe
 
           {/* Next song */}
           <div className="min-w-0 text-right text-text-faint">
-            {nextSong && next && <NextSongPreview current={current} next={next} song={nextSong} />}
+            {nextSong && next && (
+              <NextSongPreview current={current} next={next} song={nextSong} partView={partView} />
+            )}
             {nextSong && !next && (
               <>
                 <div className="truncate font-medium">{nextSong.title}</div>

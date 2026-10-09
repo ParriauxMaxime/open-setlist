@@ -6,9 +6,13 @@ import { useTranslation } from "react-i18next";
 import { useNotation } from "../../shared/hooks/use-notation";
 import type { MyPart } from "../hooks/use-my-part";
 
-function partLabel(part: string, t: TFunction): string {
+/** "🎸 Guitar"; `emoji: false` for plain text (file names). Unknown parts are capitalized. */
+export function partLabel(part: string, t: TFunction, emoji = true): string {
   if (part === ALL_PARTS) return t("myPart.all");
-  if (isKnownPart(part)) return `${PART_EMOJI[part]} ${t(`myPart.parts.${part}`)}`.trim();
+  if (isKnownPart(part)) {
+    const name = t(`myPart.parts.${part}`);
+    return emoji ? `${PART_EMOJI[part]} ${name}`.trim() : name;
+  }
   return part.charAt(0).toUpperCase() + part.slice(1);
 }
 

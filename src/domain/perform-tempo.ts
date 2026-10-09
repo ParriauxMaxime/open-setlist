@@ -145,6 +145,8 @@ export interface SongPreviewSource {
 
 export interface SongPreview {
   key?: string;
+  /** Key a transposing part reads ("My part" at written pitch); undefined in concert pitch. */
+  writtenKey?: string;
   bpm?: number;
   setup?: string;
 }
@@ -156,10 +158,21 @@ export function playedKey(key: string | undefined, transposition = 0): string | 
   return transposition ? (transposeKey(trimmed, transposition) ?? trimmed) : trimmed;
 }
 
-/** What musicians need to prepare before the next song: key, tempo, setup line. */
-export function buildSongPreview(song: SongPreviewSource, setup: string | undefined): SongPreview {
+/**
+ * What musicians need to prepare before the next song: key, tempo, setup line.
+ * `writtenShift` is the device's part shift (`writtenPitchShift`, capo included): a B♭
+ * trumpet (+2) also gets the key it reads, concert Gm → written Am.
+ */
+export function buildSongPreview(
+  song: SongPreviewSource,
+  setup: string | undefined,
+  writtenShift = 0,
+): SongPreview {
   return {
     key: playedKey(song.key, song.transposition),
+    writtenKey: writtenShift
+      ? transposeKey(song.key, (song.transposition ?? 0) + writtenShift)
+      : undefined,
     bpm: isPlayableBpm(song.bpm) ? song.bpm : undefined,
     setup: setup?.trim() || undefined,
   };

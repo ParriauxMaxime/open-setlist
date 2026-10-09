@@ -3,7 +3,9 @@
 
 import type { Setlist, Song } from "@db";
 import { type ChordProSong, parse } from "./chordpro/parser";
-import { transposeKey } from "./chords/transpose";
+import { filterSong, type PartView, songParts, writtenPitchShift } from "./chordpro/visibility";
+import { parseCapo, transposeKey } from "./chords/transpose";
+import { ALL_PARTS, normalizePart, sortParts } from "./parts";
 
 export const PrintMode = {
   Sheet: "sheet",
@@ -22,9 +24,12 @@ export interface PrintSong {
   /** 1-based position in the whole setlist, continuous across sets. */
   number: number;
   song: Song;
-  /** Key as played, i.e. with the song's transposition applied. */
+  /** Key as played, i.e. with the song's transposition applied (written key for a part). */
   key?: string;
+  /** The chart, filtered for the part when printing one. */
   chart: ChordProSong;
+  /** Semitones to shift the chart's chords by: song transposition + the part's written pitch. */
+  transposition: number;
 }
 
 export interface PrintSet {
@@ -43,18 +48,28 @@ export interface PrintSetlist {
   unknownDurationCount: number;
 }
 
-export function playedKey(song: Pick<Song, "key" | "transposition">): string | undefined {
+/** Key after the song's transposition, plus `shift` semitones (a part's written pitch). */
+export function playedKey(
+  song: Pick<Song, "key" | "transposition">,
+  shift = 0,
+): string | undefined {
   if (!song.key) return undefined;
-  return song.transposition ? (transposeKey(song.key, song.transposition) ?? song.key) : song.key;
+  const semitones = (song.transposition ?? 0) + shift;
+  return semitones ? (transposeKey(song.key, semitones) ?? song.key) : song.key;
 }
 
-/** Resolve a setlist into numbered, printable sets. Songs missing from the catalog are skipped. */
+/**
+ * Resolve a setlist into numbered, printable sets. Songs missing from the catalog are skipped.
+ * With a `part`, charts keep that part's sections only and read at its written pitch.
+ */
 export function buildPrintSetlist(
   setlist: Pick<Setlist, "sets">,
   songs: ReadonlyMap<string, Song>,
   formatKeyLabel: (key: string) => string = (key) => key,
+  part?: string,
 ): PrintSetlist {
   const sets: PrintSet[] = [];
+  const view = part ? printPartView(part) : undefined;
   let number = 0;
 
   for (const set of setlist.sets) {
@@ -65,12 +80,16 @@ export function buildPrintSetlist(
       const song = songs.get(songId);
       if (!song) continue;
       number++;
-      const key = playedKey(song);
+      const chart = parse(song.content);
+      // Capo charts are written in shapes: a transposing part reads from the sounding key
+      const shift = writtenPitchShift(view, parseCapo(chart.metadata.capo));
+      const key = playedKey(song, shift);
       printSongs.push({
         number,
         song,
         key: key && formatKeyLabel(key),
-        chart: parse(song.content),
+        chart: view ? filterSong(chart, view) : chart,
+        transposition: (song.transposition ?? 0) + shift,
       });
       if (song.duration) duration += song.duration;
       else unknownDurationCount++;
@@ -86,6 +105,32 @@ export function buildPrintSetlist(
     duration: sets.reduce((sum, s) => sum + s.duration, 0),
     unknownDurationCount: sets.reduce((sum, s) => sum + s.unknownDurationCount, 0),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Print for one part (`?part=`)
+// ---------------------------------------------------------------------------
+
+/** `?part=` value: a part name (synonyms accepted), or undefined for blank and "all". */
+export function parsePrintPart(raw: string | undefined): string | undefined {
+  const part = raw ? normalizePart(raw) : "";
+  return part && part !== ALL_PARTS ? part : undefined;
+}
+
+/** A part's charts: its own sections plus every band cue and chord, at its written pitch. */
+export function printPartView(part: string): PartView {
+  return { instrument: part, showCues: true, showChords: true, writtenPitch: true };
+}
+
+/** Parts to print for: the songs' `for=` values plus `extra` ones (device part, current URL). */
+export function printPartChoices(
+  songs: Iterable<Pick<Song, "content">>,
+  extra: readonly (string | undefined)[] = [],
+): string[] {
+  const found = [...songs].flatMap((s) =>
+    s.content.includes("for=") ? songParts(parse(s.content)) : [],
+  );
+  return sortParts([...found, ...extra].flatMap((p) => parsePrintPart(p) ?? []));
 }
 
 // ---------------------------------------------------------------------------

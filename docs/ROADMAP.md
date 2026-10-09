@@ -15,7 +15,7 @@ Last update: 2026-10-09. Health: `yarn lint`, `typecheck`, `test` (800+ tests), 
 | Notation & transpose | Works — English / solfège / German display, key-aware spelling, transposed key and capo chips | `src/domain/chords/notation.ts`, `transpose.ts` |
 | Setlists | Works — sets, drag and drop, durations, unready-song warnings | `src/modules/setlist/` |
 | Performance mode | Works — swipe, pedals, auto-scroll, wake lock, fullscreen, tempo pulse/click/count-in, next-song preview, set breaks | `src/modules/performance/` |
-| Print / PDF | Works — stage floor sheet, chart booklet | `src/modules/print/` |
+| Print / PDF | Works — stage floor sheet, chart booklet, per part (written pitch for B♭/E♭/F) | `src/modules/print/` |
 | Importers | Works — Setlist Helper catalog/setlist CSVs, ChordPro and text files (multi-file, `{new_song}` split, UTF-16), paste a chords-over-lyrics chart in the editor | `src/domain/import/` |
 | Sync | Works — GitHub / Drive snapshot, review, per-item conflicts, remote deletions via tombstones | `src/domain/sync/` |
 | Invites | Works — passphrase-encrypted or token-less links | `src/domain/invite.ts` |
