@@ -235,6 +235,13 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Phones swipe between songs; the arrows would squeeze the title out */
+@media (max-width: 639px) {
+  .perform-btn.perform-nav {
+    display: none;
+  }
+}
+
 .perform-btn:active {
   background: var(--color-bg-hover);
 }
