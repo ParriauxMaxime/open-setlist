@@ -310,7 +310,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
                     type="button"
                     onClick={() => setMenuOpen((v) => !v)}
                     className="btn btn-ghost btn-responsive"
-                    aria-label="More options"
+                    aria-label={t("a11y.moreOptions")}
                     aria-expanded={menuOpen}
                     aria-haspopup="true"
                   >

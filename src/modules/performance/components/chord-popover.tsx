@@ -4,6 +4,7 @@ import { chordMidi, parseChordSuffix } from "@domain/chords/theory";
 import { arrow, computePosition, flip, offset, shift } from "@floating-ui/dom";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { FretboardDiagram } from "../../chords/components/fretboard-diagram";
 import { KeyboardDiagram } from "../../chords/components/keyboard-diagram";
 import { useNotation } from "../../shared/hooks/use-notation";
@@ -24,6 +25,7 @@ interface Pos {
 }
 
 export function ChordPopover({ chord, anchorRect, instrument, onClose }: ChordPopoverProps) {
+  const { t } = useTranslation();
   const floatingRef = useRef<HTMLDivElement>(null);
   const arrowRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -105,7 +107,7 @@ export function ChordPopover({ chord, anchorRect, instrument, onClose }: ChordPo
         type="button"
         className="fixed inset-0 z-50"
         onClick={onClose}
-        aria-label="Close"
+        aria-label={t("a11y.close")}
         tabIndex={-1}
       />
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: onClick is only stopPropagation, not real interaction */}

@@ -581,5 +581,14 @@
     "setup": "Setup",
     "chorus": "Chorus",
     "repeat": "repeat"
+  },
+  "a11y": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "navigationMenu": "Navigation menu",
+    "moreOptions": "More options",
+    "previousSong": "Previous song",
+    "nextSong": "Next song",
+    "close": "Close"
   }
 }
