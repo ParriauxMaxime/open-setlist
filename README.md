@@ -28,6 +28,7 @@ Every setlist app is closed-source, locked to a platform, or paywalled — and t
 - **Notation** — English (C D E), solfège (Do Ré Mi) or German (H); key-aware transposition, capo display
 - **Paste any chart** — chords written above lyrics (websites, PDFs) are converted to ChordPro, with title/key/capo detection
 - **Import files** — `.cho`, `.chopro`, `.crd`, `.pro`, `.txt`, several at once (multi-song files split)
+- **Chord diagrams** — guitar, piano, ukulele, bass; 20 chord types; `{define}` custom shapes
 - **Song lookup** — search by title, metadata from iTunes, chords from Ultimate Guitar
 
 **Setlists**
