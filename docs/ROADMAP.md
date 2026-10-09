@@ -19,6 +19,7 @@ Last update: 2026-10-09. Health: `yarn lint`, `typecheck`, `test` (800+ tests), 
 | Importers | Works — Setlist Helper catalog/setlist CSVs, ChordPro and text files (multi-file, `{new_song}` split, UTF-16), paste a chords-over-lyrics chart in the editor | `src/domain/import/` |
 | Sync | Works — GitHub / Drive snapshot, review, per-item conflicts, remote deletions via tombstones | `src/domain/sync/` |
 | Invites | Works — passphrase-encrypted or token-less links | `src/domain/invite.ts` |
+| Onboarding | Works — one-screen first-run setup (instrument → My part, notation, language), versioned What's new card for returning users, Getting Started tour, perform hints | `src/domain/welcome.ts`, `src/modules/shared/components/` |
 | Offline / PWA | Works — full precache per build, cross-origin untouched, PNG icons | `src/sw.ts`, `src/domain/pwa/` |
 | Chord reference | Partial — 60 guitar shapes + computed piano; no bass/ukulele, no `{define}` | `src/domain/chords/` |
 | Song lookup | Partial — iTunes metadata + UG chords via proxy, new songs only | `src/modules/lookup/` |

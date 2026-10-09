@@ -13,6 +13,7 @@ import {
   songStatusLabelKey,
   songStatusRank,
 } from "@domain/song-status";
+import { markWhatsNewSeen, useWelcome, WELCOME } from "@domain/welcome";
 import { Link } from "@swan-io/chicane";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -21,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
 import { DataTable } from "../design-system/components/data-table";
 import { SongStatusDot } from "../shared/components/song-status-dot";
+import { WhatsNewCard } from "../shared/components/whats-new-card";
 import { useMyNotes } from "../shared/hooks/use-my-notes";
 import { useNotation } from "../shared/hooks/use-notation";
 import { ChartFileImport } from "./components/chart-file-import";
@@ -52,6 +54,7 @@ export function CatalogPage() {
   const songs = useLiveQuery(() => db.songs.orderBy("title").toArray(), [db]);
   const myNotes = useMyNotes(useActiveProfileId());
   const [importStatus, setImportStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const welcome = useWelcome();
 
   const columns: ColumnDef<Song, unknown>[] = [
     col.accessor("title", {
@@ -173,6 +176,10 @@ export function CatalogPage() {
         <output className={`mb-4 block text-sm ${importStatus.ok ? "text-accent" : "text-danger"}`}>
           {importStatus.message}
         </output>
+      )}
+
+      {welcome === WELCOME.whatsNew && (
+        <WhatsNewCard onDismiss={markWhatsNewSeen} className="mb-4" />
       )}
 
       {songs === undefined ? (

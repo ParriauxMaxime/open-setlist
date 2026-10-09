@@ -14,6 +14,8 @@ export async function openStage() {
       localStorage.setItem("open-setlist-display-prefs", JSON.stringify({ locale: "fr" }));
       localStorage.setItem("open-setlist-perform-hints-seen", "1");
       localStorage.setItem("open-setlist-onboarding-dismissed", "1");
+      localStorage.setItem("open-setlist-first-run-done", "1");
+      localStorage.setItem("open-setlist-whats-new-seen", "2026-10");
     }
   });
   const page = await ctx.newPage();

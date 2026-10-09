@@ -165,6 +165,7 @@
       "swipe": "Swipe left or right to change song",
       "doubleTapLeft": "Double-tap to zoom out",
       "doubleTapRight": "Double-tap to zoom in",
+      "myPart": "⋮ → My part: only your instrument, or lyrics only",
       "dismiss": "Tap anywhere to dismiss"
     }
   },
@@ -562,17 +563,17 @@
         "title": "Welcome to Open Setlist!",
         "body": "Open Setlist is a free, open-source setlist manager that runs entirely in your browser. Your data stays on your device — no account needed."
       },
-      "profile": {
-        "title": "Profiles",
-        "body": "Each profile has its own songs, setlists, and sync settings. You're currently on the Demo profile with sample songs. Create your own profile in Settings to start fresh."
+      "import": {
+        "title": "Bring Your Songs",
+        "body": "Coming from Setlist Helper? Import your catalog and setlist CSVs on the Sync page. In the song editor, \"Paste chart\" turns a chart copied from a website or PDF into ChordPro. Create your own profile in Settings first to keep the demo songs apart."
+      },
+      "stage": {
+        "title": "On Stage",
+        "body": "In performance mode, ⋮ → My part shows only your instrument's sections: singers can hide chords, B♭/E♭/F horns read their written pitch. Need paper? Print a stage sheet or a chart booklet from any setlist."
       },
       "sync": {
-        "title": "Sync Your Data",
-        "body": "Connect GitHub or Google Drive to back up and sync your data across devices. Set it up in Settings > Synchronization."
-      },
-      "band": {
-        "title": "Share with Your Band",
-        "body": "Share your Google Drive file with bandmates so everyone stays on the same page. Each member can sync independently."
+        "title": "Sync with Your Band",
+        "body": "Connect GitHub or Google Drive in Settings, then send your bandmates an invite link. Incoming changes are shown for review before they apply."
       },
       "install": {
         "title": "Install the App",
@@ -586,6 +587,59 @@
       "resetTitle": "Reset the app?",
       "resetMessage": "This will delete all local data — profiles, songs, setlists, and preferences. Remote storage (GitHub, Google Drive) will not be affected.",
       "resetConfirm": "Yes, reset everything"
+    }
+  },
+  "welcome": {
+    "title": "Welcome to Open Setlist",
+    "intro": "Three quick choices for this device. You can change them later in Settings.",
+    "skip": "Skip",
+    "instrument": "I play…",
+    "instrumentHint": "On stage, My part then shows your instrument's sections.",
+    "notation": "Chord names",
+    "example": "Example:",
+    "language": "Language",
+    "importSetlistHelper": "Import from Setlist Helper",
+    "importHint": "Creates your band's profile. The demo stays in the profile menu.",
+    "exploreDemo": "Explore the demo",
+    "bandProfile": "My band",
+    "whatsNew": {
+      "title": "What's new",
+      "tryIt": "Try it",
+      "close": "Close What's new",
+      "items": {
+        "myPart": {
+          "title": "My part",
+          "desc": "On stage, ⋮ → My part shows only your instrument. Lyrics only for singers, written pitch for B♭/E♭/F horns."
+        },
+        "myNotes": {
+          "title": "My notes",
+          "desc": "⋮ → Add my note: private reminders per song, shown on stage, never shared."
+        },
+        "tempo": {
+          "title": "Tempo and hands-free",
+          "desc": "Tap the BPM for a beat pulse, hold it for a count-in. Bluetooth pedals and auto-scroll turn the page."
+        },
+        "notation": {
+          "title": "Do Ré Mi or C D E H",
+          "desc": "Solfège or German chord names, and transposition that spells keys properly."
+        },
+        "print": {
+          "title": "Print / PDF",
+          "desc": "A big-font stage sheet for the floor, a chart booklet as a paper backup."
+        },
+        "readiness": {
+          "title": "Song readiness",
+          "desc": "Mark songs to learn, rehearsing or ready in the Status column. Setlists flag unready songs."
+        },
+        "setlistHelper": {
+          "title": "Import from Setlist Helper",
+          "desc": "Your catalog and setlist CSVs, on the Sync page. Comments and highlights are kept."
+        },
+        "pasteChart": {
+          "title": "Paste a chart",
+          "desc": "Chords written above lyrics become ChordPro. .cho and .txt files import from the Songs page."
+        }
+      }
     }
   },
   "invite": {

@@ -178,10 +178,16 @@ export const DEFAULT_PREFERENCES: AppPreferences = {
 
 const STORAGE_KEY = "open-setlist-display-prefs";
 
+/** First visit: follow the browser language when we have a translation for it. */
+function browserLocale(): AppPreferences["locale"] {
+  const lang = typeof navigator === "undefined" ? "" : navigator.language.toLowerCase();
+  return lang.startsWith("fr") ? "fr" : "en";
+}
+
 export function loadPreferences(): AppPreferences {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_PREFERENCES };
+    if (!raw) return { ...DEFAULT_PREFERENCES, locale: browserLocale() };
     return appPreferencesSchema.parse(JSON.parse(raw));
   } catch {
     return { ...DEFAULT_PREFERENCES };

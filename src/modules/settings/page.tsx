@@ -20,6 +20,7 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { Select } from "../design-system/components/form";
+import { WhatsNewCard } from "../shared/components/whats-new-card";
 import { GitHubConfigForm } from "./components/github-config-form";
 import { GoogleDriveConfigForm } from "./components/google-drive-config-form";
 import { ProfileManager } from "./components/profile-manager";
@@ -520,6 +521,7 @@ export function SettingsPage() {
           <p className="whitespace-pre-line text-sm text-text-muted">
             {t("onboarding.about.body")}
           </p>
+          <WhatsNewCard className="mt-4" />
           <button
             type="button"
             tabIndex={-1}

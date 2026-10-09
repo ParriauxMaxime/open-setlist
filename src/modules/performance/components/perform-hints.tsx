@@ -56,6 +56,7 @@ export function PerformHints() {
         <div className="flex max-w-56 flex-col items-center gap-2 text-center">
           <span className="text-2xl text-white">♩</span>
           <p className="text-xs text-white/80">{t("performTempo.hint")}</p>
+          <p className="text-xs text-white/80">{t("perform.hints.myPart")}</p>
         </div>
         <div className="flex max-w-56 flex-col items-center gap-1 text-center">
           <span className="text-2xl">⌨️</span>
