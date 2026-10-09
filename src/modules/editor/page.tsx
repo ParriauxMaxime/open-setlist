@@ -1,5 +1,6 @@
 import { useDb } from "@db/provider";
 import { createId } from "@domain/id";
+import { removeMyNote } from "@domain/my-notes";
 import {
   getSongOverrides,
   loadPreferences,
@@ -23,6 +24,7 @@ import { fetchChords } from "../lookup";
 import { ChordProEditor } from "./components/chordpro-editor";
 import { ChordProHelp } from "./components/chordpro-help";
 import { MetadataPanel } from "./components/metadata-panel";
+import { MyNotePanel } from "./components/my-note-panel";
 import { SongLookupModal } from "./components/song-lookup-modal";
 import { useChordProSync } from "./hooks/use-chordpro-sync";
 
@@ -221,6 +223,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
     if (!songId) return;
     addTombstone(profileId, "song", songId);
     removeSongOverrides(songId);
+    removeMyNote(profileId, songId);
     await db.songs.delete(songId);
     Router.replace("Catalog");
   }, [songId, profileId, db]);
@@ -358,6 +361,9 @@ export function EditSongPage({ songId }: EditSongPageProps) {
             </div>
           )}
         </div>
+
+        {/* Private, device-only note: kept outside the song form so it is never saved/synced */}
+        {!isNew && <MyNotePanel profileId={profileId} songId={songDbId} />}
       </div>
 
       {/* Desktop: side-by-side grid | Mobile: stacked */}

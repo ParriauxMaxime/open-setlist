@@ -1,6 +1,6 @@
 import type { Song } from "@db";
 import type { PartView } from "@domain/chordpro/visibility";
-import type { CSSProperties, RefObject } from "react";
+import type { CSSProperties, ReactNode, RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { ChordProView, type ChordTapInfo } from "./chordpro-view";
 
@@ -20,6 +20,8 @@ interface SongStripProps {
   nextSongStyle?: CSSProperties;
   onChordTap?: (info: ChordTapInfo) => void;
   partView?: PartView;
+  /** The musician's private note card for a song, if any. */
+  renderNote?: (song: Song) => ReactNode;
 }
 
 export function SongStrip({
@@ -38,6 +40,7 @@ export function SongStrip({
   nextSongStyle,
   onChordTap,
   partView,
+  renderNote,
 }: SongStripProps) {
   const { t } = useTranslation();
 
@@ -55,6 +58,7 @@ export function SongStrip({
             <ChordProView
               content={prevSong.content}
               transposition={prevTransposition}
+              note={renderNote?.(prevSong)}
               onChordTap={onChordTap}
               partView={partView}
             />
@@ -70,6 +74,7 @@ export function SongStrip({
             <ChordProView
               content={currentSong.content}
               transposition={currentTransposition}
+              note={renderNote?.(currentSong)}
               onChordTap={onChordTap}
               partView={partView}
             />
@@ -86,6 +91,7 @@ export function SongStrip({
             <ChordProView
               content={nextSong.content}
               transposition={nextTransposition}
+              note={renderNote?.(nextSong)}
               onChordTap={onChordTap}
               partView={partView}
             />

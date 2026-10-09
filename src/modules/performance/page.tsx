@@ -1,4 +1,6 @@
+import type { Song } from "@db";
 import { useDb } from "@db/provider";
+import { setMyNote } from "@domain/my-notes";
 import { SCROLL_SPEED_DEFAULT, stepScrollSpeed } from "@domain/perform-stage";
 import {
   getSongOverrides,
@@ -7,13 +9,17 @@ import {
   setSongOverrides,
   songDisplayCssVars,
 } from "@domain/preferences";
+import { useActiveProfileId } from "@domain/profiles";
 import { Link } from "@swan-io/chicane";
 import type { CSSProperties } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
+import { useMyNotes } from "../shared/hooks/use-my-notes";
 import { ChordPopover } from "./components/chord-popover";
 import type { ChordTapInfo } from "./components/chordpro-view";
+import { MyNoteCard } from "./components/my-note-card";
+import { MyNoteEditor } from "./components/my-note-editor";
 import { PerformFooter } from "./components/perform-footer";
 import { PerformHeader } from "./components/perform-header";
 import { PerformHints } from "./components/perform-hints";
@@ -51,6 +57,43 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
   const [activeChord, setActiveChord] = useState<ChordTapInfo | null>(null);
   const myPart = useMyPart(nav.flatSongs);
   const handleChordTap = useCallback((info: ChordTapInfo) => setActiveChord(info), []);
+
+  const profileId = useActiveProfileId();
+  const myNotes = useMyNotes(profileId);
+  // Songs whose note is folded to a pin, for this session only
+  const [foldedNotes, setFoldedNotes] = useState<ReadonlySet<string>>(() => new Set());
+  const setNoteFolded = useCallback((id: string, folded: boolean) => {
+    setFoldedNotes((prev) => {
+      const next = new Set(prev);
+      if (folded) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
+  // Bound to the song it was opened for, even if the musician swipes meanwhile
+  const [noteEditing, setNoteEditing] = useState<Song | null>(null);
+  const saveNote = useCallback(
+    (text: string) => {
+      if (!noteEditing) return;
+      setMyNote(profileId, noteEditing.id, text);
+      setNoteFolded(noteEditing.id, false);
+      setNoteEditing(null);
+    },
+    [noteEditing, profileId, setNoteFolded],
+  );
+  const renderNote = (song: Song) => {
+    const note = myNotes[song.id];
+    if (!note) return null;
+    const folded = foldedNotes.has(song.id);
+    return (
+      <MyNoteCard
+        text={note.text}
+        collapsed={folded}
+        onToggleCollapsed={() => setNoteFolded(song.id, !folded)}
+        onEdit={() => setNoteEditing(song)}
+      />
+    );
+  };
 
   const handleTranspose = useCallback(
     async (delta: number) => {
@@ -231,7 +274,18 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         onNext={swipe.goNext}
         onOpenSidebar={() => setSidebarOpen(true)}
         myPart={myPart}
+        hasMyNote={!!(nav.currentSong && myNotes[nav.currentSong.id])}
+        onEditMyNote={() => setNoteEditing(nav.currentSong ?? null)}
       />
+      {noteEditing && (
+        <MyNoteEditor
+          key={noteEditing.id}
+          songTitle={noteEditing.title}
+          initialText={myNotes[noteEditing.id]?.text ?? ""}
+          onSave={saveNote}
+          onCancel={() => setNoteEditing(null)}
+        />
+      )}
       <SongStrip
         containerRef={swipe.containerRef}
         stripRef={swipe.stripRef}
@@ -248,6 +302,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         nextSongStyle={nextSongStyle}
         onChordTap={handleChordTap}
         partView={myPart.view}
+        renderNote={renderNote}
       />
       {activeChord && (
         <ChordPopover

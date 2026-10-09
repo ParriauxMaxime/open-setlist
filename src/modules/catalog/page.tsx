@@ -2,6 +2,7 @@ import type { Song } from "@db";
 import { useDb } from "@db/provider";
 import { formatKey } from "@domain/chords/notation";
 import { MUSICAL_KEY_LIST } from "@domain/music";
+import { useActiveProfileId } from "@domain/profiles";
 import {
   ACTIVE_STATUS_FILTER,
   matchesStatusFilter,
@@ -19,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
 import { DataTable } from "../design-system/components/data-table";
 import { SongStatusDot } from "../shared/components/song-status-dot";
+import { useMyNotes } from "../shared/hooks/use-my-notes";
 import { useNotation } from "../shared/hooks/use-notation";
 
 const col = createColumnHelper<Song>();
@@ -46,6 +48,7 @@ export function CatalogPage() {
   const db = useDb();
   const notation = useNotation();
   const songs = useLiveQuery(() => db.songs.orderBy("title").toArray(), [db]);
+  const myNotes = useMyNotes(useActiveProfileId());
 
   const columns: ColumnDef<Song, unknown>[] = [
     col.accessor("title", {
@@ -55,6 +58,16 @@ export function CatalogPage() {
         return (
           <div>
             <span className="font-medium">{info.getValue()}</span>
+            {myNotes[song.id] && (
+              <span
+                role="img"
+                aria-label={t("myNotes.hasNote")}
+                title={t("myNotes.hasNote")}
+                className="ml-1.5 text-xs"
+              >
+                📝
+              </span>
+            )}
             <div className="mt-0.5 flex items-center gap-2 text-xs md:hidden">
               {song.artist && <span className="text-text-muted">{song.artist}</span>}
               {song.key && <span className="text-chord">{formatKey(song.key, notation)}</span>}
