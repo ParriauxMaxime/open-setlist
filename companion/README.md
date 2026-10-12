@@ -28,9 +28,12 @@ Keep it running during the gig; close its window to stop it.
   [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html), add a port named
   `Open Setlist`, and the companion finds it within a few seconds. Without `--out` it takes
   the first output whose name contains `open setlist`, else `loopmidi`, else `loopback`
-  (which is how the loopback ports of Windows MIDI Services are named).
+  (the name of the loopback ports Microsoft announces for Windows MIDI Services). Windows
+  asks twice on the first run: to run an unsigned program (More info > Run anyway), and to
+  let it through the firewall. Allow the firewall, or tablets cannot reach it.
 - **Bluetooth**: tablets find the computer as a BLE MIDI device named `Open Setlist`
-  (under the computer's own name on Windows). macOS asks once to allow Bluetooth.
+  (under the computer's own name on Windows). macOS asks to allow Bluetooth the first time
+  a given file is run.
 
 ## Options
 

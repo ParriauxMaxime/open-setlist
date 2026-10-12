@@ -114,9 +114,13 @@ fn every_answer_can_be_read_by_a_page_from_another_origin() {
         companion.post("/midi", &json!({"messages": [[240]]})),
         companion.post("/position", &position(0)),
         companion.request("OPTIONS", "/midi", ""),
+        {
+            companion.out.unplug();
+            companion.post("/midi", &json!({"messages": [[176, 20, 6]]}))
+        },
     ];
     let statuses: Vec<u16> = answers.iter().map(|answer| answer.status).collect();
-    assert_eq!(statuses, [200, 200, 204, 400, 404, 200, 400, 200, 204]);
+    assert_eq!(statuses, [200, 200, 204, 400, 404, 200, 400, 200, 204, 503]);
     for answer in &answers {
         for (name, value) in HEADERS {
             assert_eq!(answer.header(name), Some(value), "{name}");
