@@ -50,8 +50,12 @@ fn main() -> ExitCode {
     #[cfg(not(target_os = "macos"))]
     let may_use_bluetooth = true;
 
-    match run(options, may_use_bluetooth) {
-        Ok(never) => match never {},
+    let started = listen(&options).and_then(|listener| match listener {
+        Some(listener) => run(options, listener, may_use_bluetooth).map(|never| match never {}),
+        None => Ok(()),
+    });
+    match started {
+        Ok(()) => ExitCode::SUCCESS,
         Err(message) => {
             eprintln!("{message}");
             // Started with a double click on Windows, the window would close on the message.
@@ -64,23 +68,33 @@ fn main() -> ExitCode {
     }
 }
 
-fn run(options: Options, may_use_bluetooth: bool) -> Result<Infallible, String> {
+/// The socket tablets connect to, or `None` when the companion already runs: its status
+/// page is then shown instead of starting a second one.
+fn listen(options: &Options) -> Result<Option<TcpListener>, String> {
     // No authentication: the companion is only reachable on the band's own router, which
     // has no way out to the internet.
-    let listener = match TcpListener::bind((Ipv4Addr::UNSPECIFIED, options.port)) {
-        Ok(listener) => listener,
+    match TcpListener::bind((Ipv4Addr::UNSPECIFIED, options.port)) {
+        Ok(listener) => Ok(Some(listener)),
         Err(error) if error.kind() == ErrorKind::AddrInUse && is_running(options.port) => {
-            println!("Open Setlist Companion is already running: here is its status page.");
-            open_in_browser(&status_page(options.port));
-            std::process::exit(0);
+            let page = status_page(options.port);
+            println!("Open Setlist Companion is already running: {page}");
+            if options.open {
+                open_in_browser(&page);
+            }
+            Ok(None)
         }
-        Err(error) => {
-            return Err(format!(
-                "Cannot listen on port {}: {error}.\nIf another program uses it, start with --port 7778 and use that number in Open Setlist.",
-                options.port
-            ));
-        }
-    };
+        Err(error) => Err(format!(
+            "Cannot listen on port {}: {error}.\nIf another program uses that port, start with --port 7778 and use that number in Open Setlist.",
+            options.port
+        )),
+    }
+}
+
+fn run(
+    options: Options,
+    listener: TcpListener,
+    may_use_bluetooth: bool,
+) -> Result<Infallible, String> {
     let port = listener
         .local_addr()
         .map_or(options.port, |address| address.port());
