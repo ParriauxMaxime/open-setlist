@@ -63,6 +63,12 @@ It runs on Cloudflare Workers (free tier: 100K requests/day, no credit card requ
 
 5. **Paste the URL** into `src/modules/lookup/adapters/proxy.ts` as the `PROXY_URL` constant. The app uses this at runtime when fetching UG tabs.
 
+6. **Band relay**: build the app with the same URL in the `RELAY_URL` environment variable (GitHub repository variable `RELAY_URL` for the Pages workflow, `.env` locally). Without it the Sync page says band sync is not switched on.
+
+### Band relay (same worker)
+
+Routes under `/bands/` store one client-encrypted snapshot per band, in one SQLite Durable Object per band (`Band` class in `worker/index.js`, binding and migration in `wrangler.toml`). Request handling is in `worker/relay.ts` (pure, tested with Jest through `worker/test-fakes.ts`); the client is `src/domain/sync/adapters/relay.ts` and `src/domain/sync/band-code.ts`. Writes are compare-and-swap on a version counter. `ALLOWED_ORIGINS` in `wrangler.toml` lists the web origins allowed to call it. Protocol and limits: `docs/SYNC.md` > Band code.
+
 ### How it's used
 
 The song lookup flow (`src/modules/lookup/`) searches the iTunes Search API directly (CORS-enabled) for metadata, then optionally fetches chord content from Ultimate Guitar through the proxy. The proxy is only contacted when a user clicks "Import" on a search result. If the proxy is down or the fetch times out (8s), the form still populates with metadata — chords are just left empty.
