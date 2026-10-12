@@ -6,7 +6,9 @@ import {
   type BandKeys,
   deriveBandKeys,
   openBlob,
+  openFile,
   sealBlob,
+  sealFile,
 } from "../band-code";
 import type { RelayConfig } from "../config";
 import { ConflictError, type RemoteSyncPort } from "../ports/remote-sync.port";
@@ -138,6 +140,42 @@ export function createRelayAdapter(
 
   return {
     name: "Band",
+
+    files: {
+      async list() {
+        const relay = await connect(code, options);
+        const res = await relay.request("/files");
+        if (res.status !== 200) throw new RelayError(RELAY_ERROR.unreachable);
+        try {
+          return z.array(z.string()).parse(JSON.parse(new TextDecoder().decode(res.body)));
+        } catch {
+          throw new RelayError(RELAY_ERROR.unreachable);
+        }
+      },
+
+      async get(fileId) {
+        const relay = await connect(code, options);
+        const res = await relay.request(`/files/${fileId}`);
+        if (res.status === 204) return null;
+        if (res.status !== 200) throw new RelayError(RELAY_ERROR.unreachable);
+        try {
+          return new Blob([await openFile(relay.keys, fileId, res.body)]);
+        } catch (err) {
+          if (err instanceof BandBlobError) throw new RelayError(RELAY_ERROR.damaged);
+          throw err;
+        }
+      },
+
+      async put(fileId, data) {
+        const relay = await connect(code, options);
+        const content = new Uint8Array(await data.arrayBuffer());
+        const res = await relay.request(`/files/${fileId}`, {
+          method: "PUT",
+          body: await sealFile(relay.keys, fileId, content),
+        });
+        if (res.status !== 200) throw new RelayError(RELAY_ERROR.unreachable);
+      },
+    },
 
     isConfigured() {
       return Boolean(code);

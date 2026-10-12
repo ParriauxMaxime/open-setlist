@@ -1,13 +1,14 @@
 // Band relay: one opaque (client-encrypted) snapshot per band, with compare-and-swap on a
-// version counter. Request handling only: storage is injected, see the Durable Object in index.js.
+// version counter, plus the band's write-once files (sheet music). Request handling only: storage is injected, see the Durable Object in index.js.
 
 export const VERSION_HEADER = "X-Band-Version";
 export const MAX_META_BYTES = 4 * 1024;
 export const MAX_SNAPSHOT_BYTES = 8 * 1024 * 1024;
+export const MAX_FILE_BYTES = 16 * 1024 * 1024;
 /** A SQLite Durable Object row holds 2 MB at most, so blobs are stored in chunks. */
 export const CHUNK_BYTES = 1024 * 1024;
 
-export type BlobKey = "meta" | "snapshot";
+export type BlobKey = "meta" | "snapshot" | `file:${string}`;
 
 export interface BandStore {
   /** null until the band is created. */
@@ -16,18 +17,33 @@ export interface BandStore {
   read(key: BlobKey): Uint8Array<ArrayBuffer> | null;
   /** Replaces the snapshot and sets the version in one transaction. */
   writeSnapshot(data: Uint8Array, version: number): void;
+  fileIds(): string[];
+  writeFile(fileId: string, data: Uint8Array): void;
 }
 
 export interface BandRoute {
   bandId: string;
-  resource: "band" | "snapshot";
+  resource: "band" | "snapshot" | "files" | "file";
+  fileId?: string;
 }
 
-/** `/bands/<128-bit hex id>` or `/bands/<id>/snapshot`. Anything else is not a relay route. */
+/**
+ * `/bands/<128-bit hex id>`, then `/snapshot`, `/files` or `/files/<uuid>`.
+ * Anything else is not a relay route.
+ */
 export function routeBand(pathname: string): BandRoute | null {
-  const match = /^\/bands\/([0-9a-f]{32})(\/snapshot)?$/.exec(pathname);
+  const match = /^\/bands\/([0-9a-f]{32})(?:\/(snapshot|files)(?:\/([0-9a-f-]{36}))?)?$/.exec(
+    pathname,
+  );
   if (!match) return null;
-  return { bandId: match[1], resource: match[2] ? "snapshot" : "band" };
+  const [, bandId, resource, fileId] = match;
+  if (!resource) return { bandId, resource: "band" };
+  if (!fileId) return { bandId, resource: resource === "files" ? "files" : "snapshot" };
+  return resource === "files" ? { bandId, resource: "file", fileId } : null;
+}
+
+export function maxBodyBytes(route: BandRoute): number {
+  return route.resource === "file" ? MAX_FILE_BYTES : MAX_SNAPSHOT_BYTES;
 }
 
 export function splitChunks(data: Uint8Array, size = CHUNK_BYTES): Uint8Array<ArrayBuffer>[] {
@@ -107,9 +123,9 @@ export async function handleBandRequest(request: Request, store: BandStore): Pro
     return reply(201, null, 0);
   }
 
-  const writing = route.resource === "snapshot" && method === "PUT";
+  const writing = (route.resource === "snapshot" || route.resource === "file") && method === "PUT";
   if (method !== "GET" && !writing) return reply(405, "Method not allowed");
-  const body = writing ? await readCapped(request, MAX_SNAPSHOT_BYTES) : null;
+  const body = writing ? await readCapped(request, maxBodyBytes(route)) : null;
   if (writing && !body) return reply(413, "Body too large");
 
   const band = store.load();
@@ -117,6 +133,22 @@ export async function handleBandRequest(request: Request, store: BandStore): Pro
   if (band.authHash !== authHash) return reply(403, "Wrong band token");
 
   if (route.resource === "band") return reply(200, store.read("meta"), band.version);
+
+  if (route.resource === "files") {
+    return reply(200, JSON.stringify(store.fileIds()), band.version);
+  }
+
+  if (route.fileId) {
+    const { fileId } = route;
+    if (!body) {
+      const file = store.read(`file:${fileId}`);
+      return file ? reply(200, file, band.version) : reply(204, null, band.version);
+    }
+    if (body.length === 0) return reply(400, "Missing body");
+    // Write-once: a file never changes under its id
+    if (!store.fileIds().includes(fileId)) store.writeFile(fileId, body);
+    return reply(200, null, band.version);
+  }
 
   if (!body) {
     if (band.version === 0) return reply(204, null, 0);
@@ -174,7 +206,7 @@ export async function handleRelayRequest(
   if (request.method === "OPTIONS") return withCors(reply(204));
   const route = routeBand(new URL(request.url).pathname);
   if (!route) return withCors(reply(404, "Not found"));
-  if (Number(request.headers.get("Content-Length") ?? 0) > MAX_SNAPSHOT_BYTES) {
+  if (Number(request.headers.get("Content-Length") ?? 0) > maxBodyBytes(route)) {
     return withCors(reply(413, "Body too large"));
   }
   return withCors(await forward(route.bandId, request));

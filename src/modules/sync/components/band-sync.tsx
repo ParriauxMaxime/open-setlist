@@ -297,6 +297,31 @@ export function BandSync({ onTranspositionMismatches }: BandSyncProps) {
                     )}
               </p>
             )}
+            {status.type === "success" && status.files === "failed" && (
+              <p className="text-sm text-warning">{t("sync.band.filesFailed")}</p>
+            )}
+            {status.type === "success" && status.files && status.files !== "failed" && (
+              <>
+                {status.files.uploaded + status.files.downloaded > 0 && (
+                  <p className="text-sm text-accent">
+                    {t("sync.band.filesSynced", {
+                      sent: status.files.uploaded,
+                      received: status.files.downloaded,
+                    })}
+                  </p>
+                )}
+                {status.files.tooLarge > 0 && (
+                  <p className="text-sm text-warning">
+                    {t("sync.band.filesTooLarge", { count: status.files.tooLarge })}
+                  </p>
+                )}
+                {status.files.unavailable > 0 && (
+                  <p className="text-sm text-text-muted">
+                    {t("sync.band.filesUnavailable", { count: status.files.unavailable })}
+                  </p>
+                )}
+              </>
+            )}
             {status.type === "error" && (
               <p className="text-sm text-danger">
                 {t("sync.github.syncFailed", { error: status.message })}

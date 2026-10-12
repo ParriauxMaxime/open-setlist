@@ -5,8 +5,18 @@ export interface RemotePullResult {
   versionToken: string;
 }
 
+/** Sheet music files of the band: write-once, addressed by attachment id. */
+export interface RemoteFilesPort {
+  list(): Promise<string[]>;
+  /** null when the remote does not have the file. */
+  get(fileId: string): Promise<Blob | null>;
+  put(fileId: string, data: Blob): Promise<void>;
+}
+
 export interface RemoteSyncPort {
   readonly name: string;
+  /** Absent on remotes that only carry the snapshot. */
+  readonly files?: RemoteFilesPort;
   isConfigured(): boolean;
   testConnection(): Promise<string>;
   pull(): Promise<RemotePullResult | null>;

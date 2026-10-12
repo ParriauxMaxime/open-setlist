@@ -20,6 +20,7 @@ import { createGitHubAdapter } from "@domain/sync/adapters/github";
 import { createGoogleDriveAdapter } from "@domain/sync/adapters/google-drive";
 import { createRelayAdapter, fetchBandProfile, RelayError } from "@domain/sync/adapters/relay";
 import { loadSyncConfig } from "@domain/sync/config";
+import { syncFiles } from "@domain/sync/files";
 import { sync } from "@domain/sync/orchestrator";
 import { type FormEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -176,7 +177,10 @@ export function JoinPrompt() {
           const adapter = createGoogleDriveAdapter(config);
           await sync(adapter, db, profileId);
         } else {
-          await sync(createRelayAdapter(config), db, profileId);
+          const relay = createRelayAdapter(config);
+          await sync(relay, db, profileId);
+          // Sheet music comes along when it can; the Sync page fetches the rest
+          if (relay.files) await syncFiles(relay.files, db).catch(() => undefined);
         }
       }
 

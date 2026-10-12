@@ -55,6 +55,13 @@ function sqlStore(storage) {
         sql.exec("UPDATE band SET version = ?", version);
       });
     },
+    fileIds() {
+      const rows = sql.exec("SELECT key FROM blobs WHERE seq = 0 AND key LIKE 'file:%'").toArray();
+      return rows.map((row) => row.key.slice("file:".length));
+    },
+    writeFile(fileId, data) {
+      storage.transactionSync(() => writeBlob(`file:${fileId}`, data));
+    },
   };
 }
 

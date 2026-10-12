@@ -12,8 +12,10 @@ const KDF_SALT = "open-setlist/band/v1";
 const IV_BYTES = 12;
 /** Blob layout: format byte, IV, AES-256-GCM ciphertext of the gzipped content. */
 const FORMAT_GZIP_AES_GCM = 1;
+/** Same layout without gzip, for files: PDFs and images are already compressed. */
+const FORMAT_AES_GCM = 2;
 
-export type BandBlobKind = "meta" | "snapshot";
+export type BandBlobKind = "meta" | "snapshot" | `file:${string}`;
 
 export interface BandKeys {
   /** 128-bit id naming the band on the relay. */
@@ -103,23 +105,76 @@ function blobContext(keys: BandKeys, kind: BandBlobKind, version: number): Uint8
   return utf8(`${KDF_SALT}:${keys.bandId}:${kind}:${version}`);
 }
 
+async function seal(
+  keys: BandKeys,
+  kind: BandBlobKind,
+  version: number,
+  format: number,
+  content: Uint8Array<ArrayBuffer>,
+): Promise<Uint8Array<ArrayBuffer>> {
+  const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv, additionalData: blobContext(keys, kind, version) },
+    keys.key,
+    content,
+  );
+  const sealed = new Uint8Array(1 + IV_BYTES + ciphertext.byteLength);
+  sealed[0] = format;
+  sealed.set(iv, 1);
+  sealed.set(new Uint8Array(ciphertext), 1 + IV_BYTES);
+  return sealed;
+}
+
+async function open(
+  keys: BandKeys,
+  kind: BandBlobKind,
+  version: number,
+  format: number,
+  sealed: Uint8Array<ArrayBuffer>,
+): Promise<Uint8Array<ArrayBuffer>> {
+  if (sealed[0] !== format) throw new Error("Unknown format");
+  const plaintext = await crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv: sealed.slice(1, 1 + IV_BYTES),
+      additionalData: blobContext(keys, kind, version),
+    },
+    keys.key,
+    sealed.slice(1 + IV_BYTES),
+  );
+  return new Uint8Array(plaintext);
+}
+
 export async function sealBlob(
   keys: BandKeys,
   kind: BandBlobKind,
   version: number,
   content: string,
 ): Promise<Uint8Array<ArrayBuffer>> {
-  const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv, additionalData: blobContext(keys, kind, version) },
-    keys.key,
-    await transform(utf8(content), new CompressionStream("gzip")),
-  );
-  const sealed = new Uint8Array(1 + IV_BYTES + ciphertext.byteLength);
-  sealed[0] = FORMAT_GZIP_AES_GCM;
-  sealed.set(iv, 1);
-  sealed.set(new Uint8Array(ciphertext), 1 + IV_BYTES);
-  return sealed;
+  const gzipped = await transform(utf8(content), new CompressionStream("gzip"));
+  return seal(keys, kind, version, FORMAT_GZIP_AES_GCM, gzipped);
+}
+
+/** A file is bound to its id: the relay cannot serve one file in place of another. */
+export function sealFile(
+  keys: BandKeys,
+  fileId: string,
+  content: Uint8Array<ArrayBuffer>,
+): Promise<Uint8Array<ArrayBuffer>> {
+  return seal(keys, `file:${fileId}`, 0, FORMAT_AES_GCM, content);
+}
+
+/** Throws `BandBlobError` on a wrong code, a tampered file or another file's bytes. */
+export async function openFile(
+  keys: BandKeys,
+  fileId: string,
+  sealed: Uint8Array<ArrayBuffer>,
+): Promise<Uint8Array<ArrayBuffer>> {
+  try {
+    return await open(keys, `file:${fileId}`, 0, FORMAT_AES_GCM, sealed);
+  } catch {
+    throw new BandBlobError();
+  }
 }
 
 /** Throws `BandBlobError` on a wrong code, a tampered blob or a kind/version mismatch. */
@@ -130,17 +185,8 @@ export async function openBlob(
   sealed: Uint8Array<ArrayBuffer>,
 ): Promise<string> {
   try {
-    if (sealed[0] !== FORMAT_GZIP_AES_GCM) throw new Error("Unknown format");
-    const plaintext = await crypto.subtle.decrypt(
-      {
-        name: "AES-GCM",
-        iv: sealed.slice(1, 1 + IV_BYTES),
-        additionalData: blobContext(keys, kind, version),
-      },
-      keys.key,
-      sealed.slice(1 + IV_BYTES),
-    );
-    const content = await transform(new Uint8Array(plaintext), new DecompressionStream("gzip"));
+    const gzipped = await open(keys, kind, version, FORMAT_GZIP_AES_GCM, sealed);
+    const content = await transform(gzipped, new DecompressionStream("gzip"));
     return new TextDecoder().decode(content);
   } catch {
     throw new BandBlobError();

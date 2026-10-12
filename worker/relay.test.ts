@@ -45,14 +45,23 @@ async function snapshotText(relay: MemoryRelay): Promise<string> {
 }
 
 describe("routes", () => {
-  it("only knows a band and its snapshot", () => {
+  it("only knows a band, its snapshot and its files", () => {
+    const fileId = "11111111-1111-4111-8111-111111111111";
     expect(routeBand(`/bands/${BAND}`)).toEqual({ bandId: BAND, resource: "band" });
     expect(routeBand(`/bands/${BAND}/snapshot`)).toEqual({ bandId: BAND, resource: "snapshot" });
+    expect(routeBand(`/bands/${BAND}/files`)).toEqual({ bandId: BAND, resource: "files" });
+    expect(routeBand(`/bands/${BAND}/files/${fileId}`)).toEqual({
+      bandId: BAND,
+      resource: "file",
+      fileId,
+    });
     for (const path of [
       "/bands",
       "/bands/",
       "/bands/short",
-      `/bands/${BAND}/files`,
+      `/bands/${BAND}/files/short`,
+      `/bands/${BAND}/files/../snapshot`,
+      `/bands/${BAND}/snapshot/${fileId}`,
       `/x/${BAND}`,
     ]) {
       expect(routeBand(path)).toBeNull();

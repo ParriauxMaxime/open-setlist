@@ -5,7 +5,7 @@
 ### Sheet music
 - Attach PDFs or images to a song (editor → Sheet music). A file can be tied to one instrument: on stage that musician gets it by default, the others keep the chart.
 - On stage, ⋮ → View switches between the chart and each sheet; the choice is remembered per song on the device. Pages scroll like a chart, so pedals and auto-scroll work unchanged.
-- Files stay on the device for now: they are not sent through sync yet.
+- Sheet music travels with band sync (encrypted like the songs, 15 MB per file). GitHub and Google Drive sync carry the songs only.
 
 ## 2026-10-09 — Band-ready
 

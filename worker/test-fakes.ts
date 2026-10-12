@@ -31,6 +31,16 @@ export class MemoryBandStore implements BandStore {
     this.blobs.set("snapshot", splitChunks(data));
     this.band.version = version;
   }
+
+  fileIds(): string[] {
+    return Array.from(this.blobs.keys())
+      .filter((key) => key.startsWith("file:"))
+      .map((key) => key.slice("file:".length));
+  }
+
+  writeFile(fileId: string, data: Uint8Array): void {
+    this.blobs.set(`file:${fileId}`, splitChunks(data));
+  }
 }
 
 /** The whole worker side: one store per band id, as Durable Objects give. */

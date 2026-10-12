@@ -1,6 +1,7 @@
 import { useDb } from "@db/provider";
 import { useActiveProfileId } from "@domain/profiles";
 import type { ChangeItem } from "@domain/sync/diff";
+import { type FileSyncResult, syncFiles } from "@domain/sync/files";
 import type { ConflictResolutions } from "@domain/sync/merge";
 import {
   pullAndDiff,
@@ -22,7 +23,7 @@ export type RemoteSyncStatus =
   | { type: "pulling" }
   | { type: "review"; ctx: SyncReviewContext; refreshed?: boolean }
   | { type: "pushing" }
-  | { type: "success"; result: SyncResult }
+  | { type: "success"; result: SyncResult; files?: FileSyncResult | "failed" }
   | { type: "error"; message: string };
 
 interface RemoteSyncOptions {
@@ -49,6 +50,16 @@ export function useRemoteSync({
   const profileId = useActiveProfileId();
   const [status, setStatus] = useState<RemoteSyncStatus>({ type: "idle" });
 
+  // Songs are in sync: now the sheet music, which never blocks or undoes the song sync
+  const finish = async (adapter: RemoteSyncPort, result: SyncResult) => {
+    if (!adapter.files) {
+      setStatus({ type: "success", result });
+      return;
+    }
+    const files = await syncFiles(adapter.files, db).catch(() => "failed" as const);
+    setStatus({ type: "success", result, files });
+  };
+
   // Step 1: pull + diff
   const start = async () => {
     const adapter = createAdapter();
@@ -60,7 +71,8 @@ export function useRemoteSync({
       }
       setStatus({ type: "pulling" });
       const result = await pullAndDiff(adapter, db, profileId);
-      setStatus("status" in result ? { type: "success", result } : { type: "review", ctx: result });
+      if ("status" in result) await finish(adapter, result);
+      else setStatus({ type: "review", ctx: result });
     } catch (err) {
       setStatus({ type: "error", message: describeError(err) });
     }
@@ -77,7 +89,7 @@ export function useRemoteSync({
       const mismatches = detectTranspositionMismatches(ctx.local.songs, ctx.remote.songs);
       if (mismatches.length > 0) onTranspositionMismatches(mismatches);
       const result = await pushSelected(adapter, db, profileId, ctx, selectedOutgoing, resolutions);
-      setStatus({ type: "success", result });
+      await finish(adapter, result);
     } catch (err) {
       if (err instanceof SyncReviewRequiredError) {
         setStatus({ type: "review", ctx: err.ctx, refreshed: true });
