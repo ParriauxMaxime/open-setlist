@@ -265,6 +265,43 @@
     "importNote": "Import replaces all local data. Export first to keep a backup.",
     "transpositionChanged": "Transposition changed during sync",
     "transpositionDetail": "{{title}}: {{from}} → {{to}}",
+    "backupHeading": "Backup and import",
+    "advancedHeading": "Other ways to sync (advanced)",
+    "band": {
+      "heading": "Sync with your band",
+      "desc": "Share this profile's songs and setlists with your bandmates. No account needed: one of you creates the band, the others join with its code.",
+      "unavailable": "Band sync is not switched on in this copy of the app: the address of its sync server is missing. Until it is added, use a file export or another way to sync below.",
+      "create": "Create a band",
+      "join": "Join a band",
+      "createDesc": "The songs and setlists of this profile become the band's. You then get a link to send to your bandmates.",
+      "bandName": "Band name",
+      "createConfirm": "Create",
+      "creating": "Creating...",
+      "created": "Band created. Send this link to your bandmates.",
+      "joinLabel": "Band code or invite link",
+      "invalidCode": "This is not a band code. Paste the whole code, or the whole invite link.",
+      "otherRemote": "This profile already syncs with {{remote}}. To create a band from it, disconnect {{remote}} in Settings first. Joining a band is still possible: it gets its own profile.",
+      "demoProfile": "This is the demo profile. Create your own profile in the profile menu before creating a band.",
+      "sync": "Sync with the band",
+      "pulling": "Checking...",
+      "pushing": "Sending...",
+      "syncCreated": "Band catalog created: {{songs}} songs and {{setlists}} setlists sent.",
+      "code": "Band code",
+      "copyCode": "Copy code",
+      "codeCopied": "Band code copied!",
+      "inviteHint": "Only send it to your bandmates: anyone who has the link or the code can read and change the band's songs. Keep a copy: if every device loses it, nobody can join again.",
+      "leave": "Leave the band",
+      "leaveTitle": "Leave this band?",
+      "leaveMessage": "This device stops syncing with the band. Songs and setlists stay on this device. To come back you will need the band code.",
+      "errors": {
+        "notConfigured": "Band sync is not switched on in this copy of the app.",
+        "unreachable": "The sync server cannot be reached. Check your connection and try again.",
+        "unknownBand": "No band matches this code. Check it with whoever invited you.",
+        "rejected": "The sync server refused this band code.",
+        "tooLarge": "The band's catalog is too large for the sync server.",
+        "damaged": "The band's data cannot be read with this code."
+      }
+    },
     "github": {
       "sync": "Sync with GitHub",
       "syncing": "Syncing...",
@@ -550,7 +587,7 @@
     },
     "sync": {
       "heading": "Synchronization",
-      "desc": "Connect a remote storage provider to sync your data across devices."
+      "desc": "The simplest way to share with a band is a band code, on the Sync page. GitHub and Google Drive are for bands that want to keep the data in their own account."
     },
     "profile": {
       "add": "+ Add profile",
@@ -608,7 +645,7 @@
       },
       "sync": {
         "title": "Sync with Your Band",
-        "body": "Connect GitHub or Google Drive in Settings, then send your bandmates an invite link. Incoming changes are shown for review before they apply."
+        "body": "On the Sync page, create a band and send the invite link to your bandmates: no account needed. Incoming changes are shown for review before they apply."
       },
       "install": {
         "title": "Install the App",
@@ -617,7 +654,7 @@
     },
     "about": {
       "heading": "About",
-      "body": "Open Setlist is a free, open-source setlist manager that runs entirely in your browser.\n\nYour songs and setlists are stored locally on your device. No account is required.\n\nUse profiles to separate different projects or bands. Each profile has its own data and sync configuration.\n\nConnect GitHub or Google Drive in Settings to back up and sync across devices. Share your Google Drive file with bandmates to collaborate.\n\nThe app works offline as a PWA — use your browser's \"Add to Home Screen\" to install it.",
+      "body": "Open Setlist is a free, open-source setlist manager that runs entirely in your browser.\n\nYour songs and setlists are stored locally on your device. No account is required.\n\nUse profiles to separate different projects or bands. Each profile has its own data and sync configuration.\n\nCreate a band on the Sync page to share songs and setlists with your bandmates, or connect GitHub or Google Drive in Settings.\n\nThe app works offline as a PWA — use your browser's \"Add to Home Screen\" to install it.",
       "version": "Open Setlist v1",
       "resetTitle": "Reset the app?",
       "resetMessage": "This will delete all local data — profiles, songs, setlists, and preferences. Remote storage (GitHub, Google Drive) will not be affected.",
@@ -687,6 +724,7 @@
     "joining": "Joining...",
     "joinSuccess": "Joined! Your setlists are synced.",
     "joinFailed": "Could not join: {{error}}",
+    "resolving": "Looking for the band...",
     "accessLegend": "How do members get access?",
     "passphraseOption": "Protect with a passphrase (recommended)",
     "passphraseOptionDesc": "The link carries your GitHub token, encrypted. Members need both the link and the passphrase.",
