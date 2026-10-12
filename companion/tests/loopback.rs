@@ -9,13 +9,49 @@ mod common;
 
 use std::net::{Ipv4Addr, TcpListener};
 use std::process::{Child, Command, Stdio};
-use std::sync::mpsc::{self, Sender};
+use std::sync::mpsc::{self, Receiver, Sender};
+use std::sync::{Mutex, MutexGuard};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use midir::os::unix::VirtualInput;
 use midir::{MidiInput, MidiInputConnection};
-use open_setlist_companion::midi::{Message, PORT_NAME};
+use open_setlist_companion::midi::{Message, MidiOut, NoOutput, PORT_NAME};
+use open_setlist_companion::ports::Ports;
 use serde_json::json;
+
+type Listener = MidiInputConnection<Sender<Message>>;
+
+/// The tests share one MIDI system, where ports are told apart by name only.
+static MIDI_SYSTEM: Mutex<()> = Mutex::new(());
+
+fn alone() -> MutexGuard<'static, ()> {
+    MIDI_SYSTEM
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+/// A MIDI destination of our own, standing in for a drum pad or a pedalboard on a cable.
+fn hardware(name: &str) -> (Listener, Receiver<Message>) {
+    let (sender, received) = mpsc::channel();
+    let listener = MidiInput::new(name)
+        .unwrap()
+        .create_virtual(
+            name,
+            |_, message, received| {
+                let _ = received.send(message.to_vec());
+            },
+            sender,
+        )
+        .unwrap();
+    (listener, received)
+}
+
+fn next(received: &Receiver<Message>) -> Message {
+    received
+        .recv_timeout(Duration::from_secs(3))
+        .expect("a MIDI message")
+}
 
 struct Program(Child);
 
@@ -59,6 +95,7 @@ fn listen(received: Sender<Message>) -> Vec<MidiInputConnection<Sender<Message>>
 #[test]
 #[ignore = "needs the MIDI system of a real computer"]
 fn midi_posted_over_http_comes_out_of_the_virtual_port() {
+    let _alone = alone();
     let port = free_port();
     let _program = Program(
         Command::new(env!("CARGO_BIN_EXE_open-setlist-companion"))
@@ -87,13 +124,58 @@ fn midi_posted_over_http_comes_out_of_the_virtual_port() {
     assert_eq!(answer.status, 200);
     assert_eq!(answer.json(), json!({"sent": 3}));
 
-    let arrived: Vec<Message> = (0..3)
-        .map(|_| {
-            received
-                .recv_timeout(Duration::from_secs(3))
-                .expect("a MIDI message")
-        })
-        .collect();
+    let arrived: Vec<Message> = (0..3).map(|_| next(&received)).collect();
     assert_eq!(json!(arrived), messages);
     assert!(received.recv_timeout(Duration::from_millis(200)).is_err());
+}
+
+#[test]
+#[ignore = "needs the MIDI system of a real computer"]
+fn out_sends_to_an_existing_output_found_by_part_of_its_name() {
+    let _alone = alone();
+    let (_pedalboard, received) = hardware("Loopback Test Pedalboard");
+    let ports = Ports::new(Some("test pedal".to_string()), Vec::new());
+    ports.refresh();
+    let name = ports.name().expect("an output");
+    assert!(name.contains("Loopback Test Pedalboard"), "{name}");
+    assert_eq!(ports.send(&[vec![0xC0, 7]]), Ok(()));
+    assert_eq!(next(&received), vec![0xC0, 7]);
+}
+
+#[test]
+#[ignore = "needs the MIDI system of a real computer"]
+fn also_copies_every_message_to_another_output() {
+    let _alone = alone();
+    let (_pad, received) = hardware("Loopback Test Pad");
+    let wanted = vec!["test pad".to_string(), "no such thing".to_string()];
+    let ports = Ports::new(None, wanted);
+    ports.refresh();
+    assert_eq!(ports.name().as_deref(), Some(PORT_NAME));
+    let copies = ports.copies();
+    assert!(
+        copies[0]
+            .1
+            .as_ref()
+            .is_some_and(|name| name.contains("Loopback Test Pad"))
+    );
+    assert_eq!(copies[1], ("no such thing".to_string(), None));
+    assert_eq!(ports.send(&[vec![0xC9, 3], vec![0xB0, 20, 6]]), Ok(()));
+    assert_eq!(next(&received), vec![0xC9, 3]);
+    assert_eq!(next(&received), vec![0xB0, 20, 6]);
+}
+
+#[test]
+#[ignore = "needs the MIDI system of a real computer"]
+fn an_output_that_shows_up_late_is_found_at_the_next_look() {
+    let _alone = alone();
+    let ports = Ports::new(Some("late pedal".to_string()), Vec::new());
+    ports.refresh();
+    assert_eq!(ports.name(), None);
+    assert_eq!(ports.send(&[vec![0xC0, 1]]), Err(NoOutput));
+
+    let (_pedalboard, received) = hardware("Loopback Late Pedalboard");
+    ports.refresh();
+    assert!(ports.name().is_some());
+    assert_eq!(ports.send(&[vec![0xC0, 2]]), Ok(()));
+    assert_eq!(next(&received), vec![0xC0, 2]);
 }
