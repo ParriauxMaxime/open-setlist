@@ -23,13 +23,23 @@ const googleDriveConfigSchema = z.object({
   lastSyncedAt: z.number().nullable(),
 });
 
+// Band relay: `code` is the band's shared secret (see band-code.ts).
+const relayConfigSchema = z.object({
+  adapter: z.literal("relay"),
+  code: z.string().min(1),
+  lastVersionToken: z.string().nullable(),
+  lastSyncedAt: z.number().nullable(),
+});
+
 const syncConfigSchema = z.discriminatedUnion("adapter", [
   githubConfigSchema,
   googleDriveConfigSchema,
+  relayConfigSchema,
 ]);
 
 export type GitHubConfig = z.infer<typeof githubConfigSchema>;
 export type GoogleDriveConfig = z.infer<typeof googleDriveConfigSchema>;
+export type RelayConfig = z.infer<typeof relayConfigSchema>;
 export type SyncConfig = z.infer<typeof syncConfigSchema>;
 
 export function loadSyncConfig(profileId: string): SyncConfig | null {
