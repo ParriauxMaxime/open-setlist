@@ -1,7 +1,7 @@
 import { formatChord, NOTATION_LIST, type Notation } from "@domain/chords/notation";
 import { createId } from "@domain/id";
 import { extractInviteParam } from "@domain/invite";
-import { PART_EMOJI, PART_VALUES } from "@domain/parts";
+import { PART, PART_EMOJI, PART_VALUES, type Part } from "@domain/parts";
 import { loadPreferences, savePreferences } from "@domain/preferences";
 import { addProfile, setActiveProfileId } from "@domain/profiles";
 import {
@@ -26,6 +26,9 @@ const NOTATION_SAMPLE: Record<Notation, string> = {
 
 /** Bm7 shows the difference: Sim7 in solfège, Hm7 in German. */
 const EXAMPLE_CHORDS = ["G", "Bm7", "C", "D7"];
+
+/** What most band members play; the other instruments are one tap further. */
+const COMMON_PARTS: Part[] = [PART.vocals, PART.guitar, PART.bass, PART.keys, PART.drums];
 
 const LOCALES = [
   { value: "en", label: "English" },
@@ -77,13 +80,16 @@ function FirstRunDialog({ onDone }: FirstRunSetupProps) {
     onDone();
   }, [onDone]);
 
+  const [allParts, setAllParts] = useState(false);
+  const parts = allParts ? PART_VALUES : COMMON_PARTS;
+
   // The band's songs go to their own profile, away from the demo songs
-  const importFromSetlistHelper = () => {
+  const startBandProfile = (then: "Catalog" | "Sync") => {
     const id = createId();
     addProfile({ id, name: t("welcome.bandProfile"), createdAt: Date.now() });
     setActiveProfileId(id);
     finish();
-    Router.push("Sync");
+    Router.push(then);
   };
 
   useEffect(() => {
@@ -119,7 +125,7 @@ function FirstRunDialog({ onDone }: FirstRunSetupProps) {
           <legend className="text-sm font-semibold">{t("welcome.instrument")}</legend>
           <p className="mb-2 text-xs text-text-faint">{t("welcome.instrumentHint")}</p>
           <div className="flex flex-wrap gap-1.5">
-            {PART_VALUES.map((part) => {
+            {parts.map((part) => {
               const selected = choices.part === part;
               return (
                 <button
@@ -134,6 +140,11 @@ function FirstRunDialog({ onDone }: FirstRunSetupProps) {
                 </button>
               );
             })}
+            {!allParts && (
+              <button type="button" onClick={() => setAllParts(true)} className={chipClass(false)}>
+                {t("welcome.otherInstrument")}
+              </button>
+            )}
           </div>
         </fieldset>
 
@@ -184,8 +195,15 @@ function FirstRunDialog({ onDone }: FirstRunSetupProps) {
         <div className="flex flex-col gap-2 pt-1">
           <button
             type="button"
-            onClick={importFromSetlistHelper}
+            onClick={() => startBandProfile("Catalog")}
             className="btn btn-primary w-full whitespace-normal py-3 text-base"
+          >
+            {t("welcome.startOwn")}
+          </button>
+          <button
+            type="button"
+            onClick={() => startBandProfile("Sync")}
+            className="btn btn-outline w-full whitespace-normal py-3 text-base"
           >
             {t("welcome.importSetlistHelper")}
           </button>
@@ -193,7 +211,7 @@ function FirstRunDialog({ onDone }: FirstRunSetupProps) {
           <button
             type="button"
             onClick={finish}
-            className="btn btn-outline w-full whitespace-normal py-3 text-base"
+            className="btn btn-ghost w-full whitespace-normal py-3 text-base"
           >
             {t("welcome.exploreDemo")}
           </button>

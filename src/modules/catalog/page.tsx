@@ -91,6 +91,8 @@ export function CatalogPage() {
           </div>
         );
       },
+      // Titles keep one line on wider screens instead of giving their room to the filters
+      meta: { className: "md:min-w-56" },
     }) as ColumnDef<Song, unknown>,
     col.accessor((song) => resolveSongStatus(song.status), {
       id: "status",

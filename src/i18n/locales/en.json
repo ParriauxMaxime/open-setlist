@@ -654,8 +654,10 @@
     "notation": "Chord names",
     "example": "Example:",
     "language": "Language",
+    "startOwn": "Start with my own songs",
+    "otherInstrument": "Another instrument…",
     "importSetlistHelper": "Import from Setlist Helper",
-    "importHint": "Creates your band's profile. The demo stays in the profile menu.",
+    "importHint": "Both create your band's profile. The demo stays in the profile menu.",
     "exploreDemo": "Explore the demo",
     "bandProfile": "My band",
     "whatsNew": {

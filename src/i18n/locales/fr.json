@@ -654,8 +654,10 @@
     "notation": "Nom des accords",
     "example": "Exemple :",
     "language": "Langue",
+    "startOwn": "Commencer avec mes chansons",
+    "otherInstrument": "Autre instrument…",
     "importSetlistHelper": "Importer depuis Setlist Helper",
-    "importHint": "Cr\u00e9e le profil de votre groupe. La d\u00e9mo reste dans le menu des profils.",
+    "importHint": "Les deux créent le profil de votre groupe. La démo reste dans le menu des profils.",
     "exploreDemo": "Explorer la d\u00e9mo",
     "bandProfile": "Mon groupe",
     "whatsNew": {
