@@ -1,6 +1,7 @@
 pub mod ble;
 pub mod cli;
 pub mod fake;
+pub mod http;
 pub mod hub;
 pub mod midi;
 pub mod net;

@@ -3,6 +3,7 @@
 
 mod common;
 
+use std::io::{Read, Write};
 use std::net::{Ipv4Addr, TcpListener};
 use std::sync::Arc;
 use std::thread;
@@ -368,4 +369,95 @@ fn anything_else_is_not_found() {
         assert_eq!(answer.status, 404, "{method} {path}");
         assert_eq!(answer.json(), json!({"error": "not-found"}));
     }
+}
+
+#[test]
+fn every_answer_ends_the_connection_and_only_some_have_a_body() {
+    let companion = Companion::start();
+    let status = companion.get("/status");
+    assert_eq!(status.header("connection"), Some("close"));
+    assert_eq!(
+        status.header("content-length"),
+        Some(status.body.len().to_string().as_str())
+    );
+
+    let nothing = companion.get("/position?wait=0");
+    assert_eq!(nothing.status, 204);
+    assert_eq!(nothing.header("content-length"), None);
+    assert_eq!(nothing.body, "");
+
+    let head = companion.request("HEAD", "/status", "");
+    assert_eq!(head.status, 404);
+    assert_eq!(head.body, "");
+}
+
+#[test]
+fn a_request_that_arrives_in_pieces_is_put_back_together() {
+    let companion = Companion::start();
+    let body = json!({"messages": [[176, 20, 6]], "from": "Keys"}).to_string();
+    let (first, second) = body.split_at(body.len() / 2);
+    let head = format!(
+        "POST /midi HTTP/1.1\r\nHost: localhost\r\ncontent-length: {}\r\n",
+        body.len()
+    );
+    let pieces = ["POST /mi", &head["POST /mi".len()..], "\r\n", first, second];
+    let answer = common::send(companion.port, &pieces, Duration::from_millis(30)).unwrap();
+    assert_eq!(answer.status, 200);
+    assert_eq!(answer.json(), json!({"sent": 1}));
+    assert_eq!(companion.out.played(), vec![vec![176, 20, 6]]);
+}
+
+#[test]
+fn a_tablet_that_stalls_halfway_holds_up_nobody() {
+    let companion = Companion::start();
+    let stalled: Vec<_> = (0..20)
+        .map(|_| {
+            let mut stream = common::connect(companion.port).unwrap();
+            stream
+                .write_all(b"POST /midi HTTP/1.1\r\nContent-Length: 40\r\n\r\n{\"mess")
+                .unwrap();
+            stream
+        })
+        .collect();
+    let started = Instant::now();
+    let answer = companion.post("/midi", &json!({"messages": [[176, 20, 6]]}));
+    assert_eq!(answer.json(), json!({"sent": 1}));
+    assert_eq!(companion.get("/status").json()["sent"], 1);
+    assert!(started.elapsed() < Duration::from_secs(2));
+    drop(stalled);
+}
+
+#[test]
+fn what_is_not_http_is_refused_and_the_next_tablet_is_served() {
+    let companion = Companion::start();
+    let unsupported = "POST /midi HTTP/1.1\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n";
+    for nonsense in ["hello\r\n\r\n", "\u{1}\u{2}\u{3}\r\n\r\n", unsupported] {
+        let answer = common::send(companion.port, &[nonsense], Duration::ZERO).unwrap();
+        assert_eq!(answer.status, 400, "{nonsense:?}");
+        assert_eq!(answer.json(), json!({"error": "bad-request"}));
+        assert_eq!(answer.header("access-control-allow-origin"), Some("*"));
+    }
+    let silent = common::connect(companion.port).unwrap();
+    drop(silent);
+    assert_eq!(companion.get("/status").status, 200);
+}
+
+#[test]
+fn a_client_that_waits_for_a_go_ahead_gets_one() {
+    let companion = Companion::start();
+    let body = json!({"messages": [[176, 20, 6]]}).to_string();
+    let mut stream = common::connect(companion.port).unwrap();
+    write!(
+        stream,
+        "POST /midi HTTP/1.1\r\nHost: localhost\r\nContent-Length: {}\r\nExpect: 100-continue\r\n\r\n",
+        body.len()
+    )
+    .unwrap();
+    let mut go_ahead = [0; 25];
+    stream.read_exact(&mut go_ahead).unwrap();
+    assert_eq!(&go_ahead, b"HTTP/1.1 100 Continue\r\n\r\n");
+    stream.write_all(body.as_bytes()).unwrap();
+    let answer = common::answer(&mut stream).unwrap();
+    assert_eq!(answer.status, 200);
+    assert_eq!(answer.json(), json!({"sent": 1}));
 }
