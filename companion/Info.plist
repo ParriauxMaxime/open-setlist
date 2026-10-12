@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key>
+  <string>io.github.parriauxmaxime.open-setlist-companion</string>
+  <key>CFBundleName</key>
+  <string>Open Setlist Companion</string>
+  <key>NSBluetoothAlwaysUsageDescription</key>
+  <string>Tablets send their MIDI messages to this computer over Bluetooth. Les tablettes envoient leurs messages MIDI à cet ordinateur en Bluetooth.</string>
+</dict>
+</plist>
