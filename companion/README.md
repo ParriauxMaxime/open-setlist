@@ -1,0 +1,77 @@
+# Open Setlist Companion
+
+A small program for the computer that runs Ableton Live on stage. When a musician changes
+song in Open Setlist, their tablet sends MIDI messages to this program, which plays them out
+of a MIDI port that Ableton listens to. It also tells the tablets that follow which song the
+leader is on.
+
+Everything stays on the band's own Wi-Fi router: no internet, no account, no server.
+
+```
+Tablets -- Wi-Fi, HTTP on port 7777 --+
+                                      +--> companion --> "Open Setlist" MIDI port --> Ableton Live
+Tablets -- Bluetooth, BLE MIDI -------+             \--> --also outputs: drum pad, pedalboard
+```
+
+## Using it
+
+Run the file for your system (from the releases named `companion-v…`). It prints the
+address to enter in Open Setlist and opens a status page with that address, a QR code that
+sets a tablet up without typing, the MIDI output in use and the last messages received.
+Keep it running during the gig; close its window to stop it.
+
+- **macOS and Linux**: a MIDI port named `Open Setlist` appears while the program runs.
+  Turn it on as a MIDI input in Ableton. A downloaded file must first be made executable
+  (`chmod +x open-setlist-companion-macos`), and macOS asks to confirm an unsigned program
+  in System Settings > Privacy & Security.
+- **Windows**: a program cannot create a MIDI port there. Install
+  [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html), add a port named
+  `Open Setlist`, and the companion finds it within a few seconds. Without `--out` it takes
+  the first output whose name contains `open setlist`, else `loopmidi`, else `loopback`
+  (which is how the loopback ports of Windows MIDI Services are named).
+- **Bluetooth**: tablets find the computer as a BLE MIDI device named `Open Setlist`
+  (under the computer's own name on Windows). macOS asks once to allow Bluetooth.
+
+## Options
+
+| Option | |
+|---|---|
+| `--out <name>` | Send MIDI to the existing output whose name contains `<name>` |
+| `--also <name>` | Also send every message to that output; can be repeated |
+| `--list` | List the MIDI outputs of this computer, then quit |
+| `--port <number>` | Listen on another port than 7777 |
+| `--app-url <url>` | Address of Open Setlist, for the QR code |
+| `--no-bluetooth` | Do not receive MIDI over Bluetooth |
+| `--no-open` | Do not open the status page in the browser |
+
+## What tablets send
+
+JSON over HTTP, answered with the headers a web page from another origin needs.
+
+| Request | Answer |
+|---|---|
+| `GET /status` | Name, version, MIDI output, Bluetooth state, last 20 batches |
+| `POST /midi` `{"messages":[[176,20,6]],"from":"Keys"}` | `{"sent":1}`; 400 if a message is not a channel voice message, 503 without a MIDI output |
+| `POST /position` `{"from","setlistId","songId","index"}` | `{"seq":1}` |
+| `GET /position?after=<seq>&wait=<seconds>` | The latest position once it is newer than `after`, or 204 when the wait runs out |
+| `GET /` | The status page |
+
+There is no authentication: the program is meant for a router that only the band uses.
+
+## Building
+
+Rust (stable) is all macOS and Windows need. On Linux, ALSA and D-Bus headers as well:
+`sudo apt install libasound2-dev libdbus-1-dev pkg-config`.
+
+```
+cargo build --release      # target/release/open-setlist-companion
+cargo test
+cargo test --test loopback -- --ignored
+```
+
+The last command needs a real MIDI system (macOS or Linux): it starts the program, listens
+to its `Open Setlist` port the way Ableton would, and checks that messages posted over HTTP
+come out of it, and that `--out` and `--also` reach other outputs.
+
+The workflow `.github/workflows/companion.yml` builds the three programs; a tag
+`companion-v<version>` attaches them to a release.
