@@ -8,14 +8,13 @@ import { createGitHubAdapter } from "@domain/sync/adapters/github";
 import { createGoogleDriveAdapter } from "@domain/sync/adapters/google-drive";
 import { loadSyncConfig } from "@domain/sync/config";
 import type { TranspositionMismatch } from "@domain/sync/transposition-mismatch";
-import { Link } from "@swan-io/chicane";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Router } from "../../router";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { GitHubIcon, GoogleDriveIcon } from "../design-system/components/icons";
-import { SETTINGS_SCROLL_KEY } from "../settings/page";
+import { GitHubConfigForm } from "../settings/components/github-config-form";
+import { GoogleDriveConfigForm } from "../settings/components/google-drive-config-form";
 import { FileSyncSummary } from "./components/file-sync-summary";
 import { SetlistHelperImport } from "./components/setlist-helper-import";
 import { SetlistHelperSetlistImport } from "./components/setlist-helper-setlist-import";
@@ -42,6 +41,9 @@ export function SyncPage() {
     [],
   );
 
+  // Bumped when a connection is saved or removed below, to read the config again
+  const [, setConnectionVersion] = useState(0);
+  const refreshConnection = useCallback(() => setConnectionVersion((v) => v + 1), []);
   const syncConfig = loadSyncConfig(profileId);
   const ghConfigured = syncConfig?.adapter === "github";
   const gdConfigured = syncConfig?.adapter === "google-drive";
@@ -114,43 +116,6 @@ export function SyncPage() {
         {t("sync.setlistCount", { count: setlistCount })}
       </p>
 
-      <p className="mb-4 text-sm text-text-muted">{t("sync.description")}</p>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={handleExport} disabled={busy} className="btn btn-primary">
-          {status.type === "exporting" ? t("sync.exporting") : t("sync.exportToFile")}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setConfirmImport(true)}
-          disabled={busy}
-          className="btn btn-ghost"
-        >
-          {status.type === "importing" ? t("sync.importing") : t("sync.importFile")}
-        </button>
-
-        <SetlistHelperImport
-          disabled={busy}
-          onSuccess={(message) => setStatus({ type: "success", message })}
-          onError={(message) => setStatus({ type: "error", message })}
-        />
-        <SetlistHelperSetlistImport
-          disabled={busy}
-          onSuccess={(message) => setStatus({ type: "success", message })}
-          onError={(message) => setStatus({ type: "error", message })}
-        />
-      </div>
-
-      <div aria-live="polite">
-        {status.type === "success" && <p className="mt-4 text-sm text-accent">{status.message}</p>}
-        {status.type === "error" && <p className="mt-4 text-sm text-danger">{status.message}</p>}
-      </div>
-
-      <p className="mt-6 text-xs text-text-faint">{t("sync.importNote")}</p>
-
-      <hr className="my-6 border-border" />
-
       {/* GitHub sync section */}
       <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
         <GitHubIcon className="h-5 w-5" />
@@ -158,16 +123,7 @@ export function SyncPage() {
       </h2>
 
       {!ghConfigured ? (
-        <div className="flex items-center gap-3">
-          <p className="text-sm text-text-muted">{t("sync.github.notConfigured")}</p>
-          <Link
-            to={Router.Settings()}
-            onClick={() => sessionStorage.setItem(SETTINGS_SCROLL_KEY, "github")}
-            className="link-accent text-sm"
-          >
-            {t("sync.github.goToSettings")}
-          </Link>
-        </div>
+        <p className="mb-3 text-sm text-text-muted">{t("sync.github.intro")}</p>
       ) : (
         <div className="flex flex-col gap-3">
           {/* Review mode */}
@@ -235,6 +191,14 @@ export function SyncPage() {
         </div>
       )}
 
+      <div className="mt-4">
+        <GitHubConfigForm
+          profileId={profileId}
+          defaultOpen={!ghConfigured}
+          onChange={refreshConnection}
+        />
+      </div>
+
       {/* Google Drive sync section */}
       {isGoogleDriveAvailable() && (
         <>
@@ -246,16 +210,7 @@ export function SyncPage() {
           </h2>
 
           {!gdConfigured ? (
-            <div className="flex items-center gap-3">
-              <p className="text-sm text-text-muted">{t("sync.googleDrive.notConfigured")}</p>
-              <Link
-                to={Router.Settings()}
-                onClick={() => sessionStorage.setItem(SETTINGS_SCROLL_KEY, "google-drive")}
-                className="link-accent text-sm"
-              >
-                {t("sync.googleDrive.goToSettings")}
-              </Link>
-            </div>
+            <p className="mb-3 text-sm text-text-muted">{t("sync.googleDrive.intro")}</p>
           ) : (
             <div className="flex flex-col gap-3">
               {gdStatus.type === "review" ? (
@@ -321,8 +276,55 @@ export function SyncPage() {
               )}
             </div>
           )}
+
+          <div className="mt-4">
+            <GoogleDriveConfigForm
+              profileId={profileId}
+              defaultOpen={!gdConfigured}
+              onChange={refreshConnection}
+            />
+          </div>
         </>
       )}
+
+      <hr className="my-6 border-border" />
+
+      <h2 className="mb-2 text-lg font-semibold">{t("sync.backupHeading")}</h2>
+
+      <p className="mb-4 text-sm text-text-muted">{t("sync.description")}</p>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="button" onClick={handleExport} disabled={busy} className="btn btn-primary">
+          {status.type === "exporting" ? t("sync.exporting") : t("sync.exportToFile")}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setConfirmImport(true)}
+          disabled={busy}
+          className="btn btn-ghost"
+        >
+          {status.type === "importing" ? t("sync.importing") : t("sync.importFile")}
+        </button>
+
+        <SetlistHelperImport
+          disabled={busy}
+          onSuccess={(message) => setStatus({ type: "success", message })}
+          onError={(message) => setStatus({ type: "error", message })}
+        />
+        <SetlistHelperSetlistImport
+          disabled={busy}
+          onSuccess={(message) => setStatus({ type: "success", message })}
+          onError={(message) => setStatus({ type: "error", message })}
+        />
+      </div>
+
+      <div aria-live="polite">
+        {status.type === "success" && <p className="mt-4 text-sm text-accent">{status.message}</p>}
+        {status.type === "error" && <p className="mt-4 text-sm text-danger">{status.message}</p>}
+      </div>
+
+      <p className="mt-6 text-xs text-text-faint">{t("sync.importNote")}</p>
 
       {confirmImport && (
         <ConfirmModal

@@ -15,7 +15,7 @@ import {
   savePreferences,
   saveSongOverrides,
 } from "@domain/preferences";
-import { useActiveProfileId } from "@domain/profiles";
+import { Link } from "@swan-io/chicane";
 import Dexie from "dexie";
 import i18n from "i18next";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
@@ -24,12 +24,33 @@ import { Router } from "../../router";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { Select } from "../design-system/components/form";
 import { WhatsNewCard } from "../shared/components/whats-new-card";
-import { GitHubConfigForm } from "./components/github-config-form";
-import { GoogleDriveConfigForm } from "./components/google-drive-config-form";
 import { ProfileManager } from "./components/profile-manager";
 import { StageMidiSettings } from "./components/stage-midi-settings";
 
 export const SETTINGS_SCROLL_KEY = "settings-scroll-to";
+
+interface SettingsSectionProps {
+  id: string;
+  title: string;
+  defaultOpen: boolean;
+  children: ReactNode;
+}
+
+/** A group of settings most musicians set once: folded until asked for. */
+function SettingsSection({ id, title, defaultOpen, children }: SettingsSectionProps) {
+  return (
+    <details
+      id={id}
+      open={defaultOpen || undefined}
+      className="mb-4 rounded-md border border-border"
+    >
+      <summary className="cursor-pointer select-none px-4 py-3 text-lg font-semibold">
+        {title}
+      </summary>
+      <div className="border-t border-border px-4 py-4">{children}</div>
+    </details>
+  );
+}
 
 type Status =
   | { type: "idle" }
@@ -62,7 +83,6 @@ interface SettingsPageProps {
 
 export function SettingsPage({ companion }: SettingsPageProps) {
   const { t } = useTranslation();
-  const profileId = useActiveProfileId();
   const [prefs, setPrefs] = useState(loadPreferences);
   const [status, setStatus] = useState<Status>({ type: "idle" });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -370,11 +390,11 @@ export function SettingsPage({ companion }: SettingsPageProps) {
       {/* ================================================================
        * Section 2 — Display (performance mode)
        * ================================================================ */}
-      <section id="display" className="mb-8">
-        <h2 className="mb-4 border-b border-border pb-2 text-lg font-semibold">
-          {t("settings.display.heading")}
-        </h2>
-
+      <SettingsSection
+        id="display"
+        title={t("settings.display.heading")}
+        defaultOpen={scrollTarget === "display"}
+      >
         <p className="mb-4 text-sm text-text-muted">{t("settings.display.desc")}</p>
 
         {/* Global scale */}
@@ -495,52 +515,43 @@ export function SettingsPage({ companion }: SettingsPageProps) {
             {t("settings.preferences.resetToDefaults")}
           </button>
         </div>
-      </section>
+      </SettingsSection>
 
       {/* ================================================================
        * Section 3 — Profiles
        * ================================================================ */}
-      <section id="profiles" className="mb-8">
-        <h2 className="mb-4 border-b border-border pb-2 text-lg font-semibold">Profiles</h2>
-
-        <p className="mb-4 text-sm text-text-muted">
-          Each profile has its own songs, setlists, and sync configuration.
-        </p>
+      <SettingsSection
+        id="profiles"
+        title={t("settings.profile.heading")}
+        defaultOpen={scrollTarget === "profiles"}
+      >
+        <p className="mb-4 text-sm text-text-muted">{t("settings.profile.desc")}</p>
 
         <ProfileManager />
-      </section>
+      </SettingsSection>
 
       {/* ================================================================
        * Section — Stage MIDI
        * ================================================================ */}
-      <section id="midi" className="mb-8">
-        <h2 className="mb-4 border-b border-border pb-2 text-lg font-semibold">
-          {t("midi.heading")}
-        </h2>
-
+      <SettingsSection
+        id="midi"
+        title={t("midi.heading")}
+        defaultOpen={Boolean(scannedCompanion) || scrollTarget === "midi"}
+      >
         <p className="mb-4 text-sm text-text-muted">{t("midi.desc")}</p>
 
         <StageMidiSettings key={scannedCompanion ?? ""} />
-      </section>
+      </SettingsSection>
 
       {/* ================================================================
        * Section 4 — Synchronization
        * ================================================================ */}
-      <section id="sync" className="mb-8">
-        <h2 className="mb-4 border-b border-border pb-2 text-lg font-semibold">
-          {t("settings.sync.heading")}
-        </h2>
-
-        <p className="mb-4 text-sm text-text-muted">{t("settings.sync.desc")}</p>
-
-        <div className="flex flex-col gap-3">
-          <GitHubConfigForm profileId={profileId} defaultOpen={scrollTarget === "github"} />
-          <GoogleDriveConfigForm
-            profileId={profileId}
-            defaultOpen={scrollTarget === "google-drive"}
-          />
-        </div>
-      </section>
+      <SettingsSection id="sync" title={t("settings.sync.heading")} defaultOpen={false}>
+        <p className="mb-3 text-sm text-text-muted">{t("settings.sync.moved")}</p>
+        <Link to={Router.Sync()} className="btn btn-outline">
+          {t("settings.sync.open")}
+        </Link>
+      </SettingsSection>
 
       {/* ================================================================
        * Section — About

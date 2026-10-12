@@ -20,9 +20,15 @@ type Status =
 interface GitHubConfigFormProps {
   profileId: string;
   defaultOpen?: boolean;
+  /** Called once the connection is saved or removed. */
+  onChange?: () => void;
 }
 
-export function GitHubConfigForm({ profileId, defaultOpen = false }: GitHubConfigFormProps) {
+export function GitHubConfigForm({
+  profileId,
+  defaultOpen = false,
+  onChange,
+}: GitHubConfigFormProps) {
   const { t } = useTranslation();
   const existing = loadSyncConfig(profileId);
   const isConnected = existing?.adapter === "github";
@@ -67,19 +73,21 @@ export function GitHubConfigForm({ profileId, defaultOpen = false }: GitHubConfi
     try {
       const fullName = await adapter.testConnection();
       saveSyncConfig(profileId, config);
+      onChange?.();
       setStatus({ type: "connected", repo: fullName });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setStatus({ type: "error", message });
     }
-  }, [repoInput, tokenInput, profileId]);
+  }, [repoInput, tokenInput, profileId, onChange]);
 
   const handleDisconnect = useCallback(() => {
     clearSyncConfig(profileId);
+    onChange?.();
     setRepoInput("");
     setTokenInput("");
     setStatus({ type: "disconnected" });
-  }, [profileId]);
+  }, [profileId, onChange]);
 
   const [inviteOpen, setInviteOpen] = useState(false);
 

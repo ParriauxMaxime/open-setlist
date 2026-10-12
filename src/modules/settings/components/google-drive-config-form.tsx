@@ -18,11 +18,14 @@ type Status =
 interface GoogleDriveConfigFormProps {
   profileId: string;
   defaultOpen?: boolean;
+  /** Called once the connection is saved or removed. */
+  onChange?: () => void;
 }
 
 export function GoogleDriveConfigForm({
   profileId,
   defaultOpen = false,
+  onChange,
 }: GoogleDriveConfigFormProps) {
   const { t } = useTranslation();
   const available = isGoogleDriveAvailable();
@@ -73,18 +76,21 @@ export function GoogleDriveConfigForm({
         lastVersionToken: null,
         lastSyncedAt: null,
       });
+
+      onChange?.();
       setStatus({ type: "connected", file: fileName });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setStatus({ type: "error", message });
     }
-  }, [profileId]);
+  }, [profileId, onChange]);
 
   const handleDisconnect = useCallback(() => {
     clearAccessToken();
     clearSyncConfig(profileId);
+    onChange?.();
     setStatus({ type: "disconnected" });
-  }, [profileId]);
+  }, [profileId, onChange]);
 
   const handleInvite = useCallback(async () => {
     const config = loadSyncConfig(profileId);

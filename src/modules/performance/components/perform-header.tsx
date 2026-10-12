@@ -3,6 +3,7 @@ import { Link } from "@swan-io/chicane";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
+import { SETTINGS_SCROLL_KEY } from "../../settings/page";
 import type { FollowLeader } from "../hooks/use-follow-leader";
 import type { MyPart } from "../hooks/use-my-part";
 import type { StageMidi } from "../hooks/use-stage-midi";
@@ -315,6 +316,7 @@ export function PerformHeader({
                   )}
                   <Link
                     to={Router.Settings()}
+                    onClick={() => sessionStorage.setItem(SETTINGS_SCROLL_KEY, "display")}
                     className="block w-full px-4 py-3 text-left text-base text-text hover:bg-bg-hover"
                   >
                     {t("perform.displaySettings")}

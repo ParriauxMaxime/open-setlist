@@ -270,6 +270,7 @@
     "importNote": "Import replaces all local data. Export first to keep a backup.",
     "transpositionChanged": "Transposition changed during sync",
     "transpositionDetail": "{{title}}: {{from}} → {{to}}",
+    "backupHeading": "Backup and import",
     "files": {
       "synced": "Sheet music: {{sent}} sent, {{received}} received.",
       "failed": "Songs are in sync, but the sheet music could not be transferred. Sync again later.",
@@ -279,6 +280,7 @@
       "unavailable_other": "{{count}} sheets are not available yet: the member who added them has to sync."
     },
     "github": {
+      "intro": "Keep the band's songs in a GitHub repository of your own, free and private. Connect once, then sync with one button.",
       "sync": "Sync with GitHub",
       "syncing": "Syncing...",
       "syncSuccess": "Synced {{songs}} songs and {{setlists}} setlists.",
@@ -289,6 +291,7 @@
       "lastSync": "Last synced: {{time}}"
     },
     "googleDrive": {
+      "intro": "Keep the band's songs in a file on your Google Drive.",
       "sync": "Sync with Google Drive",
       "authenticating": "Authenticating...",
       "syncSuccess": "Synced {{songs}} songs and {{setlists}} setlists.",
@@ -564,9 +567,13 @@
     },
     "sync": {
       "heading": "Synchronization",
+      "moved": "GitHub and Google Drive are connected on the Sync page.",
+      "open": "Open the Sync page",
       "desc": "Connect a remote storage provider to sync your data across devices."
     },
     "profile": {
+      "heading": "Profiles",
+      "desc": "Each profile has its own songs, setlists and sync connection.",
       "add": "+ Add profile",
       "newName": "New profile",
       "deleteConfirmTitle": "Delete profile?",
@@ -622,7 +629,7 @@
       },
       "sync": {
         "title": "Sync with Your Band",
-        "body": "Connect GitHub or Google Drive in Settings, then send your bandmates an invite link. Incoming changes are shown for review before they apply."
+        "body": "Connect GitHub or Google Drive on the Sync page, then send your bandmates an invite link. Incoming changes are shown for review before they apply."
       },
       "install": {
         "title": "Install the App",
@@ -631,7 +638,7 @@
     },
     "about": {
       "heading": "About",
-      "body": "Open Setlist is a free, open-source setlist manager that runs entirely in your browser.\n\nYour songs and setlists are stored locally on your device. No account is required.\n\nUse profiles to separate different projects or bands. Each profile has its own data and sync configuration.\n\nConnect GitHub or Google Drive in Settings to back up and sync across devices. Share your Google Drive file with bandmates to collaborate.\n\nThe app works offline as a PWA — use your browser's \"Add to Home Screen\" to install it.",
+      "body": "Open Setlist is a free, open-source setlist manager that runs entirely in your browser.\n\nYour songs and setlists are stored locally on your device. No account is required.\n\nUse profiles to separate different projects or bands. Each profile has its own data and sync configuration.\n\nConnect GitHub or Google Drive on the Sync page to back up and sync across devices. Share your Google Drive file with bandmates to collaborate.\n\nThe app works offline as a PWA — use your browser's \"Add to Home Screen\" to install it.",
       "version": "Open Setlist v1",
       "resetTitle": "Reset the app?",
       "resetMessage": "This will delete all local data — profiles, songs, setlists, and preferences. Remote storage (GitHub, Google Drive) will not be affected.",
