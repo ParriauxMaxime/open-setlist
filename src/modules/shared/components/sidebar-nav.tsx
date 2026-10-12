@@ -2,6 +2,14 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "./nav-link";
 
+/** The four sections of the app, in the order every navigation shows them. */
+export const MAIN_SECTIONS = [
+  { to: "Catalog", section: "songs", labelKey: "nav.songs", icon: "♫" },
+  { to: "Setlists", section: "setlists", labelKey: "nav.setlists", icon: "☰" },
+  { to: "Sync", section: "sync", labelKey: "nav.sync", icon: "⇄" },
+  { to: "Settings", section: "settings", labelKey: "nav.settings", icon: "⚙" },
+] as const;
+
 interface SidebarNavProps {
   /** Current active section for highlighting. */
   activeSection?: string;
@@ -20,34 +28,16 @@ export function SidebarNav({ activeSection, onNavigate, footer }: SidebarNavProp
 
   return (
     <>
-      <NavLink
-        to="Catalog"
-        label={t("nav.songs")}
-        icon="♫"
-        active={activeSection === "songs"}
-        onClick={onNavigate}
-      />
-      <NavLink
-        to="Setlists"
-        label={t("nav.setlists")}
-        icon="☰"
-        active={activeSection === "setlists"}
-        onClick={onNavigate}
-      />
-      <NavLink
-        to="Sync"
-        label={t("nav.sync")}
-        icon="⇄"
-        active={activeSection === "sync"}
-        onClick={onNavigate}
-      />
-      <NavLink
-        to="Settings"
-        label={t("nav.settings")}
-        icon="⚙"
-        active={activeSection === "settings"}
-        onClick={onNavigate}
-      />
+      {MAIN_SECTIONS.map(({ to, section, labelKey, icon }) => (
+        <NavLink
+          key={to}
+          to={to}
+          label={t(labelKey)}
+          icon={icon}
+          active={activeSection === section}
+          onClick={onNavigate}
+        />
+      ))}
       {footer}
     </>
   );

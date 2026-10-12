@@ -199,12 +199,15 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
               type="submit"
               form="setlist-form"
               disabled={isSubmitting || !isDirty}
-              className="btn btn-primary btn-responsive"
+              className={`btn btn-responsive ${isDirty ? "btn-primary" : "btn-outline"}`}
             >
               {isSubmitting ? t("common.saving") : t("common.save")}
             </button>
             {totalSongs > 0 && (
-              <Link to={Router.TechSheet({ setlistId })} className="btn btn-outline btn-responsive">
+              <Link
+                to={Router.TechSheet({ setlistId })}
+                className={`btn btn-responsive ${isDirty ? "btn-outline" : "btn-primary"}`}
+              >
                 {t("setlist.perform")}
               </Link>
             )}
@@ -256,10 +259,12 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
 
       <form id="setlist-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         {/* Metadata */}
-        <div className="grid gap-3 sm:grid-cols-4">
-          <Field label={t("setlist.nameLabel")} error={errors.name?.message}>
-            <Input {...register("name")} />
-          </Field>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="col-span-2 sm:col-span-1">
+            <Field label={t("setlist.nameLabel")} error={errors.name?.message}>
+              <Input {...register("name")} />
+            </Field>
+          </div>
           <Field label={t("setlist.dateLabel")} error={errors.date?.message}>
             <Input type="date" {...register("date")} />
           </Field>

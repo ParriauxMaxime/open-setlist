@@ -6,7 +6,7 @@ import { getPerformReturn } from "../../performance/components/perform-sidebar";
 import { GettingStartedBanner } from "./getting-started-banner";
 import { NavLink } from "./nav-link";
 import { ProfileSwitcher } from "./profile-switcher";
-import { SidebarNav } from "./sidebar-nav";
+import { MAIN_SECTIONS, SidebarNav } from "./sidebar-nav";
 import { SidebarPanel } from "./sidebar-panel";
 
 const isDev = process.env.NODE_ENV !== "production";
@@ -197,6 +197,29 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <main id="main-content" className="flex-1 overflow-y-auto">
         {children}
       </main>
+
+      {/* Phones: the four sections one thumb away, no menu to open */}
+      <nav
+        aria-label={t("a11y.navigationMenu")}
+        className="sticky bottom-0 z-30 flex border-t border-border bg-bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+      >
+        {MAIN_SECTIONS.map(({ to, section: tab, labelKey, icon }) => (
+          <Link
+            key={to}
+            to={Router[to]()}
+            aria-current={section === tab ? "page" : undefined}
+            className={[
+              "flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium",
+              section === tab ? "text-accent" : "text-text-muted",
+            ].join(" ")}
+          >
+            <span className="text-xl leading-none" aria-hidden="true">
+              {icon}
+            </span>
+            {t(labelKey)}
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }

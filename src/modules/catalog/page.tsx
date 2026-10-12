@@ -161,9 +161,24 @@ export function CatalogPage() {
       meta: {
         filterType: "select",
         filterOptions: uniqueTags,
-        className: "hidden md:table-cell",
+        className: "hidden lg:table-cell",
         hideFilterOnMobile: true,
       },
+    }) as ColumnDef<Song, unknown>,
+    col.display({
+      id: "play",
+      size: 56,
+      cell: (info) => (
+        <Link
+          to={Router.PerformSong({ songId: info.row.original.id })}
+          aria-label={t("catalog.openSong", { title: info.row.original.title })}
+          title={t("catalog.openSong", { title: info.row.original.title })}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-md text-lg text-accent hover:bg-accent-muted"
+        >
+          ▶
+        </Link>
+      ),
+      meta: { disableRowLink: true, className: "!px-1 !py-0 text-right" },
     }) as ColumnDef<Song, unknown>,
   ];
 

@@ -35,6 +35,7 @@
   "catalog": {
     "title": "Chansons",
     "addSong": "+ Ajouter",
+    "openSong": "Ouvrir {{title}}",
     "searchPlaceholder": "Rechercher par titre ou artiste...",
     "empty": "Aucune chanson. Ajoutez votre première chanson.",
     "colTitle": "Titre",
@@ -103,6 +104,8 @@
     "title": "Setlists",
     "newSetlist": "+ Nouvelle setlist",
     "empty": "Aucune setlist. Créez votre première setlist.",
+    "defaultName": "Nouvelle setlist",
+    "defaultSetName": "Set 1",
     "colName": "Nom",
     "colVenue": "Lieu",
     "colDate": "Date",
