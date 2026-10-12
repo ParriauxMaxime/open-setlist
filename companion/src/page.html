@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Open Setlist Companion</title>
+<style>
+  :root {
+    --page: #f5f4f0;
+    --surface: #ffffff;
+    --text: #1d1c1a;
+    --muted: #6d6a63;
+    --line: #e1ded6;
+    --ok: #1b7f45;
+    --warn: #b45309;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #131312;
+      --surface: #1e1d1b;
+      --text: #f3f1ec;
+      --muted: #a5a199;
+      --line: #35332f;
+      --ok: #4ade80;
+      --warn: #fbbf24;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text);
+    font: 1.25rem/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main {
+    width: min(100% - 2rem, 56rem);
+    margin: 0 auto;
+    padding: 2rem 0;
+    display: grid;
+    gap: 1rem;
+  }
+  h1, h2, p, ol, ul, figure { margin: 0; }
+  h1, h2 { font-size: 1rem; font-weight: 600; color: var(--muted); }
+  h1 small { font-weight: 400; }
+  section {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    padding: 1.5rem;
+  }
+  .where { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.5rem; }
+  .where p { color: var(--muted); }
+  .where .offline { color: var(--warn); font-weight: 600; }
+  .where .address {
+    margin-top: .25rem;
+    color: var(--text);
+    font-size: clamp(1.75rem, 5.5vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+  .address span { color: var(--muted); font-size: .5em; font-weight: 400; }
+  .where .others { margin-top: .75rem; font-size: 1rem; }
+  figure { width: 12rem; text-align: center; color: var(--muted); font-size: .9rem; line-height: 1.25; }
+  figure svg { display: block; width: 100%; margin-bottom: .5rem; border-radius: .5rem; }
+  .row { display: flex; align-items: baseline; gap: .75rem; }
+  .row + .row, #fix + .row { margin-top: .75rem; }
+  .row b { min-width: 7rem; }
+  .row span::before {
+    content: "";
+    display: inline-block;
+    width: .7em;
+    height: .7em;
+    margin-right: .5em;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+  .row.ok span::before { background: var(--ok); }
+  .row.warn span::before { background: var(--warn); }
+  #fix { margin-top: .75rem; padding-left: 1.4em; }
+  #recent { list-style: none; padding: 0; margin-top: .75rem; font-size: 1.05rem; }
+  #recent li {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(4rem, 9rem) 6rem 1fr;
+    gap: .75rem;
+    padding: .4rem 0;
+    border-top: 1px solid var(--line);
+  }
+  #recent time, #recent i { color: var(--muted); font-style: normal; font-variant-numeric: tabular-nums; }
+  #recent b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #none { margin-top: .75rem; color: var(--muted); }
+  #closed { color: var(--warn); font-weight: 600; }
+  [hidden] { display: none !important; }
+  @media (max-width: 40rem) {
+    .where { grid-template-columns: 1fr; }
+    #recent li { grid-template-columns: 5.5rem 1fr; }
+    #recent i { display: none; }
+    #recent span { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<main data-os="{{OS}}">
+  <h1>Open Setlist Companion <small>{{VERSION}} · {{NAME}}</small></h1>
+  <p id="closed" data-t="closed" hidden></p>
+  <div id="where">{{WHERE}}</div>
+  <section>
+    <p id="midi" class="row"><b>MIDI</b><span></span></p>
+    <ol id="fix" hidden><li data-t="fix1"></li><li data-t="fix2"></li></ol>
+    <p id="bluetooth" class="row"><b>Bluetooth</b><span></span></p>
+  </section>
+  <section>
+    <h2 data-t="recent"></h2>
+    <ul id="recent"></ul>
+    <p id="none" data-t="none"></p>
+  </section>
+</main>
+<script>
+  const TEXTS = {
+    en: {
+      enter: "Type this address in Open Setlist",
+      or: "or",
+      scan: "or point the tablet's camera here",
+      offline: "Connect this computer to the band's Wi-Fi.",
+      noMidi: "no output",
+      fix1: "Install loopMIDI (free) and add a port named “Open Setlist”.",
+      fix2: "Leave loopMIDI open: this page finds the port by itself.",
+      advertising: "ready",
+      off: "off",
+      unavailable: "unavailable",
+      recent: "Last messages",
+      none: "Nothing received yet.",
+      wifi: "Wi-Fi",
+      bluetooth: "Bluetooth",
+      channel: "ch",
+      closed: "The companion is closed. Start it again.",
+    },
+    fr: {
+      enter: "Saisissez cette adresse dans Open Setlist",
+      or: "ou",
+      scan: "ou visez ici avec l'appareil photo de la tablette",
+      offline: "Connectez cet ordinateur au Wi-Fi du groupe.",
+      noMidi: "aucune sortie",
+      fix1: "Installez loopMIDI (gratuit) et ajoutez un port nommé «\u00a0Open Setlist\u00a0».",
+      fix2: "Laissez loopMIDI ouvert\u00a0: cette page trouve le port toute seule.",
+      advertising: "prêt",
+      off: "désactivé",
+      unavailable: "indisponible",
+      recent: "Derniers messages",
+      none: "Rien reçu pour l'instant.",
+      wifi: "Wi-Fi",
+      bluetooth: "Bluetooth",
+      channel: "canal",
+      closed: "Le programme est fermé. Relancez-le.",
+    },
+  };
+  const KINDS = { 8: "Note off", 9: "Note on", 10: "Aftertouch", 11: "CC", 12: "Program", 13: "Pressure", 14: "Bend" };
+
+  // `?lang=fr` or `?lang=en` overrides the language of the browser.
+  const wanted = new URLSearchParams(location.search).get("lang") || navigator.language || "";
+  const language = wanted.toLowerCase().startsWith("fr") ? "fr" : "en";
+  const texts = TEXTS[language];
+  const byId = (id) => document.getElementById(id);
+  const windows = document.querySelector("main").dataset.os === "windows";
+  let where = byId("where").innerHTML;
+
+  function translate(root) {
+    for (const element of root.querySelectorAll("[data-t]")) {
+      element.textContent = texts[element.dataset.t];
+    }
+  }
+
+  function describe([status, first, second]) {
+    const kind = status >> 4;
+    const value = second === undefined ? first : kind === 14 ? first + second * 128 - 8192 : `${first} = ${second}`;
+    return `${KINDS[kind]} ${value} (${texts.channel} ${(status & 15) + 1})`;
+  }
+
+  function cell(tag, text) {
+    const element = document.createElement(tag);
+    element.textContent = text;
+    return element;
+  }
+
+  function show(status) {
+    byId("closed").hidden = true;
+    byId("midi").className = status.midiOut ? "row ok" : "row warn";
+    byId("midi").lastElementChild.textContent = status.midiOut ?? texts.noMidi;
+    byId("fix").hidden = Boolean(status.midiOut) || !windows;
+    byId("bluetooth").className = status.bluetooth === "advertising" ? "row ok" : "row";
+    byId("bluetooth").lastElementChild.textContent = texts[status.bluetooth];
+    byId("none").hidden = status.recent.length > 0;
+    byId("recent").replaceChildren(
+      ...status.recent.map((batch) => {
+        const row = document.createElement("li");
+        row.append(
+          cell("time", new Date(batch.at).toLocaleTimeString(language, { hourCycle: "h23" })),
+          cell("b", batch.from),
+          cell("i", texts[batch.via]),
+          cell("span", batch.messages.map(describe).join(", ")),
+        );
+        return row;
+      }),
+    );
+  }
+
+  async function refresh() {
+    try {
+      show(await (await fetch("/status", { cache: "no-store" })).json());
+    } catch {
+      byId("closed").hidden = false;
+    }
+  }
+
+  // The address changes when the computer joins the band's Wi-Fi after the program started.
+  async function refreshWhere() {
+    try {
+      const html = await (await fetch("/", { cache: "no-store" })).text();
+      const next = new DOMParser().parseFromString(html, "text/html").getElementById("where").innerHTML;
+      if (next !== where) {
+        where = next;
+        byId("where").innerHTML = next;
+        translate(byId("where"));
+      }
+    } catch {}
+  }
+
+  document.documentElement.lang = language;
+  translate(document);
+  refresh();
+  setInterval(refresh, 1500);
+  setInterval(refreshWhere, 5000);
+</script>
+</body>
+</html>
