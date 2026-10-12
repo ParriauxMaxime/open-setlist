@@ -200,4 +200,27 @@ mod tests {
             Vec::<Message>::new()
         );
     }
+
+    #[test]
+    fn whatever_comes_over_the_air_only_valid_messages_come_out() {
+        // Bytes that lean towards the values the parser treats differently.
+        const BYTES: [u8; 16] = [
+            0, 1, 0x7F, 0x80, 0x85, 0x90, 0xB0, 0xC0, 0xD5, 0xE0, 0xF0, 0xF2, 0xF3, 0xF7, 0xF8,
+            0xFF,
+        ];
+        let mut seed: u32 = 2026;
+        let mut next = move || {
+            seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            (seed >> 16) as usize
+        };
+        for _ in 0..20_000 {
+            let packet: Vec<u8> = (0..next() % 24).map(|_| BYTES[next() % 16]).collect();
+            for message in parse(&packet) {
+                assert!(
+                    is_channel_voice(&message),
+                    "{packet:02X?} gave {message:02X?}"
+                );
+            }
+        }
+    }
 }

@@ -54,10 +54,13 @@ pub fn unavailable(hub: &Hub, reason: &str) {
 /// A packet a tablet wrote to the characteristic. Without a MIDI output there is nobody to
 /// tell: the status page already shows that the output is missing.
 fn received(hub: &Hub, packet: &[u8]) {
-    let messages = packet::parse(packet);
-    if !messages.is_empty() {
-        let _ = hub.play(messages, LABEL.to_string(), Via::Bluetooth);
-    }
+    // Windows calls this from its own threads, where a panic would end the program.
+    let _ = catch_unwind(AssertUnwindSafe(|| {
+        let messages = packet::parse(packet);
+        if !messages.is_empty() {
+            let _ = hub.play(messages, LABEL.to_string(), Via::Bluetooth);
+        }
+    }));
 }
 
 #[cfg(test)]
