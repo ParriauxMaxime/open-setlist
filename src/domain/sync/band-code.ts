@@ -15,7 +15,7 @@ const FORMAT_GZIP_AES_GCM = 1;
 /** Same layout without gzip, for files: PDFs and images are already compressed. */
 const FORMAT_AES_GCM = 2;
 
-export type BandBlobKind = "meta" | "snapshot" | "live" | `file:${string}`;
+export type BandBlobKind = "meta" | "snapshot" | `file:${string}`;
 
 export interface BandKeys {
   /** 128-bit id naming the band on the relay. */

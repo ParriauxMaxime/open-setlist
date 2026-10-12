@@ -81,7 +81,7 @@
       <div class="arrow">⇄</div>
       <div class="box todo"><strong>Le relais</strong><small>un « worker » Cloudflare<br>à mettre à jour</small></div>
     </div>
-    <p>Le relais est une petite boîte aux lettres sur Internet. Chaque appareil y dépose et y reprend les chansons du groupe, chiffrées : le relais ne peut pas les lire. Il sert à trois choses : la synchro par code de groupe, l'envoi des partitions PDF, et la session live.</p>
+    <p>Le relais est une petite boîte aux lettres sur Internet. Chaque appareil y dépose et y reprend les chansons du groupe, chiffrées : le relais ne peut pas les lire. Il sert à deux choses : la synchro par code de groupe et l'envoi des partitions PDF.</p>
     <p>Ton worker Cloudflare existe déjà (il sert à la recherche d'accords). Il faut lui envoyer la nouvelle version, puis dire à l'application où il se trouve.</p>
     <h3>État constaté le 12 octobre 2026</h3>
     <table>
@@ -164,9 +164,6 @@ cd worker</code></pre>
 
     <h3>Les partitions PDF</h3>
     <p>Sur un appareil : ouvre une chanson, <b>Partitions</b>, ajoute un PDF, <b>Enregistrer</b>, puis <b>Synchro → Synchroniser avec le groupe</b>. Tu dois lire « Partitions : 1 envoyées, 0 reçues ». Sur un second appareil, après synchro : « 0 envoyées, 1 reçues », et la partition s'affiche en mode scène.</p>
-
-    <h3>La session live</h3>
-    <p>Deux appareils du groupe ouvrent la même setlist en mode scène. Sur l'un : menu <b>⋮ → Session live → Mener</b>. Sur l'autre : <b>⋮ → Session live → Suivre</b>. Change de morceau sur le premier : le second suit. Une étiquette « Je mène » ou « Je suis » apparaît en haut ; elle est grisée quand l'appareil n'a pas de réseau.</p>
   </section>
 
   <section class="card">

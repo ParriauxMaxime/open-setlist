@@ -27,7 +27,6 @@ Every setlist app is closed-source, locked to a platform, or paywalled — and t
 - **Per-instrument parts** — `for=guitar`, `for=keys`… each musician picks "My part"; lyrics-only mode for singers; B♭/E♭/F horns read chords and keys at their written pitch
 - **Notation** — English (C D E), solfège (Do Ré Mi) or German (H); key-aware transposition, capo display
 - **Paste any chart** — chords written above lyrics (websites, PDFs) are converted to ChordPro, with title/key/capo detection
-- **Live session** — optional: one device leads and the others follow its song changes; off by default
 - **Sheet music** — attach PDFs or images to a song, one per instrument if needed; each musician reads their own on stage
 - **Import files** — `.cho`, `.chopro`, `.crd`, `.pro`, `.txt`, several at once (multi-song files split)
 - **Chord diagrams** — guitar, piano, ukulele, bass; 20 chord types; `{define}` custom shapes
@@ -130,7 +129,7 @@ No component library. No backend. Everything runs in the browser.
 One small Cloudflare Worker (`worker/`) does two jobs:
 
 - **CORS proxy for song lookup.** Ultimate Guitar doesn't serve CORS headers, so the worker forwards those requests and adds `Access-Control-Allow-Origin: *`. No parsing, no storage.
-- **Band relay** (routes under `/bands/`). Stores one encrypted snapshot per band for the "Create a band / Join a band" sync, plus the band's sheet music files, and passes live session messages between devices. It only ever receives ciphertext, see [docs/SYNC.md](docs/SYNC.md).
+- **Band relay** (routes under `/bands/`). Stores one encrypted snapshot per band for the "Create a band / Join a band" sync, plus the band's sheet music files. It only ever receives ciphertext, see [docs/SYNC.md](docs/SYNC.md).
 
 To deploy your own:
 

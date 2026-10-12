@@ -7,10 +7,6 @@
 - On stage, ⋮ → View switches between the chart and each sheet; the choice is remembered per song on the device. Pages scroll like a chart, so pedals and auto-scroll work unchanged.
 - Sheet music travels with band sync (encrypted like the songs, 15 MB per file). GitHub and Google Drive sync carry the songs only.
 
-### Live session
-- On stage, ⋮ → Live session: one device leads, the devices set to Follow jump to the song it is on. Off by default and chosen per device; scrolling always stays with each musician.
-- Needs band sync and a connection at the venue; without one, everyone simply turns their own pages.
-
 ## 2026-10-09 — Band-ready
 
 Everything a small band or orchestra needs to leave Setlist Helper, without turning into band-management software.

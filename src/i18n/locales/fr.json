@@ -800,17 +800,6 @@
     "nextSong": "Chanson suivante",
     "close": "Fermer"
   },
-  "live": {
-    "title": "Session live",
-    "mode": { "off": "Désactivée", "follow": "Suivre", "lead": "Mener" },
-    "hint": {
-      "off": "Chacun change de morceau sur son appareil.",
-      "follow": "Cet appareil passe au morceau du meneur. Le défilement reste à vous.",
-      "lead": "Les appareils qui suivent passent au morceau où vous êtes."
-    },
-    "chip": { "follow": "Je suis", "lead": "Je mène" },
-    "offline": "non connecté"
-  },
   "attachments": {
     "hasSheet": "Partition jointe",
     "panelTitle": "Partitions (PDF, images)",
