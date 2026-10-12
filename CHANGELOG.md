@@ -7,6 +7,13 @@
 - On stage, ⋮ → View switches between the chart and each sheet; the choice is remembered per song on the device. Pages scroll like a chart, so pedals and auto-scroll work unchanged.
 - Sheet music travels with GitHub sync (15 MB per file). Google Drive sync carries the songs only for now.
 
+### Simpler everywhere
+- Phones get a bottom bar for Songs, Setlists, Sync and Settings. Each setlist has a Play button, each song opens for reading in one tap, and the coming gig is listed first.
+- Stage mode: a shorter menu that starts with Transpose, My note and Full screen; three first-time hints instead of seven, the full list under Gestures and shortcuts.
+- Song editor: title, artist, key, tempo, length and notes up front, the rest folded. Length is typed as 3:45. An empty chart offers Paste chart first.
+- GitHub and Google Drive are connected on the Sync page, next to their Sync button. Settings folds what is set once.
+- First run: five instruments (the others one tap further) and a way to start with your own songs.
+
 ### MIDI on stage
 - When the song changes on stage, each musician's device can tell their gear to change sound: Ableton on the stage computer, a drum pad, a pedalboard. Off by default, set up per device in Settings → Stage: MIDI.
 - The keyboard's sound code is read from the first line of the chart (`17A`); other instruments get a code per song in the editor (Sounds).

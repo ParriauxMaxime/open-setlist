@@ -1,6 +1,11 @@
 import { NOTATION_LIST } from "@domain/chords/notation";
 import { INSTRUMENT_VALUES } from "@domain/chords/types";
-import { MIDI_TRANSPORT, normalizeCompanionAddress, saveMidiSettings } from "@domain/midi/settings";
+import {
+  loadMidiSettings,
+  MIDI_TRANSPORT,
+  normalizeCompanionAddress,
+  saveMidiSettings,
+} from "@domain/midi/settings";
 import {
   ACCENT_PRESETS,
   type AppPreferences,
@@ -190,6 +195,11 @@ export function SettingsPage({ companion }: SettingsPageProps) {
     const base = companion ? normalizeCompanionAddress(companion) : null;
     if (base) saveMidiSettings({ companion: base, transport: MIDI_TRANSPORT.wifi });
     return base;
+  });
+  // A device already set up for MIDI gets its settings without an extra tap
+  const [midiInUse] = useState(() => {
+    const midi = loadMidiSettings();
+    return midi.enabled || Boolean(midi.companion);
   });
   useEffect(() => {
     if (!companion) return;
@@ -536,7 +546,7 @@ export function SettingsPage({ companion }: SettingsPageProps) {
       <SettingsSection
         id="midi"
         title={t("midi.heading")}
-        defaultOpen={Boolean(scannedCompanion) || scrollTarget === "midi"}
+        defaultOpen={Boolean(scannedCompanion) || midiInUse || scrollTarget === "midi"}
       >
         <p className="mb-4 text-sm text-text-muted">{t("midi.desc")}</p>
 

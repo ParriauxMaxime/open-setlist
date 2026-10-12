@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Open Setlist : avant / après</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f6f5f1; --fg:#1d1d1f; --mute:#6b6b70; --card:#fff; --line:#d9d7d0; --a:#2f6fed; --b:#e0782b; --ok:#2e8b57; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#17181b; --fg:#ececee; --mute:#9a9aa2; --card:#22242a; --line:#3a3d45; --a:#6ea0ff; --b:#ffa15c; --ok:#5fcf93; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:18px/1.45 -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:980px; margin:0 auto; padding:28px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 6px; }
+  h2 { font-size:22px; margin:52px 0 4px; }
+  .lead { color:var(--mute); margin:0 0 20px; }
+  .what { margin:0 0 14px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
+  .pair.wide { grid-template-columns:1fr; }
+  figure { margin:0; background:var(--card); border:2px solid var(--line); border-radius:14px; padding:10px; }
+  figure.after { border-color:var(--ok); }
+  figcaption { font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--mute); margin-bottom:8px; }
+  figure.after figcaption { color:var(--ok); }
+  img { display:block; width:100%; height:auto; border-radius:8px; }
+  .card { background:var(--card); border:2px solid var(--line); border-radius:14px; padding:6px 16px; }
+  .card.ask { border-color:var(--b); padding:14px 16px; }
+  .card.ask b { display:block; margin-bottom:6px; }
+  table { border-collapse:collapse; width:100%; }
+  td, th { padding:10px 6px; border-bottom:1px solid var(--line); vertical-align:top; text-align:left; }
+  tr:last-child td { border-bottom:0; }
+  th { font-size:14px; text-transform:uppercase; letter-spacing:.05em; color:var(--mute); }
+  td.n { white-space:nowrap; font-weight:700; }
+  td.better { color:var(--ok); }
+  ul { margin:6px 0 0; padding-left:20px; }
+  li { margin:4px 0; }
+  @media (max-width:640px) { td.n { white-space:normal; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Avant / après</h1>
+  <p class="lead">Toute l'app repassée pour qu'elle soit simple à prendre en main. Aucune fonction supprimée : ce qui sert rarement est replié.</p>
+
+  <div class="card">
+    <table>
+      <tr><th>Geste du quotidien</th><th>Avant</th><th>Après</th></tr>
+      <tr><td>Jouer la setlist du soir, sur téléphone</td><td class="n">5 appuis</td><td class="n better">2 appuis</td></tr>
+      <tr><td>En scène : changer de morceau, tourner la page</td><td class="n">1 geste</td><td class="n">1 geste</td></tr>
+      <tr><td>En scène : transposer</td><td class="n">3 appuis, au milieu du menu</td><td class="n better">3 appuis, première ligne</td></tr>
+      <tr><td>Ajouter un morceau en collant une grille</td><td class="n">4 à 5 appuis, bouton discret</td><td class="n better">4 appuis, bouton en haut</td></tr>
+      <tr><td>Arriver sur une nouvelle setlist, sur téléphone</td><td class="n">3 appuis</td><td class="n better">2 appuis</td></tr>
+      <tr><td>Nouveau membre : connecter GitHub et synchroniser</td><td class="n">7 appuis, deux pages</td><td class="n better">3 appuis, une page</td></tr>
+      <tr><td>Brancher le MIDI avec le QR code</td><td class="n">3 appuis</td><td class="n">3 appuis</td></tr>
+    </table>
+  </div>
+
+  <h2>Mode scène : les aides</h2>
+  <p class="what">Trois gestes lisibles au lieu de sept consignes par-dessus la grille. La liste complète est dans le menu.</p>
+  <div class="pair">
+    <figure><figcaption>Avant</figcaption><img src="media/ux/scene-aides-avant.jpg" alt="Sept consignes en petit, superposées à la grille"></figure>
+    <figure class="after"><figcaption>Après</figcaption><img src="media/ux/scene-aides-apres.jpg" alt="Une carte avec trois gestes en grand"></figure>
+  </div>
+
+  <h2>Mode scène : le menu</h2>
+  <p class="what">Ce qui sert pendant un morceau en premier. Ce qui fait quitter la scène en bas. Le bouton « Supprimer la chanson », qui ne faisait rien, a disparu.</p>
+  <div class="pair">
+    <figure><figcaption>Avant</figcaption><img src="media/ux/scene-menu-avant.jpg" alt="Menu de scène avant"></figure>
+    <figure class="after"><figcaption>Après</figcaption><img src="media/ux/scene-menu-apres.jpg" alt="Menu de scène après"></figure>
+  </div>
+
+  <h2>Setlists</h2>
+  <p class="what">Un bouton « Jouer » par setlist, la date écrite comme on la lit, le prochain concert en premier. Sur téléphone, les quatre rubriques sont en bas de l'écran.</p>
+  <div class="pair">
+    <figure><figcaption>Avant</figcaption><img src="media/ux/setlists-avant.jpg" alt="Liste des setlists avant"></figure>
+    <figure class="after"><figcaption>Après</figcaption><img src="media/ux/setlists-apres.jpg" alt="Liste des setlists après"></figure>
+  </div>
+
+  <h2>Catalogue</h2>
+  <p class="what">Le triangle bleu ouvre le morceau pour le lire, sans passer par l'éditeur.</p>
+  <div class="pair">
+    <figure><figcaption>Avant</figcaption><img src="media/ux/catalogue-avant.jpg" alt="Catalogue avant"></figure>
+    <figure class="after"><figcaption>Après</figcaption><img src="media/ux/catalogue-apres.jpg" alt="Catalogue après"></figure>
+  </div>
+
+  <h2>Une setlist</h2>
+  <p class="what">Les titres ne sont plus coupés, le formulaire prend moitié moins de place, et « Jouer » devient le bouton principal dès que tout est enregistré.</p>
+  <div class="pair">
+    <figure><figcaption>Avant</figcaption><img src="media/ux/setlist-avant.jpg" alt="Éditeur de setlist avant"></figure>
+    <figure class="after"><figcaption>Après</figcaption><img src="media/ux/setlist-apres.jpg" alt="Éditeur de setlist après"></figure>
+  </div>
+
+  <h2>Éditeur de morceau</h2>
+  <p class="what">À droite, l'essentiel seulement. Les réglages de scène et le classement sont repliés, avec le nombre de champs remplis. La durée s'écrit 5:34, plus en secondes.</p>
+  <div class="pair wide">
+    <figure><figcaption>Avant</figcaption><img src="media/ux/editeur-avant.jpg" alt="Éditeur de morceau avant"></figure>
+    <figure class="after"><figcaption>Après</figcaption><img src="media/ux/editeur-apres.jpg" alt="Éditeur de morceau après"></figure>
+  </div>
+
+  <h2>Nouveau morceau</h2>
+  <p class="what">« Coller une grille » est la première chose proposée, et le titre n'est plus caché.</p>
+  <div class="pair">
+    <figure><figcaption>Avant</figcaption><img src="media/ux/nouveau-morceau-avant.jpg" alt="Nouveau morceau avant"></figure>
+    <figure class="after"><figcaption>Après</figcaption><img src="media/ux/nouveau-morceau-apres.jpg" alt="Nouveau morceau après"></figure>
+  </div>
+
+  <h2>Synchro</h2>
+  <p class="what">GitHub se connecte ici, juste au-dessus de son bouton, au lieu d'aller dans les Paramètres. La sauvegarde en fichier passe en dessous.</p>
+  <div class="pair">
+    <figure><figcaption>Avant</figcaption><img src="media/ux/synchro-avant.jpg" alt="Page Synchro avant"></figure>
+    <figure class="after"><figcaption>Après</figcaption><img src="media/ux/synchro-apres.jpg" alt="Page Synchro après"></figure>
+  </div>
+
+  <h2>Paramètres</h2>
+  <p class="what">Les choix de tous les jours restent ouverts. Affichage, profils, MIDI et synchro se déplient d'un appui.</p>
+  <div class="pair">
+    <figure><figcaption>Avant</figcaption><img src="media/ux/parametres-avant.jpg" alt="Paramètres avant : une très longue page"></figure>
+    <figure class="after"><figcaption>Après</figcaption><img src="media/ux/parametres-apres.jpg" alt="Paramètres après : une page courte"></figure>
+  </div>
+
+  <h2>Premier lancement</h2>
+  <p class="what">Cinq instruments au lieu de dix-sept, les autres à un appui. On peut démarrer directement avec ses propres chansons.</p>
+  <div class="pair">
+    <figure><figcaption>Avant</figcaption><img src="media/ux/premier-lancement-avant.jpg" alt="Premier lancement avant"></figure>
+    <figure class="after"><figcaption>Après</figcaption><img src="media/ux/premier-lancement-apres.jpg" alt="Premier lancement après"></figure>
+  </div>
+
+  <h2>À toi de voir</h2>
+  <div class="card ask">
+    <b>Quatre choix que je n'ai pas faits à ta place</b>
+    <ul>
+      <li>L'app s'ouvre toujours sur Chansons. Je peux l'ouvrir sur Setlists.</li>
+      <li>Dans une setlist, « Jouer » passe encore par la fiche technique. Dans la liste, il va droit en scène.</li>
+      <li>Catalogue sur téléphone : le filtre de statut prend de la place à côté du titre.</li>
+      <li>Outils (accordeur, accords, qualité) et « Premiers pas » : à garder dans le menu ou à ranger ailleurs ?</li>
+    </ul>
+  </div>
+  <p class="lead" style="margin-top:16px">Vérifié dans Chrome aux tailles téléphone, tablette et ordinateur. Pas encore sur une vraie tablette, ni dans Safari.</p>
+</main>
+</body>
+</html>
