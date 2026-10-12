@@ -10,3 +10,4 @@ scripts/demo-video/*.mp4
 scripts/demo-video/*.csv
 .wrangler/
 companion/target/
+companion/dist/
