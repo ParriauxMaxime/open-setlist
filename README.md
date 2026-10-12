@@ -44,7 +44,8 @@ Every setlist app is closed-source, locked to a platform, or paywalled — and t
 - **Tempo** — BPM pulse, click and count-in; next song's key, tempo and setup shown in the footer
 
 **Band**
-- **Sync** through a GitHub repo or Google Drive — review incoming/outgoing changes, per-song conflict resolution, deletions that never silently win
+- **Band code** — one musician creates the band, the others join with a link or a code: no account, end-to-end encrypted
+- **Sync** through the band code, a GitHub repo or Google Drive — review incoming/outgoing changes, per-song conflict resolution, deletions that never silently win
 - **Safe invites** — passphrase-encrypted invite links, or links without any token
 - **Coming from Setlist Helper?** Import your catalog CSV and your setlist CSVs (Sync page). Keys in solfège (`RÉm`) are converted, your comments and highlights are kept.
 
@@ -105,7 +106,7 @@ src/
     shared/           Layout, navigation
   router.ts         Route definitions (Chicane)
   app.tsx           Root component
-worker/             Cloudflare Worker CORS proxy for song lookup
+worker/             Cloudflare Worker: CORS proxy for song lookup + band sync relay
 ```
 
 ### Stack
@@ -123,23 +124,31 @@ worker/             Cloudflare Worker CORS proxy for song lookup
 
 No component library. No backend. Everything runs in the browser.
 
-### CORS proxy for song lookup
+### Cloudflare Worker: lookup proxy and band relay
 
-The song lookup feature fetches chord charts from Ultimate Guitar, which doesn't serve CORS headers. A tiny Cloudflare Worker (`worker/`) proxies those requests and adds `Access-Control-Allow-Origin: *`. That's all it does — no parsing, no storage, no transformation.
+One small Cloudflare Worker (`worker/`) does two jobs:
+
+- **CORS proxy for song lookup.** Ultimate Guitar doesn't serve CORS headers, so the worker forwards those requests and adds `Access-Control-Allow-Origin: *`. No parsing, no storage.
+- **Band relay** (routes under `/bands/`). Stores one encrypted snapshot per band for the "Create a band / Join a band" sync. It only ever receives ciphertext, see [docs/SYNC.md](docs/SYNC.md).
 
 To deploy your own:
 
 1. Create a free account at [Cloudflare](https://dash.cloudflare.com/sign-up) (no credit card)
 2. Install the CLI: `npm install -g wrangler`
 3. Authenticate: `wrangler login`
-4. Deploy:
+4. In `worker/wrangler.toml`, set `ALLOWED_ORIGINS` to the address your app is served from
+5. Deploy:
    ```bash
    cd worker
    wrangler deploy
    ```
-5. Paste the printed URL into `src/modules/lookup/adapters/proxy.ts`
+6. Paste the printed URL into `src/modules/lookup/adapters/proxy.ts` (lookup), and build the app with the same URL in the `RELAY_URL` environment variable (band sync). The GitHub Pages workflow reads it from the repository variable `RELAY_URL`; locally, put it in `.env`.
 
-Free tier covers 100K requests/day. The proxy is only hit when importing chords — metadata comes directly from the iTunes Search API, which supports CORS natively.
+Without `RELAY_URL` the app still works: the Sync page says band sync is not switched on.
+
+Free tier covers 100K requests/day (a sync is about four) and 5 GB of Durable Object storage. The proxy is only hit when importing chords — metadata comes directly from the iTunes Search API, which supports CORS natively.
+
+To try the relay locally: `cd worker && npx wrangler dev --port 8787`, then `RELAY_URL=http://127.0.0.1:8787 yarn dev`.
 
 ### Conventions
 

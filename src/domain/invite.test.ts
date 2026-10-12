@@ -1,15 +1,18 @@
 import {
   applyInvite,
+  encodeBandInvite,
   encodeOpenInvite,
   exposesToken,
   INVITE_KDF_ITERATIONS,
   InvitePassphraseError,
   type InvitePayload,
   openSealedInvite,
+  parseBandInput,
   parseInvite,
   sealInvite,
 } from "./invite";
 import { generatePassphrase, normalizePassphrase, PASSPHRASE_WORDS } from "./invite-passphrase";
+import { formatBandCode, generateBandCode } from "./sync/band-code";
 
 // Fine-grained PATs are "github_pat_" + 82 chars.
 const TOKEN = `github_pat_${"A1b2C3d4E5".repeat(8)}xy`;
@@ -197,6 +200,33 @@ describe("link encoding", () => {
       expect(url.length).toBeLessThan(2048);
     }
     expect(links[0].length).toBeLessThan(600);
+  });
+});
+
+describe("band invites", () => {
+  const code = generateBandCode();
+
+  it("carry nothing but the band code", () => {
+    const encoded = encodeBandInvite(code);
+    expect(encoded).toBe(`b1.${code}`);
+    expect(parseInvite(encoded)).toEqual({ kind: "band", code });
+    expect(parseInvite(`b1.${formatBandCode(code).toLowerCase()}`)).toEqual({ kind: "band", code });
+  });
+
+  it("reject a malformed code", () => {
+    expect(parseInvite(`b1.${code.slice(1)}`)).toBeNull();
+    expect(parseInvite("b1.")).toBeNull();
+  });
+
+  it("are read from a pasted code or a pasted link", () => {
+    const link = `https://example.github.io/open-setlist/#join=${encodeBandInvite(code)}`;
+    expect(parseBandInput(link)).toBe(code);
+    expect(parseBandInput(`Join us: ${link}\n`)).toBe(code);
+    expect(parseBandInput(` ${formatBandCode(code)} `)).toBe(code);
+    expect(parseBandInput("hello")).toBeNull();
+    expect(
+      parseBandInput(`https://example.github.io/?join=${encodeOpenInvite(githubPayload)}`),
+    ).toBeNull();
   });
 });
 

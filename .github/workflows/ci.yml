@@ -80,6 +80,7 @@ jobs:
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
           GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+          RELAY_URL: ${{ vars.RELAY_URL }}
       - run: cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3
         with:
