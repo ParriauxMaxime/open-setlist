@@ -73,9 +73,7 @@ function ProfileRow({
   const syncLabel =
     syncConfig?.adapter === "github"
       ? `GitHub: ${syncConfig.owner}/${syncConfig.repo}`
-      : syncConfig?.adapter === "relay"
-        ? t("sync.band.code")
-        : "Not configured";
+      : "Not configured";
 
   const handleSave = useCallback(() => {
     updateProfile(profile.id, { name: name.trim() || profile.name, avatar: avatar || undefined });

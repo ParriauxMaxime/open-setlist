@@ -144,3 +144,60 @@ export function putLocalSong(db: AppDatabase, song: Song): void {
 export function removeLocalSong(db: AppDatabase, id: string): void {
   (db.songs as unknown as MemoryTable<Song>).rows.delete(id);
 }
+
+/** The GitHub endpoints the adapter uses, over an in-memory repository. `install()` replaces `fetch`. */
+export class FakeGitHub {
+  files = new Map<string, { base64: string; sha: string }>();
+  writes = 0;
+  requestCount = 0;
+  /** Like GitHub: no inline content above 1 MB. */
+  inlineLimit = 1024 * 1024;
+
+  install(): void {
+    globalThis.fetch = (async (input: RequestInfo | URL, init: RequestInit = {}) => {
+      this.requestCount++;
+      const url = new URL(String(input));
+      const blob = /\/git\/blobs\/(.+)$/.exec(url.pathname);
+      if (blob) {
+        const file = [...this.files.values()].find((f) => f.sha === blob[1]);
+        return file ? this.json({ content: file.base64, encoding: "base64" }) : this.json({}, 404);
+      }
+      const path = /\/contents\/(.+)$/.exec(url.pathname)?.[1];
+      if (!path) return this.json({ full_name: "band/songs" });
+      const existing = this.files.get(path);
+
+      if (init.method === "PUT") {
+        const body = JSON.parse(String(init.body));
+        if (existing && !body.sha) return this.json({ message: '"sha" wasn\'t supplied.' }, 422);
+        if (existing && body.sha !== existing.sha) return this.json({ message: "conflict" }, 409);
+        const sha = `sha${++this.writes}`;
+        this.files.set(path, { base64: body.content, sha });
+        return this.json({ content: { sha } });
+      }
+
+      const children = [...this.files.keys()].filter((key) => key.startsWith(`${path}/`));
+      if (children.length > 0) {
+        return this.json(children.map((key) => ({ name: key.slice(path.length + 1) })));
+      }
+      if (!existing) return this.json({ message: "Not Found" }, 404);
+      const bytes = Buffer.from(existing.base64, "base64");
+      const accept = new Headers(init.headers).get("Accept") ?? "";
+      if (accept.includes("raw")) return new Response(bytes);
+      const inline = bytes.length <= this.inlineLimit;
+      return this.json({
+        sha: existing.sha,
+        size: bytes.length,
+        content: inline ? existing.base64.replace(/(.{60})/g, "$1\n") : "",
+        encoding: inline ? "base64" : "none",
+      });
+    }) as typeof fetch;
+  }
+
+  private json(body: unknown, status = 200): Response {
+    return new Response(JSON.stringify(body), { status });
+  }
+
+  text(path: string): string {
+    return Buffer.from(this.files.get(path)?.base64 ?? "", "base64").toString("utf8");
+  }
+}

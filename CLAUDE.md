@@ -32,43 +32,6 @@ Before considering any plan complete, run these checks and ensure they pass:
 2. `yarn lint` — must pass with no errors
 3. `yarn typecheck` — must pass with no errors
 
-## CORS Proxy Worker (`worker/`)
+## No backend
 
-The app runs entirely in the browser — no backend. Most external APIs we call (like the iTunes Search API) ship CORS headers and work fine from `fetch()`. Ultimate Guitar does not. Browsers block those responses, so we need a thin proxy that forwards the request and adds `Access-Control-Allow-Origin: *`.
-
-That's all the worker does. It accepts `?url=<encoded>`, checks the hostname against an allowlist (`www.ultimate-guitar.com`, `tabs.ultimate-guitar.com`), fetches upstream, and returns the response with CORS headers. No parsing, no transformation — the browser handles everything else.
-
-It runs on Cloudflare Workers (free tier: 100K requests/day, no credit card required).
-
-### Setup
-
-1. **Create a Cloudflare account** at https://dash.cloudflare.com/sign-up if you don't have one.
-
-2. **Install the Wrangler CLI** (Cloudflare's deploy tool):
-   ```bash
-   npm install -g wrangler
-   ```
-
-3. **Authenticate** — opens a browser window to log in:
-   ```bash
-   wrangler login
-   ```
-
-4. **Deploy**:
-   ```bash
-   cd open-setlist/worker/
-   wrangler deploy
-   ```
-   This prints a URL like `https://open-setlist-proxy.<your-account>.workers.dev`.
-
-5. **Paste the URL** into `src/modules/lookup/adapters/proxy.ts` as the `PROXY_URL` constant. The app uses this at runtime when fetching UG tabs.
-
-6. **Band relay**: build the app with the same URL in the `RELAY_URL` environment variable (GitHub repository variable `RELAY_URL` for the Pages workflow, `.env` locally). Without it the Sync page says band sync is not switched on.
-
-### Band relay (same worker)
-
-Routes under `/bands/` store one client-encrypted snapshot per band, in one SQLite Durable Object per band (`Band` class in `worker/index.js`, binding and migration in `wrangler.toml`). Request handling is in `worker/relay.ts` (pure, tested with Jest through `worker/test-fakes.ts`); the client is `src/domain/sync/adapters/relay.ts` and `src/domain/sync/band-code.ts`. Writes are compare-and-swap on a version counter. The same object stores the band's sheet music files (write-once, `src/domain/sync/files.ts`). `ALLOWED_ORIGINS` in `wrangler.toml` lists the web origins allowed to call it. Protocol and limits: `docs/SYNC.md` > Band code.
-
-### How it's used
-
-The song lookup flow (`src/modules/lookup/`) searches the iTunes Search API directly (CORS-enabled) for metadata, then optionally fetches chord content from Ultimate Guitar through the proxy. The proxy is only contacted when a user clicks "Import" on a search result. If the proxy is down or the fetch times out (8s), the form still populates with metadata — chords are just left empty.
+The app runs entirely in the browser and the project runs no server. Bands sync through their own GitHub repository or Google Drive (`src/domain/sync/adapters/`). On stage, MIDI goes through a companion program on the band's own computer (`companion/`, see `docs/MIDI.md`).

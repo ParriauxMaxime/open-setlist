@@ -20,7 +20,6 @@ import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { EditorHeader } from "../design-system/components/editor-header";
-import { fetchChords } from "../lookup";
 import { AttachmentsPanel } from "./components/attachments-panel";
 import { ChordProEditor } from "./components/chordpro-editor";
 import { ChordProHelp } from "./components/chordpro-help";
@@ -52,8 +51,6 @@ const defaultValues: SongFormValues = {
   content: "",
 };
 
-type EnrichmentStatus = "idle" | "enriching" | "done";
-
 /** Drops the instruments left without a code. */
 function cleanPatches(patches: Record<string, string> | undefined) {
   const kept = Object.entries(patches ?? {})
@@ -74,9 +71,6 @@ export function EditSongPage({ songId }: EditSongPageProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [showLookup, setShowLookup] = useState(false);
   const [showPasteChart, setShowPasteChart] = useState(false);
-  const [enrichStatus, setEnrichStatus] = useState<EnrichmentStatus>("idle");
-  const [enrichDetail, setEnrichDetail] = useState("");
-  const enrichAbortRef = useRef<AbortController | null>(null);
   const isNew = !songId;
 
   // Panel collapse state
@@ -167,11 +161,6 @@ export function EditSongPage({ songId }: EditSongPageProps) {
     if (isSubmitSuccessful) reset(getValues());
   }, [isSubmitSuccessful, reset, getValues]);
 
-  // Cancel enrichment on unmount
-  useEffect(() => {
-    return () => enrichAbortRef.current?.abort();
-  }, []);
-
   // Close menu on outside click or Escape
   useEffect(() => {
     if (!menuOpen) return;
@@ -250,36 +239,12 @@ export function EditSongPage({ songId }: EditSongPageProps) {
     Router.replace("Catalog");
   }, [songId, profileId, db, existing]);
 
-  const enrichSong = useCallback(
-    (title: string, artist: string) => {
-      enrichAbortRef.current?.abort();
-      const controller = new AbortController();
-      enrichAbortRef.current = controller;
-
-      setEnrichStatus("enriching");
-      setEnrichDetail(t("editor.fetchingChords"));
-
-      fetchChords(title, artist).then((chords) => {
-        if (controller.signal.aborted) return;
-        if (chords) setValue("content", chords);
-        setEnrichStatus("done");
-        setEnrichDetail("");
-        setTimeout(() => setEnrichStatus((s) => (s === "done" ? "idle" : s)), 2000);
-      });
-    },
-    [setValue, t],
-  );
-
   const onLookupSelect = useCallback(
     (values: Partial<SongFormValues>) => {
       reset({ ...defaultValues, ...values });
       setShowLookup(false);
-
-      if (values.title && values.artist) {
-        enrichSong(values.title, values.artist);
-      }
     },
-    [reset, enrichSong],
+    [reset],
   );
 
   // Wait for existing song to load before rendering the form
@@ -368,21 +333,6 @@ export function EditSongPage({ songId }: EditSongPageProps) {
             </>
           }
         />
-
-        {/* Enrichment indicator */}
-        <div aria-live="polite">
-          {enrichStatus === "enriching" && (
-            <div className="mb-3 flex items-center gap-2 rounded-md bg-bg-surface px-3 py-2 text-sm text-text-muted">
-              <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-              {enrichDetail || t("editor.enriching")}
-            </div>
-          )}
-          {enrichStatus === "done" && (
-            <div className="mb-3 rounded-md bg-bg-surface px-3 py-2 text-sm text-success">
-              {t("editor.done")}
-            </div>
-          )}
-        </div>
 
         {/* Private, device-only note: kept outside the song form so it is never saved/synced */}
         {!isNew && <MyNotePanel profileId={profileId} songId={songDbId} />}

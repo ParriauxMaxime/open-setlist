@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["src/**", "worker/**", "rspack.config.ts", "postcss.config.mjs"]
+    "includes": ["src/**", "rspack.config.ts", "postcss.config.mjs"]
   },
   "formatter": {
     "indentStyle": "space",

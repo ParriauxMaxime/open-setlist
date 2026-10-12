@@ -2,8 +2,7 @@ import { createId } from "@domain/id";
 import { z } from "zod";
 import { MIN_PASSPHRASE_LENGTH, normalizePassphrase } from "./invite-passphrase";
 import { addProfile, loadProfiles, type Profile, setActiveProfileId } from "./profiles";
-import { normalizeBandCode } from "./sync/band-code";
-import { type SyncConfig, saveSyncConfig } from "./sync/config";
+import { type GitHubConfig, type GoogleDriveConfig, saveSyncConfig } from "./sync/config";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -21,7 +20,6 @@ const invitePayloadSchema = z.object({
       token: z.string().min(1).optional(),
     }),
     z.object({ adapter: z.literal("google-drive"), fileId: z.string().min(1) }),
-    z.object({ adapter: z.literal("relay"), code: z.string().min(1) }),
   ]),
 });
 
@@ -43,11 +41,9 @@ export const GITHUB_TOKEN_DOCS_URL =
  * - `encrypted`: needs the passphrase (`openSealedInvite`).
  * - `open`: no secret inside (token-less GitHub or Google Drive).
  * - `legacy`: pre-encryption link, may carry a plaintext token.
- * - `band`: a band code. The band's name is fetched from the relay with it.
  */
 export type ParsedInvite =
   | { kind: "encrypted"; sealed: string }
-  | { kind: "band"; code: string }
   | { kind: "open"; payload: InvitePayload }
   | { kind: "legacy"; payload: InvitePayload };
 
@@ -62,15 +58,12 @@ export class InvitePassphraseError extends Error {
 // Link format
 //   e1.<salt>.<iv>.<ciphertext>  AES-256-GCM, key = PBKDF2-SHA256(passphrase)
 //   o1.<json>                    no secret inside
-//   b1.<band code>               the code is the secret, so it travels in the URL fragment
 //   <json>                       legacy, plaintext (may contain a token)
 // All parts base64url without padding. Legacy links never contain ".".
 // ---------------------------------------------------------------------------
 
 const ENCRYPTED_PREFIX = "e1";
 const OPEN_PREFIX = "o1";
-const BAND_PREFIX = "b1";
-const HASH_PARAM = "join=";
 
 export const INVITE_KDF_ITERATIONS = 600_000;
 const SALT_BYTES = 16;
@@ -187,10 +180,6 @@ export function parseInvite(encoded: string): ParsedInvite | null {
   if (prefix === ENCRYPTED_PREFIX) {
     return encoded.split(".").length === 4 ? { kind: "encrypted", sealed: encoded } : null;
   }
-  if (prefix === BAND_PREFIX) {
-    const code = normalizeBandCode(encoded.slice(dot + 1));
-    return code ? { kind: "band", code } : null;
-  }
   if (prefix === OPEN_PREFIX) {
     try {
       const json = new TextDecoder().decode(fromBase64Url(encoded.slice(dot + 1)));
@@ -201,18 +190,6 @@ export function parseInvite(encoded: string): ParsedInvite | null {
     }
   }
   return null;
-}
-
-export function encodeBandInvite(code: string): string {
-  return `${BAND_PREFIX}.${code}`;
-}
-
-/** A band code as typed or pasted: the bare code, or a whole invite link. */
-export function parseBandInput(text: string): string | null {
-  const encoded = /join=([^&#\s]+)/.exec(text)?.[1];
-  if (!encoded) return normalizeBandCode(text);
-  const invite = parseInvite(encoded);
-  return invite?.kind === "band" ? invite.code : null;
 }
 
 /** Legacy links with a GitHub token in plain text. */
@@ -235,31 +212,14 @@ export function buildInviteUrl(encoded: string): string {
   return `${cleanBase}?join=${encoded}`;
 }
 
-/** Band links keep the code in the fragment, which browsers never send to a server. */
-export function buildBandInviteUrl(code: string): string {
-  const base = `${window.location.origin}${__BASE_PATH__}`;
-  return `${base.endsWith("/") ? base : `${base}/`}#${HASH_PARAM}${encodeBandInvite(code)}`;
-}
-
-function hashInvite(): string | null {
-  const hash = window.location.hash.slice(1);
-  return hash.startsWith(HASH_PARAM) ? hash.slice(HASH_PARAM.length) : null;
-}
-
 export function extractInviteParam(): string | null {
-  return new URLSearchParams(window.location.search).get("join") ?? hashInvite();
+  return new URLSearchParams(window.location.search).get("join");
 }
 
 export function clearInviteParam(): void {
   const url = new URL(window.location.href);
   url.searchParams.delete("join");
-  if (hashInvite() !== null) url.hash = "";
   window.history.replaceState(null, "", url.toString());
-}
-
-/** Opens the join dialog for a code entered in the app, as if its link had been followed. */
-export function openBandInvite(code: string): void {
-  window.location.hash = `${HASH_PARAM}${encodeBandInvite(code)}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -267,7 +227,7 @@ export function openBandInvite(code: string): void {
 // ---------------------------------------------------------------------------
 
 export function applyInvite(payload: InvitePayload): string {
-  let syncConfig: SyncConfig;
+  let syncConfig: GitHubConfig | GoogleDriveConfig;
 
   if (payload.sync.adapter === "github") {
     if (!payload.sync.token) throw new Error("A GitHub token is required to join.");
@@ -277,13 +237,6 @@ export function applyInvite(payload: InvitePayload): string {
       repo: payload.sync.repo,
       token: payload.sync.token,
       path: payload.sync.path,
-      lastVersionToken: null,
-      lastSyncedAt: null,
-    };
-  } else if (payload.sync.adapter === "relay") {
-    syncConfig = {
-      adapter: "relay",
-      code: payload.sync.code,
       lastVersionToken: null,
       lastSyncedAt: null,
     };

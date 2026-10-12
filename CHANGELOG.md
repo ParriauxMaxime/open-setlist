@@ -5,13 +5,17 @@
 ### Sheet music
 - Attach PDFs or images to a song (editor → Sheet music). A file can be tied to one instrument: on stage that musician gets it by default, the others keep the chart.
 - On stage, ⋮ → View switches between the chart and each sheet; the choice is remembered per song on the device. Pages scroll like a chart, so pedals and auto-scroll work unchanged.
-- Sheet music travels with band sync (encrypted like the songs, 15 MB per file). GitHub and Google Drive sync carry the songs only.
+- Sheet music travels with GitHub sync (15 MB per file). Google Drive sync carries the songs only for now.
 
 ### MIDI on stage
 - When the song changes on stage, each musician's device can tell their gear to change sound: Ableton on the stage computer, a drum pad, a pedalboard. Off by default, set up per device in Settings → Stage: MIDI.
 - The keyboard's sound code is read from the first line of the chart (`17A`); other instruments get a code per song in the editor (Sounds).
 - Two ways out, neither through the internet: the companion program on the stage computer over the band's Wi-Fi router, or Bluetooth MIDI.
 - Follow the leader is back as an option, relayed by the companion program on the local network.
+
+### No server at all
+- GitHub sync no longer fails on a real catalog ("Maximum call stack size exceeded" from about 50 songs).
+- The Cloudflare worker is gone, and with it chord fetching from tab sites. Song lookup keeps the iTunes metadata. Paste a chart to convert it.
 
 ## 2026-10-09 — Band-ready
 

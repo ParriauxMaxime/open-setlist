@@ -3,6 +3,7 @@ import { sync } from "../orchestrator";
 import { ConflictError } from "../ports/remote-sync.port";
 import {
   createMemoryDb,
+  FakeGitHub,
   installMemoryLocalStorage,
   makeSnapshot,
   makeSong,
@@ -19,53 +20,6 @@ const CONFIG: GitHubConfig = {
   lastVersionToken: null,
   lastSyncedAt: null,
 };
-
-/** The GitHub endpoints the adapter uses, over an in-memory repository. */
-class FakeGitHub {
-  files = new Map<string, { base64: string; sha: string }>();
-  writes = 0;
-  /** Like GitHub: no inline content above 1 MB. */
-  inlineLimit = 1024 * 1024;
-
-  install(): void {
-    globalThis.fetch = (async (input: RequestInfo | URL, init: RequestInit = {}) => {
-      const url = new URL(String(input));
-      const blob = /\/git\/blobs\/(.+)$/.exec(url.pathname);
-      if (blob) {
-        const file = [...this.files.values()].find((f) => f.sha === blob[1]);
-        return file ? this.json({ content: file.base64, encoding: "base64" }) : this.json({}, 404);
-      }
-      const path = /\/contents\/(.+)$/.exec(url.pathname)?.[1];
-      if (!path) return this.json({ full_name: "band/songs" });
-      const existing = this.files.get(path);
-
-      if (init.method === "PUT") {
-        const body = JSON.parse(String(init.body));
-        if (existing && body.sha !== existing.sha) return this.json({ message: "conflict" }, 409);
-        const sha = `sha${++this.writes}`;
-        this.files.set(path, { base64: body.content, sha });
-        return this.json({ content: { sha } });
-      }
-      if (!existing) return this.json({ message: "Not Found" }, 404);
-      const size = Buffer.from(existing.base64, "base64").length;
-      const inline = size <= this.inlineLimit;
-      return this.json({
-        sha: existing.sha,
-        size,
-        content: inline ? existing.base64.replace(/(.{60})/g, "$1\n") : "",
-        encoding: inline ? "base64" : "none",
-      });
-    }) as typeof fetch;
-  }
-
-  private json(body: unknown, status = 200): Response {
-    return new Response(JSON.stringify(body), { status });
-  }
-
-  text(path: string): string {
-    return Buffer.from(this.files.get(path)?.base64 ?? "", "base64").toString("utf8");
-  }
-}
 
 /** A chart the size of the band's real ones, accents and emoji included. */
 function bandSong(index: number) {
@@ -130,5 +84,30 @@ describe("GitHub adapter", () => {
     await expect(adapter.push(makeSnapshot([bandSong(3)]), first)).rejects.toBeInstanceOf(
       ConflictError,
     );
+  });
+
+  it("keeps sheet music files in a folder next to the snapshot", async () => {
+    const { files } = createGitHubAdapter({ ...CONFIG, path: "band/open-setlist.json" });
+    if (!files) throw new Error("The GitHub adapter syncs files");
+    const id = "11111111-1111-4111-8111-111111111111";
+    expect(await files.list()).toEqual([]);
+    expect(await files.get(id)).toBeNull();
+
+    const bytes = new Uint8Array(300_000).map((_, i) => (i * 31) % 251);
+    await files.put(id, new Blob([bytes]));
+    expect(await files.list()).toEqual([id]);
+    expect([...github.files.keys()]).toEqual([`band/open-setlist-files/${id}`]);
+    const back = new Uint8Array((await (await files.get(id))?.arrayBuffer()) ?? new ArrayBuffer(0));
+    expect(back.length).toBe(bytes.length);
+    expect(back.every((b, i) => b === bytes[i])).toBe(true);
+  });
+
+  it("never replaces a file already stored under an id", async () => {
+    const { files } = createGitHubAdapter(CONFIG);
+    if (!files) throw new Error("The GitHub adapter syncs files");
+    const id = "22222222-2222-4222-8222-222222222222";
+    await files.put(id, new Blob(["first"]));
+    await files.put(id, new Blob(["second"]));
+    expect(await (await files.get(id))?.text()).toBe("first");
   });
 });

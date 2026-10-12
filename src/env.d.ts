@@ -1,6 +1,5 @@
 declare const __BASE_PATH__: string;
 declare const __GOOGLE_CLIENT_ID__: string;
-declare const __RELAY_URL__: string;
 
 // Google Identity Services (loaded dynamically from accounts.google.com)
 interface GoogleTokenResponse {

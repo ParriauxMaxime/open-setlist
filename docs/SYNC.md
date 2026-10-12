@@ -31,44 +31,6 @@ Musicians pick what works for them. A solo player might only use Tier 1 (or noth
 
 ---
 
-## Band code (simple sync, the default)
-
-**For bands that want no account at all.** Sync page: one musician taps "Create a band" and gets a link and a code, the others open the link or tap "Join a band" and paste the code.
-
-**How it works:**
-- The band code is 28 random characters (140 bits), generated on the creator's device (`src/domain/sync/band-code.ts`). It is the only secret, stored in the profile's sync config.
-- Three values are derived from it with HKDF-SHA256: a 128-bit band id, an access token, an AES-256-GCM key. The snapshot is gzipped then encrypted on the device, with the band id, blob kind and version bound as additional data.
-- A small relay (the Cloudflare Worker in `worker/`, routes under `/bands/`) stores one encrypted snapshot per band, in one SQLite Durable Object per band. It sees the band id, a hash of the access token and ciphertext: never the code, the band name or a song.
-- Every write names the version it was built on. The relay refuses it with 412 if the band moved, which the adapter (`src/domain/sync/adapters/relay.ts`) turns into `ConflictError`. Review, merge and conflict resolution are the same as with GitHub.
-- Invite links are `#join=b1.<code>`: the code sits in the URL fragment, which browsers do not send to any server. They go through the same join dialog as the other invites.
-
-**Relay API** (all with `Authorization: Bearer <access token>`, version in `X-Band-Version`):
-
-| Request | Result |
-|---|---|
-| `POST /bands/<id>` (encrypted band name, 4 KB max) | 201, or 409 if the id is taken |
-| `GET /bands/<id>` | encrypted band name |
-| `GET /bands/<id>/snapshot` | 200 + ciphertext, or 204 before the first push |
-| `PUT /bands/<id>/snapshot` (8 MB max) | 200 + new version, 412 if stale, 413 if too large |
-| `GET /bands/<id>/files` | ids of the band's files (JSON) |
-| `GET /bands/<id>/files/<uuid>` | 200 + ciphertext, or 204 if the relay does not have it |
-| `PUT /bands/<id>/files/<uuid>` (16 MB max) | 200; write-once, a second write under the same id is ignored |
-
-Unknown band: 404. Wrong token: 403. Anything else under `/bands/`: 404. There is no listing of bands and no delete. Browsers are only served from the origins in `ALLOWED_ORIGINS` (`worker/wrangler.toml`) and from localhost.
-
-**Sheet music files** (`src/domain/sync/files.ts`): the snapshot only carries attachment metadata. After each band sync the device uploads the files the relay lacks and downloads the ones it lacks. A file is encrypted without gzip and bound to its id, so the relay cannot serve one file for another. GitHub and Google Drive carry the snapshot only.
-
-**Deploying the relay:** it ships with the CORS proxy, see the README ("Cloudflare Worker"). The app only offers band sync when it was built with `RELAY_URL` set.
-
-**Limits:**
-- Whoever has the code can read and change the band's data. There is no per-member access and no way to revoke one member: create a new band instead.
-- The code cannot be recovered. It stays readable on every member's device (Sync > Invite band members). If every device loses it, the remote copy is unreadable; the songs on the devices are untouched.
-- No history on the relay: it keeps the latest snapshot only. Export to a file for backups.
-- Files are never deleted from the relay, even once no song uses them.
-- This is the one piece of infrastructure the project runs. It holds only ciphertext and can be self-hosted by any band with `wrangler deploy`.
-
----
-
 ## Tier 1: LAN Sync
 
 **When:** Rehearsal, backstage, same WiFi at home
@@ -141,6 +103,8 @@ Settings > GitHub > "Invite band members" builds a `?join=` link (`src/domain/in
 Joining asks for the passphrase (wrong one: error, retry), then confirms. After the first sync it offers to set the favourite instrument (optional). Google Drive invites use `o1`: a file id is not a credential.
 
 Old plaintext links (`?join=<base64 json>`) still join, with a warning that the token was exposed and should be replaced. Limits: anyone with link and passphrase gets the token. Someone holding the link alone can still guess offline: a full search of the suggested format takes hours on one high-end GPU. That stops casual leaks (chat history, screenshots), not a determined attacker. Use a longer passphrase or token-less invites for more, and revoke the token on GitHub if a link leaks.
+
+**Sheet music files** (`src/domain/sync/files.ts`): the snapshot only carries attachment metadata. After each sync the device uploads the files the repository lacks and downloads the ones it lacks, to and from `open-setlist-files/` next to the snapshot. A file never changes under its id, so there is nothing to merge. Files are capped at 15 MB and are never deleted from the repository.
 
 ---
 

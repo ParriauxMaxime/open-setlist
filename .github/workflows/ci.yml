@@ -3,7 +3,7 @@ name: CI/CD
 on:
   push:
     branches: [main]
-  # Rebuild by hand, e.g. after changing the RELAY_URL variable
+  # Rebuild by hand, e.g. after changing a repository variable
   workflow_dispatch:
 
 permissions:
@@ -82,7 +82,6 @@ jobs:
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
           GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
-          RELAY_URL: ${{ vars.RELAY_URL }}
       - run: cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3
         with:

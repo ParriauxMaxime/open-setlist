@@ -126,7 +126,6 @@ export default defineConfig((_env, argv) => {
       new rspack.DefinePlugin({
         __BASE_PATH__: JSON.stringify(process.env.BASE_PATH || "/"),
         __GOOGLE_CLIENT_ID__: JSON.stringify(process.env.GOOGLE_CLIENT_ID || ""),
-        __RELAY_URL__: JSON.stringify(process.env.RELAY_URL || ""),
       }),
       isDev && new RefreshPlugin(),
       !isDev && new PrecacheManifestPlugin(),

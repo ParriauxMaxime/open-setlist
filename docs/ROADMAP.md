@@ -22,9 +22,9 @@ Last update: 2026-10-09. Health: `yarn lint`, `typecheck`, `test` (800+ tests), 
 | Onboarding | Works — one-screen first-run setup (instrument → My part, notation, language), versioned What's new card for returning users, Getting Started tour, perform hints | `src/domain/welcome.ts`, `src/modules/shared/components/` |
 | Offline / PWA | Works — full precache per build, cross-origin untouched, PNG icons | `src/sw.ts`, `src/domain/pwa/` |
 | Chord reference | Works — 20 chord types × 12 roots on guitar (hand-written + E/A-shape barre templates), ukulele (hand-written + searched voicings), bass (root–fifth–octave box) and piano (slash bass highlighted); song `{define}` voicings override guitar/ukulele diagrams; favourite instrument picks the diagram. `{chord}` is parsed but not drawn inline | `src/domain/chords/`, `src/domain/chordpro/chord-definitions.ts` |
-| Sheet music | Partial — PDF / image attachments per song and per part, rendered on stage with pdf.js (lazy chunk); bytes in the device's `files` table, synced through the band relay only (not GitHub / Drive), never deleted from the relay | `src/domain/attachments.ts`, `src/domain/sync/files.ts`, `src/modules/performance/components/score-view.tsx` |
+| Sheet music | Partial — PDF / image attachments per song and per part, rendered on stage with pdf.js (lazy chunk); bytes in the device's `files` table, synced through GitHub next to the snapshot (not Google Drive yet), never deleted from the repository | `src/domain/attachments.ts`, `src/domain/sync/files.ts`, `src/modules/performance/components/score-view.tsx` |
 | MIDI on stage | Partial — sound code per song and instrument sent on song change, over Wi-Fi to the companion program (`companion/`) or over Bluetooth MIDI; optional follow the leader through the companion. Verified in Chrome on a computer; Android, iPad (not supported), Windows and Bluetooth still to be tested on real devices, see `docs/MIDI.md` | `src/domain/midi/`, `src/modules/performance/hooks/use-stage-midi.ts`, `companion/` |
-| Song lookup | Partial — iTunes metadata + UG chords via proxy, new songs only | `src/modules/lookup/` |
+| Song lookup | Partial — iTunes metadata, new songs only | `src/modules/lookup/` |
 
 ## Known limitations
 

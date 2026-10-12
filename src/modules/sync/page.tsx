@@ -16,7 +16,7 @@ import { Router } from "../../router";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { GitHubIcon, GoogleDriveIcon } from "../design-system/components/icons";
 import { SETTINGS_SCROLL_KEY } from "../settings/page";
-import { BandSync } from "./components/band-sync";
+import { FileSyncSummary } from "./components/file-sync-summary";
 import { SetlistHelperImport } from "./components/setlist-helper-import";
 import { SetlistHelperSetlistImport } from "./components/setlist-helper-setlist-import";
 import { SyncReview } from "./components/sync-review";
@@ -114,12 +114,6 @@ export function SyncPage() {
         {t("sync.setlistCount", { count: setlistCount })}
       </p>
 
-      <BandSync key={profileId} onTranspositionMismatches={setTranspositionMismatches} />
-
-      <hr className="my-6 border-border" />
-
-      <h2 className="mb-2 text-lg font-semibold">{t("sync.backupHeading")}</h2>
-
       <p className="mb-4 text-sm text-text-muted">{t("sync.description")}</p>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -157,194 +151,178 @@ export function SyncPage() {
 
       <hr className="my-6 border-border" />
 
-      <details
-        open={ghConfigured || gdConfigured || undefined}
-        className="accordion group rounded-md border border-border"
-      >
-        <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-semibold select-none">
-          {t("sync.advancedHeading")}
-        </summary>
-        <div className="accordion-content">
-          <div className="accordion-inner">
-            <div className="border-t border-border px-4 py-4">
-              {/* GitHub sync section */}
-              <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                <GitHubIcon className="h-5 w-5" />
-                GitHub
-              </h2>
+      {/* GitHub sync section */}
+      <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+        <GitHubIcon className="h-5 w-5" />
+        GitHub
+      </h2>
 
-              {!ghConfigured ? (
-                <div className="flex items-center gap-3">
-                  <p className="text-sm text-text-muted">{t("sync.github.notConfigured")}</p>
-                  <Link
-                    to={Router.Settings()}
-                    onClick={() => sessionStorage.setItem(SETTINGS_SCROLL_KEY, "github")}
-                    className="link-accent text-sm"
-                  >
-                    {t("sync.github.goToSettings")}
-                  </Link>
-                </div>
+      {!ghConfigured ? (
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-text-muted">{t("sync.github.notConfigured")}</p>
+          <Link
+            to={Router.Settings()}
+            onClick={() => sessionStorage.setItem(SETTINGS_SCROLL_KEY, "github")}
+            className="link-accent text-sm"
+          >
+            {t("sync.github.goToSettings")}
+          </Link>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {/* Review mode */}
+          {ghStatus.type === "review" ? (
+            <SyncReview
+              key={`${ghStatus.ctx.versionToken}:${ghStatus.ctx.local.exportedAt}`}
+              diff={ghStatus.ctx.diff}
+              onConfirm={github.confirm}
+              onCancel={github.reset}
+              busy={false}
+              notice={ghStatus.refreshed ? t("syncConflicts.reviewRefreshed") : undefined}
+            />
+          ) : (
+            <>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={github.start}
+                  disabled={github.busy}
+                  className="btn btn-primary"
+                >
+                  {ghStatus.type === "pulling"
+                    ? "Pulling..."
+                    : ghStatus.type === "pushing"
+                      ? "Pushing..."
+                      : t("sync.github.sync")}
+                </button>
+
+                {syncConfig.lastSyncedAt && ghStatus.type === "idle" && (
+                  <span className="text-sm text-text-muted">
+                    {t("sync.github.lastSync", {
+                      time: formatTimeAgo(syncConfig.lastSyncedAt),
+                    })}
+                  </span>
+                )}
+              </div>
+
+              <div aria-live="polite">
+                {ghStatus.type === "success" && (
+                  <p className="text-sm text-accent">
+                    {ghStatus.result.status === "created"
+                      ? t("sync.github.syncCreated", {
+                          songs: ghStatus.result.songCount,
+                          setlists: ghStatus.result.setlistCount,
+                        })
+                      : ghStatus.result.status === "up-to-date"
+                        ? "Everything is up to date."
+                        : t("sync.github.syncSuccess", {
+                            songs: ghStatus.result.songCount,
+                            setlists: ghStatus.result.setlistCount,
+                          })}
+                  </p>
+                )}
+
+                {ghStatus.type === "success" && <FileSyncSummary files={ghStatus.files} />}
+
+                {ghStatus.type === "error" && (
+                  <p className="text-sm text-danger">
+                    {t("sync.github.syncFailed", { error: ghStatus.message })}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Google Drive sync section */}
+      {isGoogleDriveAvailable() && (
+        <>
+          <hr className="my-6 border-border" />
+
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+            <GoogleDriveIcon className="h-5 w-5" />
+            Google Drive
+          </h2>
+
+          {!gdConfigured ? (
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-text-muted">{t("sync.googleDrive.notConfigured")}</p>
+              <Link
+                to={Router.Settings()}
+                onClick={() => sessionStorage.setItem(SETTINGS_SCROLL_KEY, "google-drive")}
+                className="link-accent text-sm"
+              >
+                {t("sync.googleDrive.goToSettings")}
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {gdStatus.type === "review" ? (
+                <SyncReview
+                  key={`${gdStatus.ctx.versionToken}:${gdStatus.ctx.local.exportedAt}`}
+                  diff={gdStatus.ctx.diff}
+                  onConfirm={googleDrive.confirm}
+                  onCancel={googleDrive.reset}
+                  busy={false}
+                  notice={gdStatus.refreshed ? t("syncConflicts.reviewRefreshed") : undefined}
+                />
               ) : (
-                <div className="flex flex-col gap-3">
-                  {/* Review mode */}
-                  {ghStatus.type === "review" ? (
-                    <SyncReview
-                      key={`${ghStatus.ctx.versionToken}:${ghStatus.ctx.local.exportedAt}`}
-                      diff={ghStatus.ctx.diff}
-                      onConfirm={github.confirm}
-                      onCancel={github.reset}
-                      busy={false}
-                      notice={ghStatus.refreshed ? t("syncConflicts.reviewRefreshed") : undefined}
-                    />
-                  ) : (
-                    <>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={github.start}
-                          disabled={github.busy}
-                          className="btn btn-primary"
-                        >
-                          {ghStatus.type === "pulling"
-                            ? "Pulling..."
-                            : ghStatus.type === "pushing"
-                              ? "Pushing..."
-                              : t("sync.github.sync")}
-                        </button>
-
-                        {syncConfig.lastSyncedAt && ghStatus.type === "idle" && (
-                          <span className="text-sm text-text-muted">
-                            {t("sync.github.lastSync", {
-                              time: formatTimeAgo(syncConfig.lastSyncedAt),
-                            })}
-                          </span>
-                        )}
-                      </div>
-
-                      <div aria-live="polite">
-                        {ghStatus.type === "success" && (
-                          <p className="text-sm text-accent">
-                            {ghStatus.result.status === "created"
-                              ? t("sync.github.syncCreated", {
-                                  songs: ghStatus.result.songCount,
-                                  setlists: ghStatus.result.setlistCount,
-                                })
-                              : ghStatus.result.status === "up-to-date"
-                                ? "Everything is up to date."
-                                : t("sync.github.syncSuccess", {
-                                    songs: ghStatus.result.songCount,
-                                    setlists: ghStatus.result.setlistCount,
-                                  })}
-                          </p>
-                        )}
-
-                        {ghStatus.type === "error" && (
-                          <p className="text-sm text-danger">
-                            {t("sync.github.syncFailed", { error: ghStatus.message })}
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* Google Drive sync section */}
-              {isGoogleDriveAvailable() && (
                 <>
-                  <hr className="my-6 border-border" />
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={googleDrive.start}
+                      disabled={googleDrive.busy}
+                      className="btn btn-primary"
+                    >
+                      {gdStatus.type === "authenticating"
+                        ? t("sync.googleDrive.authenticating")
+                        : gdStatus.type === "pulling"
+                          ? "Pulling..."
+                          : gdStatus.type === "pushing"
+                            ? "Pushing..."
+                            : t("sync.googleDrive.sync")}
+                    </button>
 
-                  <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                    <GoogleDriveIcon className="h-5 w-5" />
-                    Google Drive
-                  </h2>
+                    {syncConfig.lastSyncedAt && gdStatus.type === "idle" && (
+                      <span className="text-sm text-text-muted">
+                        {t("sync.googleDrive.lastSync", {
+                          time: formatTimeAgo(syncConfig.lastSyncedAt),
+                        })}
+                      </span>
+                    )}
+                  </div>
 
-                  {!gdConfigured ? (
-                    <div className="flex items-center gap-3">
-                      <p className="text-sm text-text-muted">
-                        {t("sync.googleDrive.notConfigured")}
+                  <div aria-live="polite">
+                    {gdStatus.type === "success" && (
+                      <p className="text-sm text-accent">
+                        {gdStatus.result.status === "created"
+                          ? t("sync.googleDrive.syncCreated", {
+                              songs: gdStatus.result.songCount,
+                              setlists: gdStatus.result.setlistCount,
+                            })
+                          : gdStatus.result.status === "up-to-date"
+                            ? t("sync.googleDrive.upToDate")
+                            : t("sync.googleDrive.syncSuccess", {
+                                songs: gdStatus.result.songCount,
+                                setlists: gdStatus.result.setlistCount,
+                              })}
                       </p>
-                      <Link
-                        to={Router.Settings()}
-                        onClick={() => sessionStorage.setItem(SETTINGS_SCROLL_KEY, "google-drive")}
-                        className="link-accent text-sm"
-                      >
-                        {t("sync.googleDrive.goToSettings")}
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-3">
-                      {gdStatus.type === "review" ? (
-                        <SyncReview
-                          key={`${gdStatus.ctx.versionToken}:${gdStatus.ctx.local.exportedAt}`}
-                          diff={gdStatus.ctx.diff}
-                          onConfirm={googleDrive.confirm}
-                          onCancel={googleDrive.reset}
-                          busy={false}
-                          notice={
-                            gdStatus.refreshed ? t("syncConflicts.reviewRefreshed") : undefined
-                          }
-                        />
-                      ) : (
-                        <>
-                          <div className="flex flex-wrap items-center gap-3">
-                            <button
-                              type="button"
-                              onClick={googleDrive.start}
-                              disabled={googleDrive.busy}
-                              className="btn btn-primary"
-                            >
-                              {gdStatus.type === "authenticating"
-                                ? t("sync.googleDrive.authenticating")
-                                : gdStatus.type === "pulling"
-                                  ? "Pulling..."
-                                  : gdStatus.type === "pushing"
-                                    ? "Pushing..."
-                                    : t("sync.googleDrive.sync")}
-                            </button>
+                    )}
 
-                            {syncConfig.lastSyncedAt && gdStatus.type === "idle" && (
-                              <span className="text-sm text-text-muted">
-                                {t("sync.googleDrive.lastSync", {
-                                  time: formatTimeAgo(syncConfig.lastSyncedAt),
-                                })}
-                              </span>
-                            )}
-                          </div>
-
-                          <div aria-live="polite">
-                            {gdStatus.type === "success" && (
-                              <p className="text-sm text-accent">
-                                {gdStatus.result.status === "created"
-                                  ? t("sync.googleDrive.syncCreated", {
-                                      songs: gdStatus.result.songCount,
-                                      setlists: gdStatus.result.setlistCount,
-                                    })
-                                  : gdStatus.result.status === "up-to-date"
-                                    ? t("sync.googleDrive.upToDate")
-                                    : t("sync.googleDrive.syncSuccess", {
-                                        songs: gdStatus.result.songCount,
-                                        setlists: gdStatus.result.setlistCount,
-                                      })}
-                              </p>
-                            )}
-
-                            {gdStatus.type === "error" && (
-                              <p className="text-sm text-danger">
-                                {t("sync.googleDrive.syncFailed", { error: gdStatus.message })}
-                              </p>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
+                    {gdStatus.type === "error" && (
+                      <p className="text-sm text-danger">
+                        {t("sync.googleDrive.syncFailed", { error: gdStatus.message })}
+                      </p>
+                    )}
+                  </div>
                 </>
               )}
             </div>
-          </div>
-        </div>
-      </details>
+          )}
+        </>
+      )}
 
       {confirmImport && (
         <ConfirmModal

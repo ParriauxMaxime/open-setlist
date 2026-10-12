@@ -8,4 +8,3 @@ scripts/demo-video/node_modules/
 scripts/demo-video/frames-*/
 scripts/demo-video/*.mp4
 scripts/demo-video/*.csv
-.wrangler/

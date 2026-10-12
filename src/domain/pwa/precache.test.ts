@@ -33,7 +33,7 @@ describe("routeRequest", () => {
     "https://api.github.com/repos/band/data/contents/snapshot.json",
     "https://www.googleapis.com/drive/v3/files/123?alt=media",
     "https://itunes.apple.com/search?term=foo",
-    "https://open-setlist-proxy.example.workers.dev/?url=x",
+    "https://api.github.com/repos/band/songs/contents/open-setlist.json",
     "chrome-extension://abc/script.js",
   ])("passes cross-origin requests through: %s", (url) => {
     expect(routeRequest(req(url), SCOPE)).toBe(FetchStrategy.Passthrough);
