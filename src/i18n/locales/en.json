@@ -800,6 +800,17 @@
     "nextSong": "Next song",
     "close": "Close"
   },
+  "live": {
+    "title": "Live session",
+    "mode": { "off": "Off", "follow": "Follow", "lead": "Lead" },
+    "hint": {
+      "off": "Everyone changes song on their own device.",
+      "follow": "This device jumps to the song the leader is on. You still scroll yourself.",
+      "lead": "Devices that follow jump to the song you are on."
+    },
+    "chip": { "follow": "Following", "lead": "Leading" },
+    "offline": "not connected"
+  },
   "attachments": {
     "hasSheet": "Sheet music attached",
     "panelTitle": "Sheet music (PDF, images)",

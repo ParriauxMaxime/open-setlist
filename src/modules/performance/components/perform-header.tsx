@@ -3,9 +3,11 @@ import { Link } from "@swan-io/chicane";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
+import type { LiveSession } from "../hooks/use-live-session";
 import type { MyPart } from "../hooks/use-my-part";
 import type { Tempo } from "../hooks/use-tempo";
 import { KeyChips } from "./key-chips";
+import { LiveChip, LiveMenu } from "./live-menu";
 import { MyPartChip, MyPartMenu } from "./my-part-menu";
 import { StageViewMenu } from "./stage-view-menu";
 import { TempoChip } from "./tempo-chip";
@@ -37,6 +39,7 @@ interface PerformHeaderProps {
   myPart: MyPart;
   hasMyNote: boolean;
   onEditMyNote: () => void;
+  live: LiveSession;
   /** Id of the sheet shown for the song; undefined = its chart. */
   stageView: string | undefined;
   onStageView: (view: string) => void;
@@ -68,6 +71,7 @@ export function PerformHeader({
   myPart,
   hasMyNote,
   onEditMyNote,
+  live,
   stageView,
   onStageView,
 }: PerformHeaderProps) {
@@ -118,6 +122,7 @@ export function PerformHeader({
             <KeyChips song={song} transposition={transposition} partView={myPart.view} />
           </div>
 
+          <LiveChip live={live} onClick={() => setMenuOpen(true)} />
           <MyPartChip myPart={myPart} onClick={() => setMenuOpen(true)} />
           <TempoChip tempo={tempo} />
 
@@ -235,6 +240,7 @@ export function PerformHeader({
               {menuOpen && (
                 <div className="absolute right-0 top-full z-50 mt-1 max-h-[80dvh] min-w-40 overflow-y-auto rounded-md border border-border bg-bg-surface py-1 shadow-lg">
                   <MyPartMenu myPart={myPart} />
+                  {live.available && <LiveMenu live={live} />}
                   {song?.attachments && song.attachments.length > 0 && (
                     <StageViewMenu
                       attachments={song.attachments}

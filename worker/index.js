@@ -2,7 +2,11 @@ import {
   handleBandRequest,
   handleRelayRequest,
   joinChunks,
+  LIVE_PROTOCOL,
+  MAX_LIVE_MESSAGE_BYTES,
   parseAllowedOrigins,
+  refuseLive,
+  routeBand,
   splitChunks,
 } from "./relay.ts";
 
@@ -67,11 +71,46 @@ function sqlStore(storage) {
 
 export class Band {
   constructor(ctx) {
+    this.ctx = ctx;
     this.store = sqlStore(ctx.storage);
   }
 
-  fetch(request) {
-    return handleBandRequest(request, this.store);
+  async fetch(request) {
+    if (routeBand(new URL(request.url).pathname)?.resource !== "live") {
+      return handleBandRequest(request, this.store);
+    }
+    const refusal = await refuseLive(request, this.store, this.ctx.getWebSockets().length);
+    if (refusal) return refusal;
+    const [client, server] = Object.values(new WebSocketPair());
+    // Hibernating sockets: the object sleeps between messages
+    this.ctx.acceptWebSocket(server);
+    return new Response(null, {
+      status: 101,
+      webSocket: client,
+      headers: { "Sec-WebSocket-Protocol": LIVE_PROTOCOL },
+    });
+  }
+
+  // Live channel: every message goes to the other devices, unread
+  webSocketMessage(sender, message) {
+    const size = typeof message === "string" ? message.length : message.byteLength;
+    if (size > MAX_LIVE_MESSAGE_BYTES) return;
+    for (const peer of this.ctx.getWebSockets()) {
+      if (peer === sender) continue;
+      try {
+        peer.send(message);
+      } catch {
+        // Peer already gone
+      }
+    }
+  }
+
+  webSocketClose(socket, code) {
+    try {
+      socket.close(code === 1005 || code === 1006 ? 1000 : code);
+    } catch {
+      // Already closed
+    }
   }
 }
 

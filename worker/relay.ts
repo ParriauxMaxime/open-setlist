@@ -1,10 +1,15 @@
 // Band relay: one opaque (client-encrypted) snapshot per band, with compare-and-swap on a
-// version counter, plus the band's write-once files (sheet music). Request handling only: storage is injected, see the Durable Object in index.js.
+// version counter, plus the band's write-once files (sheet music) and a live channel that
+// passes (client-encrypted) messages between the devices connected to it. Request handling only: storage is injected, see the Durable Object in index.js.
 
 export const VERSION_HEADER = "X-Band-Version";
 export const MAX_META_BYTES = 4 * 1024;
 export const MAX_SNAPSHOT_BYTES = 8 * 1024 * 1024;
 export const MAX_FILE_BYTES = 16 * 1024 * 1024;
+export const MAX_LIVE_MESSAGE_BYTES = 4 * 1024;
+export const MAX_LIVE_PEERS = 40;
+/** WebSocket subprotocol; the band token follows it, as browsers cannot set headers. */
+export const LIVE_PROTOCOL = "open-setlist-live";
 /** A SQLite Durable Object row holds 2 MB at most, so blobs are stored in chunks. */
 export const CHUNK_BYTES = 1024 * 1024;
 
@@ -23,22 +28,22 @@ export interface BandStore {
 
 export interface BandRoute {
   bandId: string;
-  resource: "band" | "snapshot" | "files" | "file";
+  resource: "band" | "snapshot" | "files" | "file" | "live";
   fileId?: string;
 }
 
 /**
- * `/bands/<128-bit hex id>`, then `/snapshot`, `/files` or `/files/<uuid>`.
+ * `/bands/<128-bit hex id>`, then `/snapshot`, `/live`, `/files` or `/files/<uuid>`.
  * Anything else is not a relay route.
  */
 export function routeBand(pathname: string): BandRoute | null {
-  const match = /^\/bands\/([0-9a-f]{32})(?:\/(snapshot|files)(?:\/([0-9a-f-]{36}))?)?$/.exec(
+  const match = /^\/bands\/([0-9a-f]{32})(?:\/(snapshot|live|files)(?:\/([0-9a-f-]{36}))?)?$/.exec(
     pathname,
   );
   if (!match) return null;
   const [, bandId, resource, fileId] = match;
   if (!resource) return { bandId, resource: "band" };
-  if (!fileId) return { bandId, resource: resource === "files" ? "files" : "snapshot" };
+  if (!fileId) return { bandId, resource: resource as "snapshot" | "live" | "files" };
   return resource === "files" ? { bandId, resource: "file", fileId } : null;
 }
 
@@ -96,6 +101,29 @@ async function readCapped(request: Request, max: number): Promise<Uint8Array | n
   return joinChunks(chunks);
 }
 
+/**
+ * Checks a WebSocket upgrade to the live channel. Returns the refusal, or null when the
+ * caller holds the band token and there is room for one more device.
+ */
+export async function refuseLive(
+  request: Request,
+  store: BandStore,
+  peers: number,
+): Promise<Response | null> {
+  if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
+    return reply(426, "WebSocket expected");
+  }
+  const [protocol, token] = (request.headers.get("Sec-WebSocket-Protocol") ?? "")
+    .split(",")
+    .map((part) => part.trim());
+  if (protocol !== LIVE_PROTOCOL || !token) return reply(401, "Missing band token");
+  const band = store.load();
+  if (!band) return reply(404, "Unknown band");
+  if (band.authHash !== (await sha256Hex(token))) return reply(403, "Wrong band token");
+  if (peers >= MAX_LIVE_PEERS) return reply(429, "Too many devices");
+  return null;
+}
+
 function parseVersion(value: string | null): number | null {
   if (!value || !/^\d{1,15}$/.test(value)) return null;
   return Number(value);
@@ -108,6 +136,9 @@ function parseVersion(value: string | null): number | null {
 export async function handleBandRequest(request: Request, store: BandStore): Promise<Response> {
   const route = routeBand(new URL(request.url).pathname);
   if (!route) return reply(404, "Not found");
+
+  // The live channel is a WebSocket: the Durable Object answers it itself
+  if (route.resource === "live") return reply(404, "Not found");
 
   const token = /^Bearer (\S+)$/.exec(request.headers.get("Authorization") ?? "")?.[1];
   if (!token) return reply(401, "Missing band token");
@@ -206,6 +237,8 @@ export async function handleRelayRequest(
   if (request.method === "OPTIONS") return withCors(reply(204));
   const route = routeBand(new URL(request.url).pathname);
   if (!route) return withCors(reply(404, "Not found"));
+  // A WebSocket handshake goes back as it is: it has no CORS and cannot be copied
+  if (route.resource === "live") return forward(route.bandId, request);
   if (Number(request.headers.get("Content-Length") ?? 0) > maxBodyBytes(route)) {
     return withCors(reply(413, "Body too large"));
   }

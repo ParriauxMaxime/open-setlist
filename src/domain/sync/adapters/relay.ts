@@ -59,6 +59,11 @@ export function isRelayAvailable(): boolean {
   return Boolean(RELAY_URL);
 }
 
+/** Relay address without trailing slash; empty when band sync is unavailable. */
+export function relayBaseUrl(override?: string): string {
+  return (override ?? RELAY_URL).replace(/\/+$/, "");
+}
+
 interface RelayClient {
   keys: BandKeys;
   request(
@@ -69,7 +74,7 @@ interface RelayClient {
 }
 
 async function connect(code: string, options: RelayOptions): Promise<RelayClient> {
-  const relayUrl = (options.relayUrl ?? RELAY_URL).replace(/\/+$/, "");
+  const relayUrl = relayBaseUrl(options.relayUrl);
   if (!relayUrl) throw new RelayError(RELAY_ERROR.notConfigured);
   const doFetch = options.fetch ?? fetch;
   const keys = await deriveBandKeys(code);

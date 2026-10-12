@@ -31,6 +31,7 @@ import { SongStrip } from "./components/song-strip";
 import { TempoOverlay } from "./components/tempo-overlay";
 import { useAutoScroll } from "./hooks/use-auto-scroll";
 import { useFullscreen } from "./hooks/use-fullscreen";
+import { useLiveSession } from "./hooks/use-live-session";
 import { useMyPart } from "./hooks/use-my-part";
 import { usePerformKeys } from "./hooks/use-perform-keys";
 import { useSetlistNavigation } from "./hooks/use-setlist-navigation";
@@ -153,6 +154,13 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
     enabled: loaded && nav.flatSongs.length > 0,
     onDoubleTapScale: handleDoubleTapScale,
     doubleTapScaleEnabled: globalPrefs.performDoubleTapScale,
+  });
+
+  const live = useLiveSession({
+    setlistId,
+    flatSongs: nav.flatSongs,
+    currentIndex: nav.currentIndex,
+    setCurrentIndex: nav.setCurrentIndex,
   });
 
   useWakeLock();
@@ -288,6 +296,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         myPart={myPart}
         hasMyNote={!!(nav.currentSong && myNotes[nav.currentSong.id])}
         onEditMyNote={() => setNoteEditing(nav.currentSong ?? null)}
+        live={live}
         stageView={nav.currentSong && scoreFor(nav.currentSong)?.id}
         onStageView={(view) => {
           if (nav.currentSong) setStageViews(saveStageView(profileId, nav.currentSong.id, view));

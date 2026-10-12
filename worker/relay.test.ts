@@ -1,9 +1,12 @@
 import {
   CHUNK_BYTES,
   isAllowedOrigin,
+  LIVE_PROTOCOL,
+  MAX_LIVE_PEERS,
   MAX_META_BYTES,
   MAX_SNAPSHOT_BYTES,
   parseAllowedOrigins,
+  refuseLive,
   routeBand,
   VERSION_HEADER,
 } from "./relay";
@@ -293,5 +296,48 @@ describe("origins", () => {
     expect(res.status).toBe(403);
     expect(res.headers.get("Access-Control-Allow-Origin")).toBeNull();
     expect(relay.bands.size).toBe(0);
+  });
+});
+
+describe("live channel", () => {
+  function upgrade(protocols: string | null, upgradeHeader = "websocket"): Request {
+    const headers = new Headers({ Upgrade: upgradeHeader });
+    if (protocols) headers.set("Sec-WebSocket-Protocol", protocols);
+    return new Request(`https://relay.test/bands/${BAND}/live`, { headers });
+  }
+
+  async function refusal(request: Request, relay: MemoryRelay, peers = 0): Promise<number | null> {
+    return (await refuseLive(request, relay.store(BAND), peers))?.status ?? null;
+  }
+
+  it("lets a device holding the band token in", async () => {
+    const relay = new MemoryRelay();
+    await createBand(relay);
+    expect(await refusal(upgrade(`${LIVE_PROTOCOL}, ${TOKEN}`), relay)).toBeNull();
+  });
+
+  it("refuses a wrong or missing token, an unknown band and plain requests", async () => {
+    const relay = new MemoryRelay();
+    expect(await refusal(upgrade(`${LIVE_PROTOCOL}, ${TOKEN}`), relay)).toBe(404);
+    await createBand(relay);
+    expect(await refusal(upgrade(`${LIVE_PROTOCOL}, guess`), relay)).toBe(403);
+    expect(await refusal(upgrade(LIVE_PROTOCOL), relay)).toBe(401);
+    expect(await refusal(upgrade(null), relay)).toBe(401);
+    expect(await refusal(upgrade(`${LIVE_PROTOCOL}, ${TOKEN}`, "h2c"), relay)).toBe(426);
+  });
+
+  it("caps the number of connected devices", async () => {
+    const relay = new MemoryRelay();
+    await createBand(relay);
+    const request = () => upgrade(`${LIVE_PROTOCOL}, ${TOKEN}`);
+    expect(await refusal(request(), relay, MAX_LIVE_PEERS - 1)).toBeNull();
+    expect(await refusal(request(), relay, MAX_LIVE_PEERS)).toBe(429);
+  });
+
+  it("is not reachable as a plain route", async () => {
+    const relay = new MemoryRelay();
+    await createBand(relay);
+    expect(routeBand(`/bands/${BAND}/live`)).toEqual({ bandId: BAND, resource: "live" });
+    expect((await call(relay, "GET", `/bands/${BAND}/live`)).status).toBe(404);
   });
 });
