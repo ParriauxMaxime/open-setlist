@@ -7,6 +7,12 @@
 - On stage, ⋮ → View switches between the chart and each sheet; the choice is remembered per song on the device. Pages scroll like a chart, so pedals and auto-scroll work unchanged.
 - Sheet music travels with band sync (encrypted like the songs, 15 MB per file). GitHub and Google Drive sync carry the songs only.
 
+### MIDI on stage
+- When the song changes on stage, each musician's device can tell their gear to change sound: Ableton on the stage computer, a drum pad, a pedalboard. Off by default, set up per device in Settings → Stage: MIDI.
+- The keyboard's sound code is read from the first line of the chart (`17A`); other instruments get a code per song in the editor (Sounds).
+- Two ways out, neither through the internet: the companion program on the stage computer over the band's Wi-Fi router, or Bluetooth MIDI.
+- Follow the leader is back as an option, relayed by the companion program on the local network.
+
 ## 2026-10-09 — Band-ready
 
 Everything a small band or orchestra needs to leave Setlist Helper, without turning into band-management software.

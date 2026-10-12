@@ -35,6 +35,8 @@ export interface Song {
   scrollSpeed?: number; // auto-scroll speed 1–10; unset = derived from duration
   status?: SongStatus; // readiness; unset = "ready" (see @domain/song-status)
   attachments?: SongAttachment[];
+  /** Sound code per part (`{ drums: "12" }`), sent as MIDI on stage; see @domain/midi/patch. */
+  patches?: Record<string, string>;
   content: string; // raw ChordPro body
   createdAt: number;
   updatedAt: number;

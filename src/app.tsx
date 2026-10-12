@@ -118,7 +118,7 @@ function AdminRoutes({
     case "Sync":
       return <SyncPage />;
     case "Settings":
-      return <SettingsPage />;
+      return <SettingsPage companion={route.params.companion} />;
     case "Quality":
       return <QualityPage />;
   }

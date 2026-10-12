@@ -30,11 +30,13 @@ import { SetInterstitial } from "./components/set-interstitial";
 import { SongStrip } from "./components/song-strip";
 import { TempoOverlay } from "./components/tempo-overlay";
 import { useAutoScroll } from "./hooks/use-auto-scroll";
+import { useFollowLeader } from "./hooks/use-follow-leader";
 import { useFullscreen } from "./hooks/use-fullscreen";
 import { useMyPart } from "./hooks/use-my-part";
 import { usePerformKeys } from "./hooks/use-perform-keys";
 import { useSetlistNavigation } from "./hooks/use-setlist-navigation";
 import { useSingleSongNavigation } from "./hooks/use-single-song-navigation";
+import { useStageMidi } from "./hooks/use-stage-midi";
 import { useSwipeStrip } from "./hooks/use-swipe-strip";
 import { useTempo } from "./hooks/use-tempo";
 import { useWakeLock } from "./hooks/use-wake-lock";
@@ -153,6 +155,14 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
     enabled: loaded && nav.flatSongs.length > 0,
     onDoubleTapScale: handleDoubleTapScale,
     doubleTapScaleEnabled: globalPrefs.performDoubleTapScale,
+  });
+
+  const midi = useStageMidi(nav.currentSong);
+  const follow = useFollowLeader({
+    setlistId,
+    flatSongs: nav.flatSongs,
+    currentIndex: nav.currentIndex,
+    setCurrentIndex: nav.setCurrentIndex,
   });
 
   useWakeLock();
@@ -288,6 +298,8 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         myPart={myPart}
         hasMyNote={!!(nav.currentSong && myNotes[nav.currentSong.id])}
         onEditMyNote={() => setNoteEditing(nav.currentSong ?? null)}
+        midi={midi}
+        follow={follow}
         stageView={nav.currentSong && scoreFor(nav.currentSong)?.id}
         onStageView={(view) => {
           if (nav.currentSong) setStageViews(saveStageView(profileId, nav.currentSong.id, view));

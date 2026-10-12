@@ -1,5 +1,6 @@
 import { NOTATION_LIST } from "@domain/chords/notation";
 import { INSTRUMENT_VALUES } from "@domain/chords/types";
+import { MIDI_TRANSPORT, normalizeCompanionAddress, saveMidiSettings } from "@domain/midi/settings";
 import {
   ACCENT_PRESETS,
   type AppPreferences,
@@ -19,12 +20,14 @@ import Dexie from "dexie";
 import i18n from "i18next";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Router } from "../../router";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { Select } from "../design-system/components/form";
 import { WhatsNewCard } from "../shared/components/whats-new-card";
 import { GitHubConfigForm } from "./components/github-config-form";
 import { GoogleDriveConfigForm } from "./components/google-drive-config-form";
 import { ProfileManager } from "./components/profile-manager";
+import { StageMidiSettings } from "./components/stage-midi-settings";
 
 export const SETTINGS_SCROLL_KEY = "settings-scroll-to";
 
@@ -52,7 +55,12 @@ const THEME_NAME_KEYS: Record<string, string> = {
   Paper: "settings.theme.paper",
 };
 
-export function SettingsPage() {
+interface SettingsPageProps {
+  /** Companion address from the QR code on its status page (`?companion=192.168.1.20:7777`). */
+  companion?: string;
+}
+
+export function SettingsPage({ companion }: SettingsPageProps) {
   const { t } = useTranslation();
   const profileId = useActiveProfileId();
   const [prefs, setPrefs] = useState(loadPreferences);
@@ -156,6 +164,18 @@ export function SettingsPage() {
       document.getElementById(scrollTarget)?.scrollIntoView({ behavior: "smooth" });
     }
   }, [scrollTarget]);
+
+  // Scanned from the companion program's screen: remember it, then drop it from the URL
+  const [scannedCompanion] = useState(() => {
+    const base = companion ? normalizeCompanionAddress(companion) : null;
+    if (base) saveMidiSettings({ companion: base, transport: MIDI_TRANSPORT.wifi });
+    return base;
+  });
+  useEffect(() => {
+    if (!companion) return;
+    Router.replace("Settings");
+    if (scannedCompanion) document.getElementById("midi")?.scrollIntoView();
+  }, [companion, scannedCompanion]);
 
   const activeTheme = matchThemeName(prefs);
   const matchedAccent = ACCENT_PRESETS.find((p) => p.color === prefs.accentColor);
@@ -488,6 +508,19 @@ export function SettingsPage() {
         </p>
 
         <ProfileManager />
+      </section>
+
+      {/* ================================================================
+       * Section — Stage MIDI
+       * ================================================================ */}
+      <section id="midi" className="mb-8">
+        <h2 className="mb-4 border-b border-border pb-2 text-lg font-semibold">
+          {t("midi.heading")}
+        </h2>
+
+        <p className="mb-4 text-sm text-text-muted">{t("midi.desc")}</p>
+
+        <StageMidiSettings key={scannedCompanion ?? ""} />
       </section>
 
       {/* ================================================================

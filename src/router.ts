@@ -17,7 +17,7 @@ export const Router = createRouter(
     Chords: "/chords",
     Tuner: "/tuner",
     Sync: "/sync",
-    Settings: "/settings",
+    Settings: "/settings?:companion",
     Quality: "/quality",
   },
   { basePath },

@@ -3,10 +3,13 @@ import { Link } from "@swan-io/chicane";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
+import type { FollowLeader } from "../hooks/use-follow-leader";
 import type { MyPart } from "../hooks/use-my-part";
+import type { StageMidi } from "../hooks/use-stage-midi";
 import type { Tempo } from "../hooks/use-tempo";
 import { KeyChips } from "./key-chips";
 import { MyPartChip, MyPartMenu } from "./my-part-menu";
+import { FollowChip, FollowMenu, MidiChip } from "./stage-midi";
 import { StageViewMenu } from "./stage-view-menu";
 import { TempoChip } from "./tempo-chip";
 
@@ -37,6 +40,8 @@ interface PerformHeaderProps {
   myPart: MyPart;
   hasMyNote: boolean;
   onEditMyNote: () => void;
+  midi: StageMidi;
+  follow: FollowLeader;
   /** Id of the sheet shown for the song; undefined = its chart. */
   stageView: string | undefined;
   onStageView: (view: string) => void;
@@ -68,6 +73,8 @@ export function PerformHeader({
   myPart,
   hasMyNote,
   onEditMyNote,
+  midi,
+  follow,
   stageView,
   onStageView,
 }: PerformHeaderProps) {
@@ -118,6 +125,8 @@ export function PerformHeader({
             <KeyChips song={song} transposition={transposition} partView={myPart.view} />
           </div>
 
+          <FollowChip follow={follow} onClick={() => setMenuOpen(true)} />
+          <MidiChip midi={midi} />
           <MyPartChip myPart={myPart} onClick={() => setMenuOpen(true)} />
           <TempoChip tempo={tempo} />
 
@@ -235,6 +244,7 @@ export function PerformHeader({
               {menuOpen && (
                 <div className="absolute right-0 top-full z-50 mt-1 max-h-[80dvh] min-w-40 overflow-y-auto rounded-md border border-border bg-bg-surface py-1 shadow-lg">
                   <MyPartMenu myPart={myPart} />
+                  {follow.available && <FollowMenu follow={follow} />}
                   {song?.attachments && song.attachments.length > 0 && (
                     <StageViewMenu
                       attachments={song.attachments}

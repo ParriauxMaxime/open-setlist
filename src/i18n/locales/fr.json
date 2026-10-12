@@ -800,6 +800,97 @@
     "nextSong": "Chanson suivante",
     "close": "Fermer"
   },
+  "midi": {
+    "heading": "Scène : MIDI",
+    "desc": "Quand le morceau change sur scène, cet appareil peut dire à votre matériel de changer de son : Ableton sur le PC de scène, un pad de batterie, un pédalier. Tout est éteint tant que vous ne l'activez pas, et rien ne passe par Internet.",
+    "enabled": "Envoyer mon son au changement de morceau",
+    "role": {
+      "label": "Mon instrument",
+      "hint": "Cet appareil n'envoie que les codes de son de cet instrument."
+    },
+    "transport": {
+      "label": "Par",
+      "wifi": "Wi-Fi (programme compagnon)",
+      "bluetooth": "Bluetooth"
+    },
+    "wifi": {
+      "desc": "Lancez le programme compagnon Open Setlist sur le PC de scène, sur le même Wi-Fi que cet appareil, et entrez l'adresse qu'il affiche.",
+      "address": "Adresse du programme compagnon",
+      "test": "Tester",
+      "connected": "Connecté à {{name}}. Le MIDI sort sur « {{port}} ».",
+      "permission": "La première fois, Chrome demande si ce site peut joindre les appareils de votre réseau local : autorisez."
+    },
+    "bluetooth": {
+      "desc": "Se connecte au programme compagnon ou à n'importe quel appareil MIDI Bluetooth.",
+      "connect": "Connecter",
+      "disconnect": "Déconnecter",
+      "reconnect": "Après un rechargement de l'app, reconnectez : le navigateur ne garde pas le lien.",
+      "unsupported": "Ce navigateur ne sait pas utiliser le Bluetooth depuis une page web. Utilisez Chrome sur Android ou sur ordinateur.",
+      "state": {
+        "disconnected": "Non connecté",
+        "connecting": "Connexion à {{name}}…",
+        "connected": "Connecté à {{name}}"
+      }
+    },
+    "test": {
+      "label": "Essayer",
+      "desc": "Envoie un code de son tout de suite. Dans Ableton, servez-vous des deux boutons « seulement » pour assigner chaque contrôle l'un après l'autre.",
+      "code": "Code de son",
+      "send": "Envoyer",
+      "bankOnly": "Seulement la lettre (CC {{cc}})",
+      "slotOnly": "Seulement les chiffres (CC {{cc}})",
+      "busy": "Envoi…",
+      "sent_one": "{{count}} message MIDI envoyé.",
+      "sent_other": "{{count}} messages MIDI envoyés."
+    },
+    "advanced": {
+      "label": "Détails MIDI",
+      "channel": "Canal (1 à 16)",
+      "encoding": "Type de message",
+      "encodings": {
+        "cc-pair": "Deux Control Change (Ableton)",
+        "program": "Program Change (matériel)"
+      },
+      "ccBank": "CC de la lettre",
+      "ccSlot": "CC des chiffres",
+      "programFromOne": "Mon matériel numérote ses presets à partir de 1"
+    },
+    "errors": {
+      "badAddress": "Ce n'est pas une adresse. Exemple : 192.168.1.20",
+      "badCode": "Ce n'est pas un code de son. Exemples : 17A, ou 12.",
+      "unreachable": "Pas de réponse. Vérifiez que le programme compagnon tourne, que les deux appareils sont sur le même Wi-Fi, et que Chrome a le droit de joindre le réseau local.",
+      "noMidiOutput": "Le programme compagnon tourne mais n'a pas de sortie MIDI. Regardez sa fenêtre sur l'ordinateur.",
+      "rejected": "Le programme compagnon a refusé le message.",
+      "bluetooth": "Non envoyé : aucun appareil MIDI Bluetooth n'est connecté."
+    },
+    "stage": {
+      "noPatch": "MIDI : pas de code de son pour votre instrument dans ce morceau",
+      "badCode": "MIDI : « {{code}} » n'est pas un code de son",
+      "disconnected": "MIDI : Bluetooth non connecté. Touchez pour connecter",
+      "sending": "MIDI : envoi de {{code}}",
+      "sent": "MIDI : {{code}} envoyé. Touchez pour renvoyer",
+      "failed": "MIDI : {{code}} n'est pas parti. Touchez pour réessayer"
+    },
+    "follow": {
+      "title": "Suivre le meneur",
+      "mode": { "off": "Désactivé", "follow": "Suivre", "lead": "Mener" },
+      "hint": {
+        "off": "Chacun change de morceau sur son appareil.",
+        "follow": "Cet appareil passe au morceau du meneur. Le défilement reste à vous.",
+        "lead": "Les appareils qui suivent passent au morceau où vous êtes."
+      },
+      "chip": { "follow": "Je suis", "lead": "Je mène" },
+      "offline": "programme compagnon injoignable"
+    },
+    "patches": {
+      "label": "Sons (MIDI)",
+      "fromChart": "lu sur la première ligne de la grille",
+      "add": "Ajouter un instrument…",
+      "code": "Code de son pour {{part}}",
+      "remove": "Retirer {{part}}",
+      "hint": "Le preset sur lequel chaque instrument passe pour ce morceau : un numéro, ou un code comme 17A."
+    }
+  },
   "attachments": {
     "hasSheet": "Partition jointe",
     "panelTitle": "Partitions (PDF, images)",

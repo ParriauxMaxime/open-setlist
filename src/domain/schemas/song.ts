@@ -34,6 +34,7 @@ export const songSchema = z.object({
   techNotes: z.string().optional(),
   links: songLinksSchema,
   attachments: z.array(songAttachmentSchema).optional(),
+  patches: z.record(z.string(), z.string()).optional(),
   content: z.string(),
   createdAt: z.number(),
   updatedAt: z.number(),

@@ -27,6 +27,7 @@ Every setlist app is closed-source, locked to a platform, or paywalled — and t
 - **Per-instrument parts** — `for=guitar`, `for=keys`… each musician picks "My part"; lyrics-only mode for singers; B♭/E♭/F horns read chords and keys at their written pitch
 - **Notation** — English (C D E), solfège (Do Ré Mi) or German (H); key-aware transposition, capo display
 - **Paste any chart** — chords written above lyrics (websites, PDFs) are converted to ChordPro, with title/key/capo detection
+- **MIDI** — optional: on a song change, your device tells Ableton, a drum pad or a pedalboard to switch sound, over the band's own Wi-Fi or Bluetooth, never through the internet ([docs/MIDI.md](docs/MIDI.md))
 - **Sheet music** — attach PDFs or images to a song, one per instrument if needed; each musician reads their own on stage
 - **Import files** — `.cho`, `.chopro`, `.crd`, `.pro`, `.txt`, several at once (multi-song files split)
 - **Chord diagrams** — guitar, piano, ukulele, bass; 20 chord types; `{define}` custom shapes

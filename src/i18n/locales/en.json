@@ -800,6 +800,97 @@
     "nextSong": "Next song",
     "close": "Close"
   },
+  "midi": {
+    "heading": "Stage: MIDI",
+    "desc": "When the song changes on stage, this device can tell your gear to change sound: Ableton on the stage computer, a drum pad, a pedalboard. Everything is off until you turn it on, and nothing goes through the internet.",
+    "enabled": "Send my sound when the song changes",
+    "role": {
+      "label": "My instrument",
+      "hint": "This device sends the sound codes of this instrument only."
+    },
+    "transport": {
+      "label": "Through",
+      "wifi": "Wi-Fi (companion program)",
+      "bluetooth": "Bluetooth"
+    },
+    "wifi": {
+      "desc": "Run the Open Setlist companion program on the stage computer, on the same Wi-Fi as this device, and enter the address it shows.",
+      "address": "Address of the companion program",
+      "test": "Test",
+      "connected": "Connected to {{name}}. MIDI goes out on “{{port}}”.",
+      "permission": "The first time, Chrome asks whether this site may reach devices on your local network: allow it."
+    },
+    "bluetooth": {
+      "desc": "Connects to the companion program or to any Bluetooth MIDI device.",
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "reconnect": "After reloading the app, connect again: the browser does not keep the link.",
+      "unsupported": "This browser cannot use Bluetooth from a web page. Use Chrome on Android or on a computer.",
+      "state": {
+        "disconnected": "Not connected",
+        "connecting": "Connecting to {{name}}…",
+        "connected": "Connected to {{name}}"
+      }
+    },
+    "test": {
+      "label": "Try it",
+      "desc": "Sends a sound code now. In Ableton, use the two “only” buttons to map each control one at a time.",
+      "code": "Sound code",
+      "send": "Send",
+      "bankOnly": "Letter only (CC {{cc}})",
+      "slotOnly": "Digits only (CC {{cc}})",
+      "busy": "Sending…",
+      "sent_one": "{{count}} MIDI message sent.",
+      "sent_other": "{{count}} MIDI messages sent."
+    },
+    "advanced": {
+      "label": "MIDI details",
+      "channel": "Channel (1 to 16)",
+      "encoding": "Message type",
+      "encodings": {
+        "cc-pair": "Two Control Changes (Ableton)",
+        "program": "Program Change (hardware)"
+      },
+      "ccBank": "CC for the letter",
+      "ccSlot": "CC for the digits",
+      "programFromOne": "My gear numbers its presets from 1"
+    },
+    "errors": {
+      "badAddress": "This is not an address. Example: 192.168.1.20",
+      "badCode": "This is not a sound code. Examples: 17A, or 12.",
+      "unreachable": "No answer. Check that the companion program is running, that both devices are on the same Wi-Fi, and that Chrome may reach the local network.",
+      "noMidiOutput": "The companion program runs but has no MIDI output. Look at its window on the computer.",
+      "rejected": "The companion program refused the message.",
+      "bluetooth": "Not sent: no Bluetooth MIDI device is connected."
+    },
+    "stage": {
+      "noPatch": "MIDI: no sound code for your instrument in this song",
+      "badCode": "MIDI: “{{code}}” is not a sound code",
+      "disconnected": "MIDI: Bluetooth not connected. Tap to connect",
+      "sending": "MIDI: sending {{code}}",
+      "sent": "MIDI: {{code}} sent. Tap to send again",
+      "failed": "MIDI: {{code}} was not sent. Tap to try again"
+    },
+    "follow": {
+      "title": "Follow the leader",
+      "mode": { "off": "Off", "follow": "Follow", "lead": "Lead" },
+      "hint": {
+        "off": "Everyone changes song on their own device.",
+        "follow": "This device jumps to the song the leader is on. You still scroll yourself.",
+        "lead": "Devices that follow jump to the song you are on."
+      },
+      "chip": { "follow": "Following", "lead": "Leading" },
+      "offline": "companion program not reachable"
+    },
+    "patches": {
+      "label": "Sounds (MIDI)",
+      "fromChart": "from the chart's first line",
+      "add": "Add an instrument…",
+      "code": "Sound code for {{part}}",
+      "remove": "Remove {{part}}",
+      "hint": "The preset each instrument switches to for this song: a number, or a code like 17A."
+    }
+  },
   "attachments": {
     "hasSheet": "Sheet music attached",
     "panelTitle": "Sheet music (PDF, images)",

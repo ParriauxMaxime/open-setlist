@@ -79,7 +79,7 @@ export function AttachmentsPanel({ attachments, onChange }: AttachmentsPanelProp
               value={attachment.part ?? ""}
               onChange={(e) => setPart(attachment.id, e.target.value)}
               aria-label={t("attachments.partLabel")}
-              className="w-40"
+              className="max-w-40"
             >
               <option value="">{t("attachments.everyone")}</option>
               {PART_VALUES.map((part) => (

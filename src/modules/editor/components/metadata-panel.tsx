@@ -1,15 +1,17 @@
+import { parse } from "@domain/chordpro/parser";
 import { formatKey } from "@domain/chords/notation";
 import { MAJOR_KEYS, MINOR_KEYS } from "@domain/music";
 import { SCROLL_SPEED_MAX, SCROLL_SPEED_MIN } from "@domain/perform-stage";
 import type { SongDisplayPrefs } from "@domain/preferences";
 import type { SongFormValues } from "@domain/schemas/song";
 import { resolveSongStatus, SONG_STATUS_LIST } from "@domain/song-status";
-import { useId } from "react";
+import { useId, useMemo } from "react";
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Field, Input, Select, Textarea } from "../../design-system/components/form";
 import { SongStatusDot } from "../../shared/components/song-status-dot";
 import { useNotation } from "../../shared/hooks/use-notation";
+import { PatchesField } from "./patches-field";
 
 interface MetadataPanelProps {
   register: UseFormRegister<SongFormValues>;
@@ -57,6 +59,8 @@ export function MetadataPanel({
 }: MetadataPanelProps) {
   const { t } = useTranslation();
   const notation = useNotation();
+  const content = watch("content");
+  const setupLine = useMemo(() => parse(content).setup, [content]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -211,6 +215,12 @@ export function MetadataPanel({
           className="resize-y"
         />
       </Field>
+
+      <PatchesField
+        patches={watch("patches") ?? {}}
+        setupLine={setupLine}
+        onChange={(patches) => setValue("patches", patches, { shouldDirty: true })}
+      />
 
       {/* Links */}
       <details className="group rounded-md border border-border">

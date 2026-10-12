@@ -48,10 +48,19 @@ const defaultValues: SongFormValues = {
   techNotes: "",
   links: undefined,
   attachments: undefined,
+  patches: undefined,
   content: "",
 };
 
 type EnrichmentStatus = "idle" | "enriching" | "done";
+
+/** Drops the instruments left without a code. */
+function cleanPatches(patches: Record<string, string> | undefined) {
+  const kept = Object.entries(patches ?? {})
+    .map(([part, code]) => [part, code.trim()] as const)
+    .filter(([, code]) => code);
+  return kept.length > 0 ? Object.fromEntries(kept) : undefined;
+}
 
 export function EditSongPage({ songId }: EditSongPageProps) {
   const { t } = useTranslation();
@@ -147,6 +156,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
         techNotes: existing.techNotes ?? "",
         links: existing.links,
         attachments: existing.attachments,
+        patches: existing.patches,
         content: existing.content,
       });
     }
@@ -215,6 +225,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
       techNotes: values.techNotes || undefined,
       links: links && Object.keys(links).length > 0 ? links : undefined,
       attachments: values.attachments?.length ? values.attachments : undefined,
+      patches: cleanPatches(values.patches),
       id: songDbId,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
