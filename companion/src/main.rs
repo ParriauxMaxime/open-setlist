@@ -23,7 +23,11 @@ fn main() -> ExitCode {
     let options = match cli::parse(std::env::args().skip(1)) {
         Ok(cli::Command::Run(options)) => options,
         Ok(cli::Command::List) => {
-            for name in ports::list() {
+            let names = ports::list();
+            if names.is_empty() {
+                println!("No MIDI output on this computer.");
+            }
+            for name in names {
                 println!("{name}");
             }
             return ExitCode::SUCCESS;
