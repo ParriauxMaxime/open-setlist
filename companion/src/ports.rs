@@ -20,82 +20,97 @@ impl Port {
     }
 }
 
-struct Copy {
-    wanted: String,
-    port: Option<Port>,
+/// One output: how it is found, and the port once it is open.
+struct Output {
+    /// Part of the name of an existing output, or `None` for the default one.
+    wanted: Option<String>,
+    port: Mutex<Option<Port>>,
+}
+
+impl Output {
+    fn new(wanted: Option<String>) -> Self {
+        Self {
+            wanted,
+            port: Mutex::new(None),
+        }
+    }
+
+    fn name(&self) -> Option<String> {
+        lock(&self.port).as_ref().map(|port| port.name.clone())
+    }
+
+    /// Opens the port if it is not open, unless it is the one named `taken`. The lock is
+    /// not held while the system is searched, so that sending never waits for it.
+    fn open(&self, taken: Option<&str>) {
+        if lock(&self.port).is_some() {
+            return;
+        }
+        let found = match &self.wanted {
+            Some(wanted) => open(|names| find_port(names, wanted)),
+            None => open_default(),
+        };
+        *lock(&self.port) = found.filter(|port| Some(port.name.as_str()) != taken);
+    }
+
+    /// A port that fails is closed, so that it is looked for again.
+    fn send(&self, messages: &[Message]) -> bool {
+        let mut port = lock(&self.port);
+        let sent = port.as_mut().is_some_and(|port| port.send(messages));
+        if !sent {
+            *port = None;
+        }
+        sent
+    }
 }
 
 pub struct Ports {
-    wanted: Option<String>,
-    main: Mutex<Option<Port>>,
-    copies: Mutex<Vec<Copy>>,
+    main: Output,
+    copies: Vec<Output>,
 }
 
 impl Ports {
     /// `wanted` names an existing output to use instead of the default one; every message
     /// is also sent to the outputs named in `copies`.
     pub fn new(wanted: Option<String>, copies: Vec<String>) -> Self {
-        let copies = copies
-            .into_iter()
-            .map(|wanted| Copy { wanted, port: None })
-            .collect();
         Self {
-            wanted,
-            main: Mutex::new(None),
-            copies: Mutex::new(copies),
+            main: Output::new(wanted),
+            copies: copies
+                .into_iter()
+                .map(|wanted| Output::new(Some(wanted)))
+                .collect(),
         }
     }
 
     /// Opens what is not open yet. A port can show up late (loopMIDI started afterwards, a
     /// pedalboard plugged in) or go away, so this is called again every few seconds.
     pub fn refresh(&self) {
-        let mut main = lock(&self.main);
-        if main.is_none() {
-            *main = match &self.wanted {
-                Some(wanted) => open(|names| find_port(names, wanted)),
-                None => open_default(),
-            };
-        }
-        let in_use = main.as_ref().map(|port| port.name.clone());
-        drop(main);
-        for copy in lock(&self.copies).iter_mut() {
-            if copy.port.is_none() {
-                copy.port = open(|names| find_port(names, &copy.wanted))
-                    .filter(|port| Some(&port.name) != in_use.as_ref());
-            }
+        self.main.open(None);
+        let main = self.main.name();
+        for copy in &self.copies {
+            copy.open(main.as_deref());
         }
     }
 
     /// What was asked for with `--also`, and the output found for it.
     pub fn copies(&self) -> Vec<(String, Option<String>)> {
-        lock(&self.copies)
+        self.copies
             .iter()
-            .map(|copy| {
-                let found = copy.port.as_ref().map(|port| port.name.clone());
-                (copy.wanted.clone(), found)
-            })
+            .map(|copy| (copy.wanted.clone().unwrap_or_default(), copy.name()))
             .collect()
     }
 }
 
 impl MidiOut for Ports {
     fn name(&self) -> Option<String> {
-        lock(&self.main).as_ref().map(|port| port.name.clone())
+        self.main.name()
     }
 
     fn send(&self, messages: &[Message]) -> Result<(), NoOutput> {
-        let mut main = lock(&self.main);
-        let sent = main.as_mut().is_some_and(|port| port.send(messages));
-        if !sent {
-            // Closed, so that the next refresh looks for it again.
-            *main = None;
+        if !self.main.send(messages) {
             return Err(NoOutput);
         }
-        drop(main);
-        for copy in lock(&self.copies).iter_mut() {
-            if copy.port.as_mut().is_some_and(|port| !port.send(messages)) {
-                copy.port = None;
-            }
+        for copy in &self.copies {
+            copy.send(messages);
         }
         Ok(())
     }
