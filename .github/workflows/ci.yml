@@ -3,6 +3,8 @@ name: CI/CD
 on:
   push:
     branches: [main]
+  # Rebuild by hand, e.g. after changing the RELAY_URL variable
+  workflow_dispatch:
 
 permissions:
   contents: read

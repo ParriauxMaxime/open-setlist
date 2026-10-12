@@ -50,8 +50,16 @@ Musicians pick what works for them. A solo player might only use Tier 1 (or noth
 | `GET /bands/<id>` | encrypted band name |
 | `GET /bands/<id>/snapshot` | 200 + ciphertext, or 204 before the first push |
 | `PUT /bands/<id>/snapshot` (8 MB max) | 200 + new version, 412 if stale, 413 if too large |
+| `GET /bands/<id>/files` | ids of the band's files (JSON) |
+| `GET /bands/<id>/files/<uuid>` | 200 + ciphertext, or 204 if the relay does not have it |
+| `PUT /bands/<id>/files/<uuid>` (16 MB max) | 200; write-once, a second write under the same id is ignored |
+| `GET /bands/<id>/live` (WebSocket) | live channel, see below |
 
-Unknown band: 404. Wrong token: 403. Anything else under `/bands/`: 404. There is no listing and no delete. Browsers are only served from the origins in `ALLOWED_ORIGINS` (`worker/wrangler.toml`) and from localhost.
+Unknown band: 404. Wrong token: 403. Anything else under `/bands/`: 404. There is no listing of bands and no delete. Browsers are only served from the origins in `ALLOWED_ORIGINS` (`worker/wrangler.toml`) and from localhost.
+
+**Sheet music files** (`src/domain/sync/files.ts`): the snapshot only carries attachment metadata. After each band sync the device uploads the files the relay lacks and downloads the ones it lacks. A file is encrypted without gzip and bound to its id, so the relay cannot serve one file for another. GitHub and Google Drive carry the snapshot only.
+
+**Live session** (`src/domain/sync/live.ts`): opt-in per device, off by default. The Durable Object accepts WebSockets (hibernation API) from devices that present the access token as the second WebSocket subprotocol, up to 40 per band, and passes every message (4 KB max) to the other devices, unread and unstored. Messages are sealed with the band key: `position` (setlist id, song id, index) from a leading device on every song change, `hello` from a device that just connected, which a leader answers with its position. A following device jumps to that song if it has the same setlist open. Scrolling is never shared.
 
 **Deploying the relay:** it ships with the CORS proxy, see the README ("Cloudflare Worker"). The app only offers band sync when it was built with `RELAY_URL` set.
 
@@ -59,6 +67,8 @@ Unknown band: 404. Wrong token: 403. Anything else under `/bands/`: 404. There i
 - Whoever has the code can read and change the band's data. There is no per-member access and no way to revoke one member: create a new band instead.
 - The code cannot be recovered. It stays readable on every member's device (Sync > Invite band members). If every device loses it, the remote copy is unreadable; the songs on the devices are untouched.
 - No history on the relay: it keeps the latest snapshot only. Export to a file for backups.
+- Files are never deleted from the relay, even once no song uses them.
+- The live session needs a connection at the venue; there is no local-network fallback.
 - This is the one piece of infrastructure the project runs. It holds only ciphertext and can be self-hosted by any band with `wrangler deploy`.
 
 ---

@@ -67,7 +67,7 @@ It runs on Cloudflare Workers (free tier: 100K requests/day, no credit card requ
 
 ### Band relay (same worker)
 
-Routes under `/bands/` store one client-encrypted snapshot per band, in one SQLite Durable Object per band (`Band` class in `worker/index.js`, binding and migration in `wrangler.toml`). Request handling is in `worker/relay.ts` (pure, tested with Jest through `worker/test-fakes.ts`); the client is `src/domain/sync/adapters/relay.ts` and `src/domain/sync/band-code.ts`. Writes are compare-and-swap on a version counter. `ALLOWED_ORIGINS` in `wrangler.toml` lists the web origins allowed to call it. Protocol and limits: `docs/SYNC.md` > Band code.
+Routes under `/bands/` store one client-encrypted snapshot per band, in one SQLite Durable Object per band (`Band` class in `worker/index.js`, binding and migration in `wrangler.toml`). Request handling is in `worker/relay.ts` (pure, tested with Jest through `worker/test-fakes.ts`); the client is `src/domain/sync/adapters/relay.ts` and `src/domain/sync/band-code.ts`. Writes are compare-and-swap on a version counter. The same object stores the band's sheet music files (write-once, `src/domain/sync/files.ts`) and runs the live session channel (WebSocket, `src/domain/sync/live.ts`). `ALLOWED_ORIGINS` in `wrangler.toml` lists the web origins allowed to call it. Protocol and limits: `docs/SYNC.md` > Band code.
 
 ### How it's used
 

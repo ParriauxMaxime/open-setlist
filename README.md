@@ -130,7 +130,7 @@ No component library. No backend. Everything runs in the browser.
 One small Cloudflare Worker (`worker/`) does two jobs:
 
 - **CORS proxy for song lookup.** Ultimate Guitar doesn't serve CORS headers, so the worker forwards those requests and adds `Access-Control-Allow-Origin: *`. No parsing, no storage.
-- **Band relay** (routes under `/bands/`). Stores one encrypted snapshot per band for the "Create a band / Join a band" sync. It only ever receives ciphertext, see [docs/SYNC.md](docs/SYNC.md).
+- **Band relay** (routes under `/bands/`). Stores one encrypted snapshot per band for the "Create a band / Join a band" sync, plus the band's sheet music files, and passes live session messages between devices. It only ever receives ciphertext, see [docs/SYNC.md](docs/SYNC.md).
 
 To deploy your own:
 
