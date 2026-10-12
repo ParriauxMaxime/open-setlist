@@ -2,8 +2,17 @@ import { snapshotSchema } from "@domain/schemas/snapshot";
 import type { GitHubConfig } from "../config";
 import { ConflictError, type RemoteSyncPort } from "../ports/remote-sync.port";
 
+// Spreading a whole catalog into one call overflows the stack ("Maximum call stack size
+// exceeded" from about 50 songs): convert by chunks.
+const BASE64_CHUNK = 0x8000;
+
 function toBase64(str: string): string {
-  return btoa(String.fromCodePoint(...new TextEncoder().encode(str)));
+  const bytes = new TextEncoder().encode(str);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += BASE64_CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + BASE64_CHUNK));
+  }
+  return btoa(binary);
 }
 
 function fromBase64(b64: string): string {
@@ -20,6 +29,12 @@ export function createGitHubAdapter(config: GitHubConfig): RemoteSyncPort {
     Accept: "application/vnd.github.v3+json",
     "Content-Type": "application/json",
   };
+
+  async function fetchBlob(sha: string): Promise<string> {
+    const res = await fetch(`${baseUrl}/git/blobs/${sha}`, { headers });
+    if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+    return (await res.json()).content;
+  }
 
   return {
     name: "GitHub",
@@ -46,8 +61,9 @@ export function createGitHubAdapter(config: GitHubConfig): RemoteSyncPort {
         throw new Error(body.message || `GitHub API error: ${res.status}`);
       }
       const data = await res.json();
-      const content = fromBase64(data.content.replace(/\n/g, ""));
-      const snapshot = snapshotSchema.parse(JSON.parse(content));
+      // Above 1 MB GitHub leaves `content` empty: the blob endpoint has it
+      const base64: string = data.content || (await fetchBlob(data.sha));
+      const snapshot = snapshotSchema.parse(JSON.parse(fromBase64(base64.replace(/\n/g, ""))));
       return { snapshot, versionToken: data.sha };
     },
 

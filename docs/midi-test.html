@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Open Setlist : tester le MIDI sur scène</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f6f5f1; --fg:#1d1d1f; --mute:#6b6b70; --card:#fff; --line:#d9d7d0; --a:#2f6fed; --b:#e0782b; --ok:#2e8b57; --no:#c0392b; --code:#eceae4; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#17181b; --fg:#ececee; --mute:#9a9aa2; --card:#22242a; --line:#3a3d45; --a:#6ea0ff; --b:#ffa15c; --ok:#5fcf93; --no:#ff7b6b; --code:#2c2f37; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:18px/1.45 -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:900px; margin:0 auto; padding:28px 20px 64px; }
+  h1 { font-size:28px; margin:0 0 6px; }
+  h2 { font-size:22px; margin:44px 0 14px; }
+  .lead { color:var(--mute); margin:0 0 18px; }
+  svg { width:100%; height:auto; display:block; }
+  .box { fill:var(--card); stroke:var(--line); stroke-width:2; }
+  .pc { fill:none; stroke:var(--mute); stroke-width:2; stroke-dasharray:8 6; }
+  .t { fill:var(--fg); font-size:20px; font-weight:600; text-anchor:middle; }
+  .s { fill:var(--mute); font-size:15px; text-anchor:middle; }
+  .ico { font-size:38px; text-anchor:middle; }
+  .a { stroke:var(--a); stroke-width:4; fill:none; }
+  .o { stroke:var(--b); stroke-width:4; fill:none; stroke-dasharray:10 7; }
+  .la { fill:var(--a); font-size:16px; font-weight:600; text-anchor:middle; }
+  .lo { fill:var(--b); font-size:16px; font-weight:600; text-anchor:middle; }
+  .steps { display:grid; gap:12px; }
+  .step { display:grid; grid-template-columns:52px 1fr; gap:14px; align-items:start; background:var(--card); border:2px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .n { width:44px; height:44px; border-radius:50%; background:var(--a); color:#fff; font-weight:700; font-size:20px; display:grid; place-items:center; }
+  .step b { display:block; font-size:19px; margin-bottom:2px; }
+  .step p { margin:4px 0 0; color:var(--mute); }
+  .see { color:var(--ok); font-weight:600; }
+  code, pre { font:15px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--code); border-radius:6px; }
+  code { padding:1px 6px; overflow-wrap:anywhere; }
+  pre { padding:10px 12px; margin:8px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; color:var(--fg); }
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .card { background:var(--card); border:2px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .card b { display:block; margin-bottom:6px; }
+  .card.warn { border-color:var(--b); }
+  .ok { color:var(--ok); font-weight:700; } .no { color:var(--no); font-weight:700; } .wait { color:var(--b); font-weight:700; }
+  table { border-collapse:collapse; width:100%; }
+  td { padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+  td:last-child { text-align:right; white-space:nowrap; }
+  @media (max-width:640px) { .cards { grid-template-columns:1fr; } td:last-child { white-space:normal; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Le morceau change, le son change</h1>
+  <p class="lead">Test avec ta tablette Android et ton Mac. Rien ne passe par Internet.</p>
+
+  <svg viewBox="0 0 860 300" role="img" aria-label="Schéma : la tablette envoie le code du son au programme compagnon sur l'ordinateur, par wifi ou Bluetooth, qui le transmet à Ableton en MIDI">
+    <defs>
+      <marker id="ma" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--a)"/></marker>
+      <marker id="mo" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--b)"/></marker>
+    </defs>
+
+    <rect class="box" x="20" y="85" width="210" height="130" rx="16"/>
+    <text class="ico" x="125" y="135">📱</text>
+    <text class="t" x="125" y="170">Ta tablette</text>
+    <text class="s" x="125" y="194">morceau suivant : 17A</text>
+
+    <rect class="pc" x="430" y="20" width="410" height="260" rx="18"/>
+    <text class="s" x="635" y="48">Ton Mac aujourd'hui, le PC de scène demain</text>
+
+    <rect class="box" x="455" y="65" width="360" height="85" rx="16"/>
+    <text class="t" x="635" y="102">Programme compagnon</text>
+    <text class="s" x="635" y="128">un fichier à lancer, rien à régler</text>
+
+    <rect class="box" x="455" y="190" width="360" height="70" rx="16"/>
+    <text class="t" x="635" y="232">🎛️ Ableton change de son</text>
+
+    <path class="a" d="M235 125 C320 125 350 95 447 95" marker-end="url(#ma)"/>
+    <text class="la" x="335" y="88">wifi du groupe</text>
+    <path class="o" d="M235 180 C320 180 350 130 447 125" marker-end="url(#mo)"/>
+    <text class="lo" x="335" y="196">ou Bluetooth</text>
+    <path class="a" d="M635 153 V182" marker-end="url(#ma)"/>
+    <text class="la" x="672" y="174">MIDI</text>
+  </svg>
+
+  <h2>Sur le Mac</h2>
+  <div class="steps">
+    <div class="step"><span class="n">1</span><div>
+      <b>Lance le programme compagnon</b>
+      <!--COMPANION_RUN-->
+    </div></div>
+    <div class="step"><span class="n">2</span><div>
+      <b>Une page s'ouvre avec une adresse et un QR code</b>
+      <p class="see">Laisse-la ouverte : elle affiche chaque message reçu.</p>
+    </div></div>
+  </div>
+
+  <h2>Sur la tablette, dans Chrome</h2>
+  <div class="steps">
+    <div class="step"><span class="n">3</span><div>
+      <b>Vise le QR code avec l'appareil photo</b>
+      <p>Open Setlist s'ouvre sur <b style="display:inline">Paramètres → Scène : MIDI</b>, adresse déjà remplie. Tablette et Mac sur le même wifi.</p>
+    </div></div>
+    <div class="step"><span class="n">4</span><div>
+      <b>Mon instrument : Clavier. Coche « Envoyer mon son au changement de morceau »</b>
+    </div></div>
+    <div class="step"><span class="n">5</span><div>
+      <b>Appuie sur « Tester »</b>
+      <p>Chrome demande s'il peut joindre ton réseau local : <b style="display:inline">Autoriser</b>.</p>
+      <p class="see">Tu dois lire « Connecté à … Le MIDI sort sur Open Setlist ».</p>
+    </div></div>
+    <div class="step"><span class="n">6</span><div>
+      <b>Appuie sur « Envoyer »</b>
+      <p class="see">Sur le Mac, la page du compagnon affiche le message reçu.</p>
+    </div></div>
+  </div>
+
+  <h2>Sur scène</h2>
+  <div class="steps">
+    <div class="step"><span class="n">7</span><div>
+      <b>Ouvre une setlist, « Jouer », change de morceau</b>
+      <p>En haut, l'étiquette <code>MIDI 17A</code> devient bleue quand le son est parti. Rouge : pas parti, touche-la pour renvoyer. <code>MIDI –</code> : pas de code dans ce morceau.</p>
+    </div></div>
+  </div>
+
+  <div class="cards" style="margin-top:14px">
+    <div class="card">
+      <b>D'où vient le code ?</b>
+      Clavier : la première ligne de la grille (<code>17A</code>).<br>
+      Les autres : champ « Sons (MIDI) » du morceau.
+    </div>
+    <div class="card">
+      <b>Suivre le meneur</b>
+      En mode scène, menu ⋮. Éteint par défaut.<br>
+      Passe par le compagnon, donc en wifi.
+    </div>
+  </div>
+
+  <h2>En Bluetooth, à la place du wifi</h2>
+  <div class="steps">
+    <div class="step"><span class="n">B</span><div>
+      <b>Paramètres → Scène : MIDI → Bluetooth → Connecter</b>
+      <p>Choisis <b style="display:inline">Open Setlist</b> dans la liste, puis « Envoyer ».</p>
+      <!--BLUETOOTH_NOTE-->
+    </div></div>
+  </div>
+
+  <h2>Brancher Ableton</h2>
+  <div class="steps">
+    <div class="step"><span class="n">A</span><div>
+      <b>Préférences → MIDI : entrée « Open Setlist », coche Télécommande</b>
+    </div></div>
+    <div class="step"><span class="n">B</span><div>
+      <b>Deux racks l'un dans l'autre</b>
+      <p>Dehors : 4 chaînes, une par lettre. Dedans : une chaîne par son. Relie chaque sélecteur de chaîne à une macro.</p>
+    </div></div>
+    <div class="step"><span class="n">C</span><div>
+      <b>Mode affectation MIDI (Cmd+M), clique la macro</b>
+      <p>Sur la tablette : « Seulement la lettre » pour la macro du dehors, « Seulement les chiffres » pour celle du dedans.</p>
+    </div></div>
+  </div>
+  <div class="card warn" style="margin-top:12px">
+    <b>À valider avec la personne qui règle Ableton</b>
+    Deux contrôles (lettre, chiffres) : c'est ma proposition, les numéros se changent dans « Détails MIDI ».
+  </div>
+
+  <h2>Demain sur le PC Windows</h2>
+  <!--WINDOWS-->
+
+  <h2>Où on en est</h2>
+  <div class="card">
+    <table>
+      <!--STATUS_ROWS-->
+    </table>
+  </div>
+</main>
+</body>
+</html>
