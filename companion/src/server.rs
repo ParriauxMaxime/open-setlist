@@ -2,7 +2,6 @@
 
 use std::io::{self, Read};
 use std::net::TcpListener;
-use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
@@ -23,7 +22,7 @@ const MAX_MESSAGES: usize = 32;
 const MAX_LABEL: usize = 40;
 const DEFAULT_WAIT: u64 = 25;
 const MAX_WAIT: u64 = 30;
-const WORKERS: usize = 4;
+const LISTEN_AGAIN: Duration = Duration::from_millis(250);
 
 /// The app is a web page from another origin, served over HTTPS, calling a private address.
 const HEADERS: [(&str, &str); 6] = [
@@ -93,23 +92,41 @@ struct Play {
 
 /// Starts answering on `listener`, on threads of its own.
 pub fn start(listener: TcpListener, hub: Arc<Hub>, settings: Settings) -> io::Result<()> {
-    let server = Arc::new(Server::from_listener(listener, None).map_err(io::Error::other)?);
     let settings = Arc::new(settings);
-    for _ in 0..WORKERS {
-        let (server, hub, settings) = (server.clone(), hub.clone(), settings.clone());
-        thread::Builder::new()
-            .name("http".to_string())
-            .spawn(move || {
-                for request in server.incoming_requests() {
-                    // One request going wrong must not cost a worker.
-                    let _ = catch_unwind(AssertUnwindSafe(|| handle(request, &hub, &settings)));
+    let mut first = Some(serve(&listener)?);
+    thread::Builder::new()
+        .name("http".to_string())
+        .spawn(move || {
+            loop {
+                if let Some(server) = first.take().or_else(|| serve(&listener).ok()) {
+                    answer(&server, &hub, &settings);
                 }
-            })?;
-    }
+                // tiny_http stops for good when accepting one connection fails, which a
+                // tablet dropping off the Wi-Fi at the wrong moment is enough to cause.
+                // The socket is still ours: listen on it again.
+                thread::sleep(LISTEN_AGAIN);
+            }
+        })?;
     Ok(())
 }
 
-fn handle(mut request: Request, hub: &Arc<Hub>, settings: &Settings) {
+fn serve(listener: &TcpListener) -> io::Result<Server> {
+    Server::from_listener(listener.try_clone()?, None).map_err(io::Error::other)
+}
+
+/// Gives every request a thread of its own, so that a tablet waiting for a position, or
+/// one whose connection stalls, holds up neither the others nor `/midi`.
+fn answer(server: &Server, hub: &Arc<Hub>, settings: &Arc<Settings>) {
+    for request in server.incoming_requests() {
+        let (hub, settings) = (hub.clone(), settings.clone());
+        // If the thread cannot start, the request is dropped and tiny_http answers 500.
+        let _ = thread::Builder::new()
+            .name("request".to_string())
+            .spawn(move || handle(request, &hub, &settings));
+    }
+}
+
+fn handle(mut request: Request, hub: &Hub, settings: &Settings) {
     let (path, query) = match request.url().split_once('?') {
         Some((path, query)) => (path.to_string(), query.to_string()),
         None => (request.url().to_string(), String::new()),
@@ -120,10 +137,7 @@ fn handle(mut request: Request, hub: &Arc<Hub>, settings: &Settings) {
         (Method::Get, "/status") => Reply::json(200, status(hub, settings)),
         (Method::Post, "/midi") => play(&mut request, hub),
         (Method::Post, "/position") => publish(&mut request, hub),
-        (Method::Get, "/position") => match poll(&query) {
-            Some((after, wait)) => return next_position(request, hub, after, wait),
-            None => Reply::bad_request(),
-        },
+        (Method::Get, "/position") => next_position(&query, hub),
         _ => Reply::error(404, "not-found"),
     };
     respond(request, reply);
@@ -227,25 +241,15 @@ fn poll(query: &str) -> Option<(u64, Duration)> {
     Some((after, Duration::from_secs(wait.min(MAX_WAIT))))
 }
 
-fn position_reply(found: Option<(u64, Value)>) -> Reply {
-    match found {
+/// Holds the request until there is a position newer than the one the tablet has.
+fn next_position(query: &str, hub: &Hub) -> Reply {
+    let Some((after, wait)) = poll(query) else {
+        return Reply::bad_request();
+    };
+    match hub.positions.next(after, wait) {
         Some((seq, position)) => Reply::json(200, json!({ "seq": seq, "position": position })),
         None => Reply::empty(),
     }
-}
-
-/// Answers at once when there is something newer than `after`. Otherwise the request waits
-/// on a thread of its own, so that a waiting tablet holds up neither the others nor `/midi`.
-fn next_position(request: Request, hub: &Arc<Hub>, after: u64, wait: Duration) {
-    let found = hub.positions.next(after, Duration::ZERO);
-    if found.is_some() || wait.is_zero() {
-        return respond(request, position_reply(found));
-    }
-    let hub = hub.clone();
-    // If the thread cannot start, the request is dropped and tiny_http answers 500.
-    let _ = thread::Builder::new()
-        .name("position".to_string())
-        .spawn(move || respond(request, position_reply(hub.positions.next(after, wait))));
 }
 
 #[cfg(test)]

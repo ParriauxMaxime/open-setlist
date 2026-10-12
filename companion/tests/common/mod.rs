@@ -28,12 +28,12 @@ impl Answer {
 }
 
 /// One request the way the app sends it: from another origin, the body as text/plain.
-/// `None` when nothing listens on the port.
+/// `None` when no complete answer came back.
 pub fn request(port: u16, method: &str, path: &str, body: &str) -> Option<Answer> {
     let mut stream = TcpStream::connect((Ipv4Addr::LOCALHOST, port)).ok()?;
     stream
         .set_read_timeout(Some(Duration::from_secs(40)))
-        .unwrap();
+        .ok()?;
     write!(
         stream,
         "{method} {path} HTTP/1.1\r\nHost: localhost\r\nOrigin: https://example.org\r\n\
@@ -41,16 +41,12 @@ pub fn request(port: u16, method: &str, path: &str, body: &str) -> Option<Answer
          Connection: close\r\n\r\n{body}",
         body.len()
     )
-    .unwrap();
+    .ok()?;
     let mut raw = String::new();
-    stream.read_to_string(&mut raw).unwrap();
-    let (head, body) = raw.split_once("\r\n\r\n").expect("an HTTP answer");
+    stream.read_to_string(&mut raw).ok()?;
+    let (head, body) = raw.split_once("\r\n\r\n")?;
     let mut lines = head.lines();
-    let status = lines
-        .next()
-        .and_then(|line| line.split(' ').nth(1))
-        .and_then(|status| status.parse().ok())
-        .expect("a status line");
+    let status = lines.next()?.split(' ').nth(1)?.parse().ok()?;
     let headers = lines
         .filter_map(|line| line.split_once(": "))
         .map(|(name, value)| (name.to_lowercase(), value.to_string()))
