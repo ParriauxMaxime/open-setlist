@@ -50,8 +50,8 @@
 
   <svg viewBox="0 0 860 300" role="img" aria-label="Schéma : la tablette envoie le code du son au programme compagnon sur l'ordinateur, par wifi ou Bluetooth, qui le transmet à Ableton en MIDI">
     <defs>
-      <marker id="ma" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--a)"/></marker>
-      <marker id="mo" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--b)"/></marker>
+      <marker id="ma" markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16" refX="13" refY="8" orient="auto"><path d="M0,0 L16,8 L0,16 z" fill="var(--a)"/></marker>
+      <marker id="mo" markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16" refX="13" refY="8" orient="auto"><path d="M0,0 L16,8 L0,16 z" fill="var(--b)"/></marker>
     </defs>
 
     <rect class="box" x="20" y="85" width="210" height="130" rx="16"/>
@@ -81,7 +81,10 @@
   <div class="steps">
     <div class="step"><span class="n">1</span><div>
       <b>Lance le programme compagnon</b>
-      <!--COMPANION_RUN-->
+      <p>Dans un terminal :</p>
+      <pre>~/Projects/open-setlist/.claude/worktrees/pdf-charts/companion/target/release/open-setlist-companion</pre>
+      <p>Le Mac demande l'accès au Bluetooth : <b style="display:inline">Autoriser</b>.</p>
+      <p class="see">Un port MIDI « Open Setlist » existe tant que le programme tourne.</p>
     </div></div>
     <div class="step"><span class="n">2</span><div>
       <b>Une page s'ouvre avec une adresse et un QR code</b>
@@ -96,7 +99,7 @@
       <p>Open Setlist s'ouvre sur <b style="display:inline">Paramètres → Scène : MIDI</b>, adresse déjà remplie. Tablette et Mac sur le même wifi.</p>
     </div></div>
     <div class="step"><span class="n">4</span><div>
-      <b>Mon instrument : Clavier. Coche « Envoyer mon son au changement de morceau »</b>
+      <b>Mon instrument : Claviers. Coche « Envoyer mon son au changement de morceau »</b>
     </div></div>
     <div class="step"><span class="n">5</span><div>
       <b>Appuie sur « Tester »</b>
@@ -135,7 +138,7 @@
     <div class="step"><span class="n">B</span><div>
       <b>Paramètres → Scène : MIDI → Bluetooth → Connecter</b>
       <p>Choisis <b style="display:inline">Open Setlist</b> dans la liste, puis « Envoyer ».</p>
-      <!--BLUETOOTH_NOTE-->
+      <p>L'ordinateur peut apparaître sous son propre nom. Après un rechargement de l'app, touche l'étiquette MIDI pour reconnecter.</p>
     </div></div>
   </div>
 
@@ -159,12 +162,42 @@
   </div>
 
   <h2>Demain sur le PC Windows</h2>
-  <!--WINDOWS-->
+  <div class="steps">
+    <div class="step"><span class="n">1</span><div>
+      <b>Télécharge <code>open-setlist-companion-windows.exe</code></b>
+      <p><a href="https://github.com/ParriauxMaxime/open-setlist/releases/tag/companion-v0.1.0">Page de téléchargement</a>. Un seul fichier, rien à installer.</p>
+    </div></div>
+    <div class="step"><span class="n">2</span><div>
+      <b>Windows pose deux questions au premier lancement</b>
+      <p>« Informations complémentaires → Exécuter quand même », puis le pare-feu : <b style="display:inline">Autoriser</b>, sinon les tablettes ne le voient pas.</p>
+    </div></div>
+    <div class="step"><span class="n">3</span><div>
+      <b>Installe loopMIDI et crée un port « Open Setlist »</b>
+      <p>Windows ne laisse pas un programme créer son port MIDI. <a href="https://www.tobias-erichsen.de/software/loopmidi.html">loopMIDI</a> est gratuit ; le compagnon trouve le port tout seul.</p>
+    </div></div>
+  </div>
+  <div class="cards" style="margin-top:12px">
+    <div class="card warn">
+      <b>Jamais lancé sur un vrai Windows</b>
+      Le premier lancement sur ton PC sera le vrai test. Envoie-moi ce que tu vois.
+    </div>
+    <div class="card">
+      <b>Pad de batterie, pédalier</b>
+      Branchés au PC par câble : lance le compagnon avec <code>--also "nom du port"</code>. Chaque instrument a son canal MIDI.
+    </div>
+  </div>
+  <p class="lead" style="margin-top:14px">Sur un autre Mac : même page de téléchargement, puis <code>chmod +x</code> sur le fichier et « Ouvrir quand même » dans Réglages → Confidentialité et sécurité.</p>
 
   <h2>Où on en est</h2>
   <div class="card">
     <table>
-      <!--STATUS_ROWS-->
+      <tr><td>App en ligne → compagnon → port MIDI du Mac, en wifi, Chrome sur ordinateur</td><td class="ok">vérifié</td></tr>
+      <tr><td>Suivre le meneur, deux appareils simulés</td><td class="ok">vérifié</td></tr>
+      <tr><td>Chrome sur ta tablette Android : la permission « réseau local »</td><td class="wait">à tester par toi</td></tr>
+      <tr><td>Bluetooth, de la tablette à l'ordinateur</td><td class="wait">à tester par toi</td></tr>
+      <tr><td>Ableton qui change de son</td><td class="wait">à tester par toi</td></tr>
+      <tr><td>Programme compagnon sur Windows</td><td class="wait">jamais lancé</td></tr>
+      <tr><td>iPad</td><td class="no">impossible, Safari bloque</td></tr>
     </table>
   </div>
 </main>

@@ -32,7 +32,7 @@ Tablet ── Bluetooth MIDI ─────────────────
 Tablet ── Bluetooth MIDI ────────────────────▶ any BLE MIDI device
 ```
 
-**Wi-Fi** (`src/domain/midi/companion.ts`). The companion program (`companion/`, one file to run on Windows, macOS or Linux) listens on port 7777 of the stage computer. The app is served over HTTPS and the companion speaks plain HTTP on a private address; Chrome allows that after asking the musician once (Local Network Access). Verified in Chrome 155 on a computer: with the permission, `https://…github.io` reaches `http://192.168.x.x:7777`, loopback and `.local` names; without it the request is blocked. Safari and Firefox block it outright, so there is no Wi-Fi transport on an iPad.
+**Wi-Fi** (`src/domain/midi/companion.ts`). The companion program (`companion/`, one file to run on Windows, macOS or Linux, see its README) listens on port 7777 of the stage computer. On macOS and Linux it creates a MIDI port named `Open Setlist`; Windows cannot do that, so it uses a loopMIDI port of that name. The app is served over HTTPS and the companion speaks plain HTTP on a private address; Chrome allows that after asking the musician once (Local Network Access). Verified in Chrome 155 on a computer: with the permission, `https://…github.io` reaches `http://192.168.x.x:7777`, loopback and `.local` names; without it the request is blocked. Safari and Firefox block it outright, so there is no Wi-Fi transport on an iPad.
 
 **Bluetooth** (`src/domain/midi/bluetooth.ts`). The app is a standard BLE MIDI central through Web Bluetooth (Chrome and Edge, Android and desktop). It connects to the companion program, which advertises as a BLE MIDI device, or straight to BLE MIDI hardware. The browser forgets the device when the page reloads: one tap on the MIDI chip reconnects.
 
@@ -55,6 +55,7 @@ The QR code opens `…/settings?companion=<address>`: the app stores the address
 ## Not verified yet
 
 - Chrome on Android asking for and honouring the local network permission.
-- The Bluetooth transport end to end (it needs two devices).
-- The companion program on Windows and Linux beyond compiling and its automated tests.
+- The Bluetooth transport end to end: no tablet has connected to the companion yet.
+- The companion program at run time on Windows (never started on a real one) and on Linux with a real ALSA sequencer and BlueZ.
+- Ableton Live receiving the two Control Changes and switching chains.
 - Whether the drum pad and the pedalboard accept Program Change, and on which channel.

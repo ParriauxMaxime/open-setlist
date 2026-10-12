@@ -106,6 +106,7 @@ src/
     shared/           Layout, navigation
   router.ts         Route definitions (Chicane)
   app.tsx           Root component
+companion/          Program for the stage computer: plays the MIDI the tablets send (Rust)
 ```
 
 ### Stack
