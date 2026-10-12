@@ -21,6 +21,7 @@ import { Router } from "../../router";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { EditorHeader } from "../design-system/components/editor-header";
 import { fetchChords } from "../lookup";
+import { AttachmentsPanel } from "./components/attachments-panel";
 import { ChordProEditor } from "./components/chordpro-editor";
 import { ChordProHelp } from "./components/chordpro-help";
 import { MetadataPanel } from "./components/metadata-panel";
@@ -46,6 +47,7 @@ const defaultValues: SongFormValues = {
   notes: "",
   techNotes: "",
   links: undefined,
+  attachments: undefined,
   content: "",
 };
 
@@ -144,6 +146,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
         notes: existing.notes ?? "",
         techNotes: existing.techNotes ?? "",
         links: existing.links,
+        attachments: existing.attachments,
         content: existing.content,
       });
     }
@@ -211,11 +214,16 @@ export function EditSongPage({ songId }: EditSongPageProps) {
       notes: values.notes || undefined,
       techNotes: values.techNotes || undefined,
       links: links && Object.keys(links).length > 0 ? links : undefined,
+      attachments: values.attachments?.length ? values.attachments : undefined,
       id: songDbId,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
     };
     await db.songs.put(toSave);
+    const kept = new Set(toSave.attachments?.map((a) => a.id));
+    await db.files.bulkDelete(
+      (existing?.attachments ?? []).filter((a) => !kept.has(a.id)).map((a) => a.id),
+    );
     if (isNew) {
       Router.replace("SongEdit", { songId: toSave.id });
     }
@@ -226,9 +234,10 @@ export function EditSongPage({ songId }: EditSongPageProps) {
     addTombstone(profileId, "song", songId);
     removeSongOverrides(songId);
     removeMyNote(profileId, songId);
+    await db.files.bulkDelete((existing?.attachments ?? []).map((a) => a.id));
     await db.songs.delete(songId);
     Router.replace("Catalog");
-  }, [songId, profileId, db]);
+  }, [songId, profileId, db, existing]);
 
   const enrichSong = useCallback(
     (title: string, artist: string) => {
@@ -366,6 +375,10 @@ export function EditSongPage({ songId }: EditSongPageProps) {
 
         {/* Private, device-only note: kept outside the song form so it is never saved/synced */}
         {!isNew && <MyNotePanel profileId={profileId} songId={songDbId} />}
+        <AttachmentsPanel
+          attachments={watch("attachments") ?? []}
+          onChange={(attachments) => setValue("attachments", attachments, { shouldDirty: true })}
+        />
       </div>
 
       {/* Desktop: side-by-side grid | Mobile: stacked */}

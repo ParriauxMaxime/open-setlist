@@ -1,5 +1,6 @@
 import type { Song } from "@db";
 import { useDb } from "@db/provider";
+import { loadStageViews, saveStageView, stageAttachment } from "@domain/attachments";
 import { parse } from "@domain/chordpro/parser";
 import { setMyNote } from "@domain/my-notes";
 import { SCROLL_SPEED_DEFAULT, stepScrollSpeed } from "@domain/perform-stage";
@@ -66,6 +67,11 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
 
   const profileId = useActiveProfileId();
   const myNotes = useMyNotes(profileId);
+  const [stageViews, setStageViews] = useState(() => loadStageViews(profileId));
+  const scoreFor = useCallback(
+    (song: Song) => stageAttachment(song, myPart.view.instrument, stageViews[song.id]),
+    [myPart.view.instrument, stageViews],
+  );
   // Songs whose note is folded to a pin, for this session only
   const [foldedNotes, setFoldedNotes] = useState<ReadonlySet<string>>(() => new Set());
   const setNoteFolded = useCallback((id: string, folded: boolean) => {
@@ -282,6 +288,10 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         myPart={myPart}
         hasMyNote={!!(nav.currentSong && myNotes[nav.currentSong.id])}
         onEditMyNote={() => setNoteEditing(nav.currentSong ?? null)}
+        stageView={nav.currentSong && scoreFor(nav.currentSong)?.id}
+        onStageView={(view) => {
+          if (nav.currentSong) setStageViews(saveStageView(profileId, nav.currentSong.id, view));
+        }}
       />
       {noteEditing && (
         <MyNoteEditor
@@ -309,6 +319,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         onChordTap={handleChordTap}
         partView={myPart.view}
         renderNote={renderNote}
+        scoreFor={scoreFor}
       />
       {activeChord && (
         <ChordPopover

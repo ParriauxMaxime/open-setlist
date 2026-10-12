@@ -74,6 +74,16 @@ export function CatalogPage() {
                 📝
               </span>
             )}
+            {song.attachments && song.attachments.length > 0 && (
+              <span
+                role="img"
+                aria-label={t("attachments.hasSheet")}
+                title={t("attachments.hasSheet")}
+                className="ml-1.5 text-xs"
+              >
+                📄
+              </span>
+            )}
             <div className="mt-0.5 flex items-center gap-2 text-xs md:hidden">
               {song.artist && <span className="text-text-muted">{song.artist}</span>}
               {song.key && <span className="text-chord">{formatKey(song.key, notation)}</span>}

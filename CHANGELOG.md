@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Sheet music
+- Attach PDFs or images to a song (editor → Sheet music). A file can be tied to one instrument: on stage that musician gets it by default, the others keep the chart.
+- On stage, ⋮ → View switches between the chart and each sheet; the choice is remembered per song on the device. Pages scroll like a chart, so pedals and auto-scroll work unchanged.
+- Files stay on the device for now: they are not sent through sync yet.
+
 ## 2026-10-09 — Band-ready
 
 Everything a small band or orchestra needs to leave Setlist Helper, without turning into band-management software.

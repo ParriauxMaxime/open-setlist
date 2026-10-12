@@ -68,6 +68,8 @@ export default defineConfig((_env, argv) => {
           : isDev
             ? "assets/[name].js"
             : "assets/[name].[contenthash:8].js",
+      // Lazy chunks (PDF reader and its worker)
+      chunkFilename: isDev ? "assets/[name].js" : "assets/[name].[contenthash:8].js",
       cssFilename: isDev ? "assets/[name].css" : "assets/[name].[contenthash:8].css",
       publicPath: process.env.BASE_PATH || "/",
       clean: true,

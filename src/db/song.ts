@@ -6,6 +6,20 @@ export interface SongLinks {
   deezer?: string;
 }
 
+/** Sheet music file of a song; its bytes are in the `files` table under the same id. */
+export interface SongAttachment {
+  id: string;
+  name: string;
+  type: string; // MIME type
+  size: number; // bytes
+  part?: string; // the instrument it is written for; unset = everyone
+}
+
+export interface SongFile {
+  id: string;
+  data: Blob;
+}
+
 export interface Song {
   id: string;
   title: string;
@@ -20,6 +34,7 @@ export interface Song {
   transposition?: number; // semitones to transpose chords at render time
   scrollSpeed?: number; // auto-scroll speed 1–10; unset = derived from duration
   status?: SongStatus; // readiness; unset = "ready" (see @domain/song-status)
+  attachments?: SongAttachment[];
   content: string; // raw ChordPro body
   createdAt: number;
   updatedAt: number;

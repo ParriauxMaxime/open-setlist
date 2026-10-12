@@ -16,7 +16,7 @@ export function partLabel(part: string, t: TFunction, emoji = true): string {
   return part.charAt(0).toUpperCase() + part.slice(1);
 }
 
-function choiceClass(selected: boolean): string {
+export function choiceClass(selected: boolean): string {
   return `min-h-11 rounded-md border px-3 text-base transition-colors ${
     selected
       ? "border-accent bg-accent-muted text-accent"

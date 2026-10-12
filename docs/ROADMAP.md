@@ -22,6 +22,7 @@ Last update: 2026-10-09. Health: `yarn lint`, `typecheck`, `test` (800+ tests), 
 | Onboarding | Works — one-screen first-run setup (instrument → My part, notation, language), versioned What's new card for returning users, Getting Started tour, perform hints | `src/domain/welcome.ts`, `src/modules/shared/components/` |
 | Offline / PWA | Works — full precache per build, cross-origin untouched, PNG icons | `src/sw.ts`, `src/domain/pwa/` |
 | Chord reference | Works — 20 chord types × 12 roots on guitar (hand-written + E/A-shape barre templates), ukulele (hand-written + searched voicings), bass (root–fifth–octave box) and piano (slash bass highlighted); song `{define}` voicings override guitar/ukulele diagrams; favourite instrument picks the diagram. `{chord}` is parsed but not drawn inline | `src/domain/chords/`, `src/domain/chordpro/chord-definitions.ts` |
+| Sheet music | Partial — PDF / image attachments per song and per part, rendered on stage with pdf.js (lazy chunk); bytes in the device's `files` table, not synced yet | `src/domain/attachments.ts`, `src/modules/performance/components/score-view.tsx` |
 | Song lookup | Partial — iTunes metadata + UG chords via proxy, new songs only | `src/modules/lookup/` |
 
 ## Known limitations

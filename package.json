@@ -23,6 +23,7 @@
     "dexie": "^4.0.0",
     "dexie-react-hooks": "^1.1.0",
     "i18next": "^25.8.11",
+    "pdfjs-dist": "^6.4.299",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.71.1",

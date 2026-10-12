@@ -755,5 +755,20 @@
     "previousSong": "Chanson précédente",
     "nextSong": "Chanson suivante",
     "close": "Fermer"
+  },
+  "attachments": {
+    "hasSheet": "Partition jointe",
+    "panelTitle": "Partitions (PDF, images)",
+    "add": "Ajouter un fichier",
+    "hint": "PDF ou image. Choisissez un instrument pour qu'il s'affiche d'office chez ce musicien en mode scène.",
+    "everyone": "Tout le monde",
+    "partLabel": "Instrument",
+    "remove": "Retirer {{name}}",
+    "largeFile": "fichier lourd, lent sur tablette",
+    "unsupported": "Format non pris en charge : {{names}}",
+    "missingFile": "« {{name}} » n'est pas encore sur cet appareil.",
+    "unreadable": "Impossible de lire ce PDF.",
+    "viewTitle": "Affichage",
+    "chartView": "Grille"
   }
 }

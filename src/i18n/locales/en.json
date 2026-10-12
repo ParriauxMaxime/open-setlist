@@ -755,5 +755,20 @@
     "previousSong": "Previous song",
     "nextSong": "Next song",
     "close": "Close"
+  },
+  "attachments": {
+    "hasSheet": "Sheet music attached",
+    "panelTitle": "Sheet music (PDF, images)",
+    "add": "Add a file",
+    "hint": "PDF or image. Pick an instrument to show it by default to that musician on stage.",
+    "everyone": "Everyone",
+    "partLabel": "Instrument",
+    "remove": "Remove {{name}}",
+    "largeFile": "large file, slow on tablets",
+    "unsupported": "Unsupported format: {{names}}",
+    "missingFile": "“{{name}}” is not on this device yet.",
+    "unreadable": "This PDF cannot be read.",
+    "viewTitle": "View",
+    "chartView": "Chart"
   }
 }

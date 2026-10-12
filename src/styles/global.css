@@ -251,6 +251,12 @@ body {
   cursor: default;
 }
 
+/* Sheet music page: paper stays white in every theme */
+.score-page {
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.3);
+}
+
 /* Tempo pulse — elements are re-keyed per beat so the animation restarts */
 .tempo-flash {
   --tempo-flash-peak: 1;

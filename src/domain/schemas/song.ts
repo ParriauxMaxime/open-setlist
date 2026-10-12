@@ -11,6 +11,14 @@ const songLinksSchema = z
   })
   .optional();
 
+const songAttachmentSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+  size: z.number(),
+  part: z.string().optional(),
+});
+
 export const songSchema = z.object({
   id: z.string(),
   title: z.string().min(1, "Title is required"),
@@ -25,6 +33,7 @@ export const songSchema = z.object({
   notes: z.string().optional(),
   techNotes: z.string().optional(),
   links: songLinksSchema,
+  attachments: z.array(songAttachmentSchema).optional(),
   content: z.string(),
   createdAt: z.number(),
   updatedAt: z.number(),
