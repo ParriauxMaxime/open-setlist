@@ -56,7 +56,10 @@
     "artistPlaceholder": "Artist name",
     "keyLabel": "Key",
     "bpmLabel": "BPM",
-    "durationLabel": "Duration (s)",
+    "durationLabel": "Length",
+    "durationInvalid": "Write it like 3:45",
+    "stageSection": "On stage",
+    "filingSection": "Filing",
     "tagsLabel": "Tags",
     "addTagPlaceholder": "Add tag...",
     "notesLabel": "Notes",
@@ -78,8 +81,8 @@
     "deleteConfirmMessage": "This action cannot be undone.",
     "techNotesLabel": "Tech Notes",
     "techNotesPlaceholder": "Lighting, sound cues, effects...",
-    "metadata": "Metadata",
-    "toggleMetadata": "Toggle metadata panel"
+    "metadata": "Details",
+    "toggleMetadata": "Show or hide the details"
   },
   "lookup": {
     "title": "Find online",
@@ -379,6 +382,7 @@
     "fillCount_one": "{{count}} song in your catalog without a chart: it gets this one",
     "fillCount_other": "{{count}} songs in your catalog without a chart: they get theirs",
     "pasteButton": "Paste chart",
+    "emptyHint": "Already have the chart somewhere? Paste it: it is put in shape for you.",
     "pasteTitle": "Paste a chart",
     "pasteHint": "Copy a chart from a website, a PDF or another app and paste it here. Chords written above the lyrics are moved into the lyrics, section names and tabs are recognized. ChordPro is kept as is.",
     "pasteLabel": "Pasted text",

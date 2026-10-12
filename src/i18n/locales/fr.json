@@ -56,7 +56,10 @@
     "artistPlaceholder": "Nom de l\u2019artiste",
     "keyLabel": "Tonalité",
     "bpmLabel": "BPM",
-    "durationLabel": "Durée (s)",
+    "durationLabel": "Durée",
+    "durationInvalid": "Écrivez-la comme 3:45",
+    "stageSection": "Sur scène",
+    "filingSection": "Classement",
     "tagsLabel": "Tags",
     "addTagPlaceholder": "Ajouter un tag...",
     "notesLabel": "Notes",
@@ -78,8 +81,8 @@
     "deleteConfirmMessage": "Cette action est irréversible.",
     "techNotesLabel": "Notes techniques",
     "techNotesPlaceholder": "Éclairage, cues son, effets...",
-    "metadata": "Métadonnées",
-    "toggleMetadata": "Afficher/masquer les métadonnées"
+    "metadata": "Détails",
+    "toggleMetadata": "Afficher ou masquer les détails"
   },
   "lookup": {
     "title": "Chercher en ligne",
@@ -379,6 +382,7 @@
     "fillCount_one": "{{count}} chanson de votre catalogue sans grille : elle la reçoit",
     "fillCount_other": "{{count}} chansons de votre catalogue sans grille : elles reçoivent la leur",
     "pasteButton": "Coller une grille",
+    "emptyHint": "Vous avez déjà la grille quelque part ? Collez-la, elle est mise en forme toute seule.",
     "pasteTitle": "Coller une grille",
     "pasteHint": "Copiez une grille depuis un site, un PDF ou une autre appli et collez-la ici. Les accords écrits au-dessus des paroles sont placés dans les paroles, les noms de parties et les tablatures sont reconnus. Le ChordPro est gardé tel quel.",
     "pasteLabel": "Texte collé",

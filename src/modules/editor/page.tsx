@@ -334,6 +334,19 @@ export function EditSongPage({ songId }: EditSongPageProps) {
           }
         />
 
+        {/* An empty chart: pasting one is the quickest way in */}
+        {!watch("content").trim() && (
+          <div className="mb-3 flex flex-wrap items-center gap-3 rounded-md border border-accent bg-accent-muted px-3 py-3">
+            <p className="min-w-40 flex-1 text-sm text-text">{t("chartImport.emptyHint")}</p>
+            <button
+              type="button"
+              onClick={() => setShowPasteChart(true)}
+              className="btn btn-primary"
+            >
+              {t("chartImport.pasteButton")}
+            </button>
+          </div>
+        )}
         {/* Private, device-only note: kept outside the song form so it is never saved/synced */}
         {!isNew && <MyNotePanel profileId={profileId} songId={songDbId} />}
         <AttachmentsPanel
@@ -383,7 +396,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
         {/* Metadata — mobile: collapsible accordion | desktop: side drawer */}
         <div className="order-1 lg:order-none lg:min-h-0">
           {/* Mobile: native <details> accordion */}
-          <details className="group rounded-md border border-border lg:hidden">
+          <details open={isNew} className="group rounded-md border border-border lg:hidden">
             <summary className="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-text-muted">
               {t("editor.metadata")}
             </summary>

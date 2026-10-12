@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { Field, Input, Select, Textarea } from "../../design-system/components/form";
 import { SongStatusDot } from "../../shared/components/song-status-dot";
 import { useNotation } from "../../shared/hooks/use-notation";
+import { DurationField } from "./duration-field";
 import { PatchesField } from "./patches-field";
 
 interface MetadataPanelProps {
@@ -61,6 +62,19 @@ export function MetadataPanel({
   const notation = useNotation();
   const content = watch("content");
   const setupLine = useMemo(() => parse(content).setup, [content]);
+  const links = watch("links");
+  const stageCount = [
+    watch("transposition"),
+    watch("scrollSpeed"),
+    Object.keys(watch("patches") ?? {}).length,
+    Object.keys(overrides).length,
+  ].filter(Boolean).length;
+  const filingCount = [
+    watch("status"),
+    tags.length,
+    watch("techNotes"),
+    links && Object.values(links).some(Boolean),
+  ].filter(Boolean).length;
 
   return (
     <div className="flex flex-col gap-4">
@@ -85,11 +99,6 @@ export function MetadataPanel({
       <Field label={t("editor.artistLabel")} error={errors.artist?.message}>
         <Input {...register("artist")} placeholder={t("editor.artistPlaceholder")} />
       </Field>
-
-      <StatusControl
-        value={watch("status")}
-        onChange={(status) => setValue("status", status, { shouldDirty: true })}
-      />
 
       {/* Key / BPM / Duration / Transposition / Scroll speed — 2-col grid for narrow panel */}
       <div className="grid grid-cols-2 gap-3">
@@ -123,78 +132,11 @@ export function MetadataPanel({
           />
         </Field>
 
-        <Field label={t("editor.durationLabel")} error={errors.duration?.message}>
-          <Input
-            type="number"
-            {...register("duration", {
-              setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
-            })}
-            placeholder="240"
-          />
-        </Field>
-
-        <Field label={t("editor.transpositionLabel")} error={errors.transposition?.message}>
-          <Input
-            type="number"
-            {...register("transposition", {
-              setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
-            })}
-            placeholder="0"
-          />
-        </Field>
-
-        <Field label={t("performStage.scrollSpeedLabel")} error={errors.scrollSpeed?.message}>
-          <Input
-            type="number"
-            min={SCROLL_SPEED_MIN}
-            max={SCROLL_SPEED_MAX}
-            {...register("scrollSpeed", {
-              setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
-            })}
-            placeholder={t("performStage.scrollSpeedAuto")}
-          />
-        </Field>
+        <DurationField
+          value={watch("duration")}
+          onChange={(seconds) => setValue("duration", seconds, { shouldDirty: true })}
+        />
       </div>
-
-      {/* Tags */}
-      <Field label={t("editor.tagsLabel")}>
-        <div className="mb-1.5 flex flex-wrap gap-1.5">
-          {tags.map((tag) => (
-            <span
-              key={tag}
-              className="flex items-center gap-1 rounded-sm bg-bg-raised px-2 py-0.5 text-sm text-text-muted"
-            >
-              {tag}
-              <button
-                type="button"
-                onClick={() => onRemoveTag(tag)}
-                aria-label={`Remove ${tag}`}
-                className="ml-0.5 text-text-faint hover:text-danger"
-              >
-                x
-              </button>
-            </span>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <Input
-            type="text"
-            value={tagInput}
-            onChange={(e) => onTagInputChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                onAddTag();
-              }
-            }}
-            placeholder={t("editor.addTagPlaceholder")}
-            className="flex-1"
-          />
-          <button type="button" onClick={onAddTag} className="btn btn-ghost">
-            {t("common.add")}
-          </button>
-        </div>
-      </Field>
 
       {/* Notes */}
       <Field label={t("editor.notesLabel")} error={errors.notes?.message}>
@@ -206,151 +148,239 @@ export function MetadataPanel({
         />
       </Field>
 
-      {/* Tech Notes */}
-      <Field label={t("editor.techNotesLabel")} error={errors.techNotes?.message}>
-        <Textarea
-          {...register("techNotes")}
-          placeholder={t("editor.techNotesPlaceholder")}
-          rows={2}
-          className="resize-y"
-        />
-      </Field>
-
-      <PatchesField
-        patches={watch("patches") ?? {}}
-        setupLine={setupLine}
-        onChange={(patches) => setValue("patches", patches, { shouldDirty: true })}
-      />
-
-      {/* Links */}
+      {/* What is set once, or rarely: folded away */}
       <details className="group rounded-md border border-border">
         <summary className="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-text-muted">
-          {t("editor.linksLabel")}
+          {t("editor.stageSection")}
+          {stageCount > 0 && ` (${stageCount})`}
         </summary>
-        <div className="flex flex-col gap-3 border-t border-border px-3 py-3">
-          <Field label="YouTube">
-            <Input {...register("links.youtube")} placeholder="https://youtube.com/watch?v=..." />
-          </Field>
-          <Field label="Spotify">
-            <Input
-              {...register("links.spotify")}
-              placeholder="https://open.spotify.com/track/..."
-            />
-          </Field>
-          <Field label="Deezer">
-            <Input {...register("links.deezer")} placeholder="https://deezer.com/track/..." />
-          </Field>
+        <div className="flex flex-col gap-4 border-t border-border px-3 py-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={t("editor.transpositionLabel")} error={errors.transposition?.message}>
+              <Input
+                type="number"
+                {...register("transposition", {
+                  setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
+                })}
+                placeholder="0"
+              />
+            </Field>
+
+            <Field label={t("performStage.scrollSpeedLabel")} error={errors.scrollSpeed?.message}>
+              <Input
+                type="number"
+                min={SCROLL_SPEED_MIN}
+                max={SCROLL_SPEED_MAX}
+                {...register("scrollSpeed", {
+                  setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
+                })}
+                placeholder={t("performStage.scrollSpeedAuto")}
+              />
+            </Field>
+          </div>
+          <PatchesField
+            patches={watch("patches") ?? {}}
+            setupLine={setupLine}
+            onChange={(patches) => setValue("patches", patches, { shouldDirty: true })}
+          />
+
+          {/* Display Overrides (existing songs only) */}
+          {!isNew && (
+            <fieldset className="rounded-md border border-border p-4">
+              <legend className="px-1 text-sm font-semibold text-text-muted">
+                {t("editor.displayOverrides")}
+              </legend>
+
+              <label className="mb-2 flex cursor-pointer items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={overridesOpen}
+                  onChange={(e) => {
+                    if (!e.target.checked) onClearAllOverrides();
+                    else onOverridesOpenChange(true);
+                  }}
+                  className="h-4 w-4 rounded accent-[var(--color-accent)]"
+                />
+                <span className="text-sm text-text">{t("editor.enableDisplayOverrides")}</span>
+              </label>
+
+              <p className="mb-3 text-xs text-text-faint">{t("editor.displayOverridesDesc")}</p>
+
+              {overridesOpen && (
+                <div className="flex flex-col gap-4">
+                  <OverrideSizeField
+                    label={t("settings.display.scale")}
+                    field="globalScale"
+                    min={0.5}
+                    max={3}
+                    step={0.1}
+                    suffix="x"
+                    globalValue={globalPrefs.globalScale}
+                    overrides={overrides}
+                    onUpdate={onUpdateOverride}
+                    onClear={onClearOverrideKey}
+                  />
+                  <OverrideSizeField
+                    label={t("settings.sizes.lyrics")}
+                    field="lyricsSize"
+                    min={0.5}
+                    max={4}
+                    step={0.125}
+                    suffix="rem"
+                    globalValue={globalPrefs.lyricsSize}
+                    overrides={overrides}
+                    onUpdate={onUpdateOverride}
+                    onClear={onClearOverrideKey}
+                  />
+                  <OverrideSizeField
+                    label={t("settings.sizes.chords")}
+                    field="chordSize"
+                    min={0.5}
+                    max={4}
+                    step={0.125}
+                    suffix="rem"
+                    globalValue={globalPrefs.chordSize}
+                    overrides={overrides}
+                    onUpdate={onUpdateOverride}
+                    onClear={onClearOverrideKey}
+                  />
+                  <OverrideSizeField
+                    label={t("settings.sizes.sectionLabels")}
+                    field="sectionSize"
+                    min={0.5}
+                    max={4}
+                    step={0.125}
+                    suffix="rem"
+                    globalValue={globalPrefs.sectionSize}
+                    overrides={overrides}
+                    onUpdate={onUpdateOverride}
+                    onClear={onClearOverrideKey}
+                  />
+                  <OverrideColorField
+                    label={t("settings.colors.chords")}
+                    field="chordColor"
+                    globalValue={globalPrefs.chordColor}
+                    overrides={overrides}
+                    onUpdate={onUpdateOverride}
+                    onClear={onClearOverrideKey}
+                  />
+                  <OverrideColorField
+                    label={t("settings.colors.verse")}
+                    field="verseColor"
+                    globalValue={globalPrefs.verseColor}
+                    overrides={overrides}
+                    onUpdate={onUpdateOverride}
+                    onClear={onClearOverrideKey}
+                  />
+                  <OverrideColorField
+                    label={t("settings.colors.chorus")}
+                    field="chorusColor"
+                    globalValue={globalPrefs.chorusColor}
+                    overrides={overrides}
+                    onUpdate={onUpdateOverride}
+                    onClear={onClearOverrideKey}
+                  />
+                  <OverrideColorField
+                    label={t("settings.colors.bridge")}
+                    field="bridgeColor"
+                    globalValue={globalPrefs.bridgeColor}
+                    overrides={overrides}
+                    onUpdate={onUpdateOverride}
+                    onClear={onClearOverrideKey}
+                  />
+                </div>
+              )}
+            </fieldset>
+          )}
         </div>
       </details>
 
-      {/* Display Overrides (existing songs only) */}
-      {!isNew && (
-        <fieldset className="rounded-md border border-border p-4">
-          <legend className="px-1 text-sm font-semibold text-text-muted">
-            {t("editor.displayOverrides")}
-          </legend>
+      <details className="group rounded-md border border-border">
+        <summary className="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-text-muted">
+          {t("editor.filingSection")}
+          {filingCount > 0 && ` (${filingCount})`}
+        </summary>
+        <div className="flex flex-col gap-4 border-t border-border px-3 py-3">
+          <StatusControl
+            value={watch("status")}
+            onChange={(status) => setValue("status", status, { shouldDirty: true })}
+          />
 
-          <label className="mb-2 flex cursor-pointer items-center gap-3">
-            <input
-              type="checkbox"
-              checked={overridesOpen}
-              onChange={(e) => {
-                if (!e.target.checked) onClearAllOverrides();
-                else onOverridesOpenChange(true);
-              }}
-              className="h-4 w-4 rounded accent-[var(--color-accent)]"
-            />
-            <span className="text-sm text-text">{t("editor.enableDisplayOverrides")}</span>
-          </label>
-
-          <p className="mb-3 text-xs text-text-faint">{t("editor.displayOverridesDesc")}</p>
-
-          {overridesOpen && (
-            <div className="flex flex-col gap-4">
-              <OverrideSizeField
-                label={t("settings.display.scale")}
-                field="globalScale"
-                min={0.5}
-                max={3}
-                step={0.1}
-                suffix="x"
-                globalValue={globalPrefs.globalScale}
-                overrides={overrides}
-                onUpdate={onUpdateOverride}
-                onClear={onClearOverrideKey}
-              />
-              <OverrideSizeField
-                label={t("settings.sizes.lyrics")}
-                field="lyricsSize"
-                min={0.5}
-                max={4}
-                step={0.125}
-                suffix="rem"
-                globalValue={globalPrefs.lyricsSize}
-                overrides={overrides}
-                onUpdate={onUpdateOverride}
-                onClear={onClearOverrideKey}
-              />
-              <OverrideSizeField
-                label={t("settings.sizes.chords")}
-                field="chordSize"
-                min={0.5}
-                max={4}
-                step={0.125}
-                suffix="rem"
-                globalValue={globalPrefs.chordSize}
-                overrides={overrides}
-                onUpdate={onUpdateOverride}
-                onClear={onClearOverrideKey}
-              />
-              <OverrideSizeField
-                label={t("settings.sizes.sectionLabels")}
-                field="sectionSize"
-                min={0.5}
-                max={4}
-                step={0.125}
-                suffix="rem"
-                globalValue={globalPrefs.sectionSize}
-                overrides={overrides}
-                onUpdate={onUpdateOverride}
-                onClear={onClearOverrideKey}
-              />
-              <OverrideColorField
-                label={t("settings.colors.chords")}
-                field="chordColor"
-                globalValue={globalPrefs.chordColor}
-                overrides={overrides}
-                onUpdate={onUpdateOverride}
-                onClear={onClearOverrideKey}
-              />
-              <OverrideColorField
-                label={t("settings.colors.verse")}
-                field="verseColor"
-                globalValue={globalPrefs.verseColor}
-                overrides={overrides}
-                onUpdate={onUpdateOverride}
-                onClear={onClearOverrideKey}
-              />
-              <OverrideColorField
-                label={t("settings.colors.chorus")}
-                field="chorusColor"
-                globalValue={globalPrefs.chorusColor}
-                overrides={overrides}
-                onUpdate={onUpdateOverride}
-                onClear={onClearOverrideKey}
-              />
-              <OverrideColorField
-                label={t("settings.colors.bridge")}
-                field="bridgeColor"
-                globalValue={globalPrefs.bridgeColor}
-                overrides={overrides}
-                onUpdate={onUpdateOverride}
-                onClear={onClearOverrideKey}
-              />
+          {/* Tags */}
+          <Field label={t("editor.tagsLabel")}>
+            <div className="mb-1.5 flex flex-wrap gap-1.5">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="flex items-center gap-1 rounded-sm bg-bg-raised px-2 py-0.5 text-sm text-text-muted"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => onRemoveTag(tag)}
+                    aria-label={`Remove ${tag}`}
+                    className="ml-0.5 text-text-faint hover:text-danger"
+                  >
+                    x
+                  </button>
+                </span>
+              ))}
             </div>
-          )}
-        </fieldset>
-      )}
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={tagInput}
+                onChange={(e) => onTagInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    onAddTag();
+                  }
+                }}
+                placeholder={t("editor.addTagPlaceholder")}
+                className="flex-1"
+              />
+              <button type="button" onClick={onAddTag} className="btn btn-ghost">
+                {t("common.add")}
+              </button>
+            </div>
+          </Field>
+
+          {/* Tech Notes */}
+          <Field label={t("editor.techNotesLabel")} error={errors.techNotes?.message}>
+            <Textarea
+              {...register("techNotes")}
+              placeholder={t("editor.techNotesPlaceholder")}
+              rows={2}
+              className="resize-y"
+            />
+          </Field>
+
+          {/* Links */}
+          <details className="group rounded-md border border-border">
+            <summary className="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-text-muted">
+              {t("editor.linksLabel")}
+            </summary>
+            <div className="flex flex-col gap-3 border-t border-border px-3 py-3">
+              <Field label="YouTube">
+                <Input
+                  {...register("links.youtube")}
+                  placeholder="https://youtube.com/watch?v=..."
+                />
+              </Field>
+              <Field label="Spotify">
+                <Input
+                  {...register("links.spotify")}
+                  placeholder="https://open.spotify.com/track/..."
+                />
+              </Field>
+              <Field label="Deezer">
+                <Input {...register("links.deezer")} placeholder="https://deezer.com/track/..." />
+              </Field>
+            </div>
+          </details>
+        </div>
+      </details>
     </div>
   );
 }
