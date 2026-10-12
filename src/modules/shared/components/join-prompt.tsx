@@ -18,6 +18,7 @@ import {
 } from "@domain/preferences";
 import { createGitHubAdapter } from "@domain/sync/adapters/github";
 import { createGoogleDriveAdapter } from "@domain/sync/adapters/google-drive";
+import { createRelayAdapter, fetchBandProfile, RelayError } from "@domain/sync/adapters/relay";
 import { loadSyncConfig } from "@domain/sync/config";
 import { sync } from "@domain/sync/orchestrator";
 import { type FormEvent, useEffect, useState } from "react";
@@ -30,6 +31,7 @@ const INSTRUMENTS = appPreferencesSchema.shape.favoriteInstrument.unwrap().optio
 
 type Status =
   | { type: "locked"; sealed: string }
+  | { type: "resolving"; code: string }
   | { type: "idle"; payload: InvitePayload; exposesToken: boolean }
   | { type: "joining" }
   | { type: "joined" }
@@ -39,22 +41,60 @@ function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Unknown error";
 }
 
+function readInvite(): Status | null {
+  const encoded = extractInviteParam();
+  if (!encoded) return null;
+  const invite = parseInvite(encoded);
+  if (!invite) {
+    clearInviteParam();
+    return null;
+  }
+  if (invite.kind === "encrypted") return { type: "locked", sealed: invite.sealed };
+  if (invite.kind === "band") return { type: "resolving", code: invite.code };
+  return { type: "idle", payload: invite.payload, exposesToken: exposesToken(invite) };
+}
+
 export function JoinPrompt() {
   const { t } = useTranslation();
 
   // Extract invite param eagerly during render (before the Home→Catalog
   // redirect strips the query string).
-  const [status, setStatus] = useState<Status | null>(() => {
-    const encoded = extractInviteParam();
-    if (!encoded) return null;
-    const invite = parseInvite(encoded);
-    if (!invite) {
-      clearInviteParam();
-      return null;
-    }
-    if (invite.kind === "encrypted") return { type: "locked", sealed: invite.sealed };
-    return { type: "idle", payload: invite.payload, exposesToken: exposesToken(invite) };
-  });
+  const [status, setStatus] = useState<Status | null>(readInvite);
+
+  const describeError = (err: unknown) =>
+    err instanceof RelayError ? t(`sync.band.errors.${err.kind}`) : errorMessage(err);
+
+  // A band code entered on the Sync page arrives as a fragment change.
+  useEffect(() => {
+    const handler = () => {
+      const invite = readInvite();
+      if (invite) setStatus(invite);
+    };
+    window.addEventListener("hashchange", handler);
+    return () => window.removeEventListener("hashchange", handler);
+  }, []);
+
+  // A band code says nothing by itself: ask the relay which band it opens.
+  const resolvingCode = status?.type === "resolving" ? status.code : null;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once per code
+  useEffect(() => {
+    if (!resolvingCode) return;
+    let cancelled = false;
+    fetchBandProfile(resolvingCode)
+      .then((profile) => {
+        if (cancelled) return;
+        const payload: InvitePayload = { profile, sync: { adapter: "relay", code: resolvingCode } };
+        setStatus({ type: "idle", payload, exposesToken: false });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        clearInviteParam();
+        setStatus({ type: "error", message: describeError(err) });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvingCode]);
 
   // Secrets live in component state only and are cleared once used.
   const [passphrase, setPassphrase] = useState("");
@@ -135,13 +175,15 @@ export function JoinPrompt() {
           await requestAccessToken();
           const adapter = createGoogleDriveAdapter(config);
           await sync(adapter, db, profileId);
+        } else {
+          await sync(createRelayAdapter(config), db, profileId);
         }
       }
 
       setStatus({ type: "joined" });
       Router.replace("Catalog");
     } catch (err) {
-      setStatus({ type: "error", message: errorMessage(err) });
+      setStatus({ type: "error", message: describeError(err) });
     }
   };
 
@@ -162,7 +204,9 @@ export function JoinPrompt() {
     if (!status) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      if (status.type === "locked" || status.type === "idle") handleCancel();
+      if (status.type === "locked" || status.type === "idle" || status.type === "resolving") {
+        handleCancel();
+      }
       if (status.type === "joined") setStatus(null);
     };
     document.addEventListener("keydown", handler);
@@ -290,6 +334,15 @@ export function JoinPrompt() {
               </button>
             </div>
           </form>
+        )}
+
+        {status.type === "resolving" && (
+          <>
+            <p className="text-sm text-text-muted">{t("invite.resolving")}</p>
+            <button type="button" onClick={handleCancel} className="btn btn-ghost self-end">
+              {t("common.cancel")}
+            </button>
+          </>
         )}
 
         {status.type === "joining" && (
