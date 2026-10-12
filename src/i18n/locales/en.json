@@ -148,7 +148,6 @@
     "editSetlist": "Edit setlist",
     "editSong": "Edit song",
     "displaySettings": "Display settings",
-    "deleteSong": "Delete song",
     "exitToSetlist": "Exit to setlist",
     "exitToSong": "Exit to song",
     "exit": "Exit",
@@ -159,13 +158,16 @@
     "transpose": "Transpose",
     "transposeDown": "Transpose down",
     "transposeUp": "Transpose up",
+    "help": "Gestures and shortcuts",
+    "editGroup": "Edit",
     "hints": {
-      "tap": "Tap to show or hide controls",
-      "swipe": "Swipe left or right to change song",
-      "doubleTapLeft": "Double-tap to zoom out",
-      "doubleTapRight": "Double-tap to zoom in",
+      "tap": "Tap the screen: show or hide the buttons",
+      "swipe": "Swipe: next or previous song",
+      "page": "Pedal, space or ↓: next page",
+      "doubleTap": "Double-tap the right edge to zoom in, the left edge to zoom out",
       "myPart": "⋮ → My part: only your instrument, or lyrics only",
-      "dismiss": "Tap anywhere to dismiss"
+      "more": "Everything else is in the ⋮ menu, under Gestures and shortcuts.",
+      "dismiss": "Got it"
     }
   },
   "performStage": {

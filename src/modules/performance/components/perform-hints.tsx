@@ -11,14 +11,23 @@ function markSeen(): void {
   localStorage.setItem(DISMISS_KEY, "1");
 }
 
-export function PerformHints() {
+interface PerformHintsProps {
+  /** Asked for from the menu: every gesture and shortcut, not only the three to start with. */
+  showAll: boolean;
+  onClose: () => void;
+}
+
+/** The three gestures a musician needs, shown once; the full list is one tap away in the menu. */
+export function PerformHints({ showAll, onClose }: PerformHintsProps) {
   const { t } = useTranslation();
-  const [visible, setVisible] = useState(() => !isSeen());
+  const [firstTime, setFirstTime] = useState(() => !isSeen());
+  const visible = firstTime || showAll;
 
   const dismiss = useCallback(() => {
     markSeen();
-    setVisible(false);
-  }, []);
+    setFirstTime(false);
+    onClose();
+  }, [onClose]);
 
   useEffect(() => {
     if (!visible) return;
@@ -31,46 +40,42 @@ export function PerformHints() {
 
   if (!visible) return null;
 
+  const essentials = [
+    { icon: "👆", text: t("perform.hints.tap") },
+    { icon: "👈 👉", text: t("perform.hints.swipe") },
+    { icon: "⌨️", text: t("perform.hints.page") },
+  ];
+  const more = [
+    { icon: "👆👆", text: t("perform.hints.doubleTap") },
+    { icon: "♩", text: t("performTempo.hint") },
+    { icon: "⋮", text: t("perform.hints.myPart") },
+    { icon: "⌨️", text: t("performStage.hintPedal") },
+    { icon: "S", text: t("performStage.hintAutoScroll") },
+  ];
+
   return (
-    <button
-      type="button"
-      className="fixed inset-0 z-50 flex cursor-default items-stretch border-0 bg-black/70"
-      onClick={dismiss}
-    >
-      {/* Left side — zoom out zone */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 border-r border-white/10">
-        <span className="text-2xl">👆👆</span>
-        <p className="text-xs text-white/80">{t("perform.hints.doubleTapLeft")}</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("perform.help")}
+        className="flex max-h-full w-full max-w-md flex-col gap-5 overflow-y-auto rounded-xl bg-bg-surface p-6 shadow-xl"
+      >
+        <ul className="flex flex-col gap-4">
+          {(showAll ? [...essentials.slice(0, 2), ...more] : essentials).map((hint) => (
+            <li key={hint.text} className="flex items-center gap-4">
+              <span className="w-14 shrink-0 text-center text-2xl text-text">{hint.icon}</span>
+              <span className={showAll ? "text-base text-text" : "text-lg text-text"}>
+                {hint.text}
+              </span>
+            </li>
+          ))}
+        </ul>
+        {!showAll && <p className="text-sm text-text-muted">{t("perform.hints.more")}</p>}
+        <button type="button" onClick={dismiss} className="btn btn-primary min-h-12 text-base">
+          {t("perform.hints.dismiss")}
+        </button>
       </div>
-
-      {/* Center column — tap + swipe hints */}
-      <div className="flex flex-col items-center justify-center gap-8 px-6">
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-3xl">👆</span>
-          <p className="text-sm font-medium text-white">{t("perform.hints.tap")}</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-2xl">👈 👉</span>
-          <p className="text-xs text-white/80">{t("perform.hints.swipe")}</p>
-        </div>
-        <div className="flex max-w-56 flex-col items-center gap-2 text-center">
-          <span className="text-2xl text-white">♩</span>
-          <p className="text-xs text-white/80">{t("performTempo.hint")}</p>
-          <p className="text-xs text-white/80">{t("perform.hints.myPart")}</p>
-        </div>
-        <div className="flex max-w-56 flex-col items-center gap-1 text-center">
-          <span className="text-2xl">⌨️</span>
-          <p className="text-xs text-white/80">{t("performStage.hintPedal")}</p>
-          <p className="text-xs text-white/80">{t("performStage.hintAutoScroll")}</p>
-        </div>
-        <p className="text-xs text-white/50">{t("perform.hints.dismiss")}</p>
-      </div>
-
-      {/* Right side — zoom in zone */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 border-l border-white/10">
-        <span className="text-2xl">👆👆</span>
-        <p className="text-xs text-white/80">{t("perform.hints.doubleTapRight")}</p>
-      </div>
-    </button>
+    </div>
   );
 }

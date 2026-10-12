@@ -42,6 +42,7 @@ interface PerformHeaderProps {
   onEditMyNote: () => void;
   midi: StageMidi;
   follow: FollowLeader;
+  onShowHelp: () => void;
   /** Id of the sheet shown for the song; undefined = its chart. */
   stageView: string | undefined;
   onStageView: (view: string) => void;
@@ -75,6 +76,7 @@ export function PerformHeader({
   onEditMyNote,
   midi,
   follow,
+  onShowHelp,
   stageView,
   onStageView,
 }: PerformHeaderProps) {
@@ -243,8 +245,46 @@ export function PerformHeader({
               </button>
               {menuOpen && (
                 <div className="absolute right-0 top-full z-50 mt-1 max-h-[80dvh] min-w-40 overflow-y-auto rounded-md border border-border bg-bg-surface py-1 shadow-lg">
+                  {/* What a musician reaches for during a song comes first */}
+                  <div className="border-b border-border pb-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onToggleTranspose();
+                        setMenuOpen(false);
+                      }}
+                      className="block w-full px-4 py-3 text-left text-base text-text hover:bg-bg-hover"
+                    >
+                      {t("perform.transpose")}
+                    </button>
+                    {song && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onEditMyNote();
+                          setMenuOpen(false);
+                        }}
+                        className="block w-full px-4 py-3 text-left text-base text-text hover:bg-bg-hover"
+                      >
+                        📌 {hasMyNote ? t("myNotes.edit") : t("myNotes.add")}
+                      </button>
+                    )}
+                    {fullscreenSupported && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onToggleFullscreen();
+                          setMenuOpen(false);
+                        }}
+                        className="block w-full px-4 py-3 text-left text-base text-text hover:bg-bg-hover"
+                      >
+                        {isFullscreen
+                          ? t("performStage.exitFullscreen")
+                          : t("performStage.enterFullscreen")}
+                      </button>
+                    )}
+                  </div>
                   <MyPartMenu myPart={myPart} />
-                  {follow.available && <FollowMenu follow={follow} />}
                   {song?.attachments && song.attachments.length > 0 && (
                     <StageViewMenu
                       attachments={song.attachments}
@@ -252,69 +292,42 @@ export function PerformHeader({
                       onChange={onStageView}
                     />
                   )}
-                  {song && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onEditMyNote();
-                        setMenuOpen(false);
-                      }}
-                      className="block w-full px-4 py-2.5 text-left text-base text-text hover:bg-bg-hover"
-                    >
-                      📌 {hasMyNote ? t("myNotes.edit") : t("myNotes.add")}
-                    </button>
-                  )}
-                  {setlistId && (
-                    <Link
-                      to={Router.SetlistEdit({ setlistId })}
-                      className="block px-4 py-2.5 text-left text-base text-text hover:bg-bg-hover"
-                    >
-                      {t("perform.editSetlist")}
-                    </Link>
-                  )}
+                  {follow.available && <FollowMenu follow={follow} />}
+                  {/* Leaves the stage: kept apart, at the bottom */}
+                  <div className="px-4 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-text-faint">
+                    {t("perform.editGroup")}
+                  </div>
                   {song && (
                     <Link
                       to={Router.SongEdit({ songId: song.id })}
-                      className="block px-4 py-2.5 text-left text-base text-text hover:bg-bg-hover"
+                      className="block w-full px-4 py-3 text-left text-base text-text hover:bg-bg-hover"
                     >
                       {t("perform.editSong")}
                     </Link>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onToggleTranspose();
-                      setMenuOpen(false);
-                    }}
-                    className="block w-full px-4 py-2.5 text-left text-base text-text hover:bg-bg-hover"
-                  >
-                    {t("perform.transpose")}
-                  </button>
-                  {fullscreenSupported && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onToggleFullscreen();
-                        setMenuOpen(false);
-                      }}
-                      className="block w-full px-4 py-2.5 text-left text-base text-text hover:bg-bg-hover"
+                  {setlistId && (
+                    <Link
+                      to={Router.SetlistEdit({ setlistId })}
+                      className="block w-full px-4 py-3 text-left text-base text-text hover:bg-bg-hover"
                     >
-                      {isFullscreen
-                        ? t("performStage.exitFullscreen")
-                        : t("performStage.enterFullscreen")}
-                    </button>
+                      {t("perform.editSetlist")}
+                    </Link>
                   )}
                   <Link
                     to={Router.Settings()}
-                    className="block px-4 py-2.5 text-left text-base text-text hover:bg-bg-hover"
+                    className="block w-full px-4 py-3 text-left text-base text-text hover:bg-bg-hover"
                   >
                     {t("perform.displaySettings")}
                   </Link>
                   <button
                     type="button"
-                    className="block w-full px-4 py-2.5 text-left text-base text-danger hover:bg-bg-hover"
+                    onClick={() => {
+                      onShowHelp();
+                      setMenuOpen(false);
+                    }}
+                    className="block w-full px-4 py-3 text-left text-base text-text-muted hover:bg-bg-hover"
                   >
-                    {t("perform.deleteSong")}
+                    {t("perform.help")}
                   </button>
                 </div>
               )}

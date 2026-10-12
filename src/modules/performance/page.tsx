@@ -56,6 +56,8 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
   const [chromeVisible, setChromeVisible] = useState(true);
   const toggleChrome = useCallback(() => setChromeVisible((v) => !v), []);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const closeHelp = useCallback(() => setHelpOpen(false), []);
   const [transposeOpen, setTransposeOpen] = useState(false);
   const toggleTranspose = useCallback(() => setTransposeOpen((v) => !v), []);
   const [activeChord, setActiveChord] = useState<ChordTapInfo | null>(null);
@@ -300,6 +302,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         onEditMyNote={() => setNoteEditing(nav.currentSong ?? null)}
         midi={midi}
         follow={follow}
+        onShowHelp={() => setHelpOpen(true)}
         stageView={nav.currentSong && scoreFor(nav.currentSong)?.id}
         onStageView={(view) => {
           if (nav.currentSong) setStageViews(saveStageView(profileId, nav.currentSong.id, view));
@@ -352,7 +355,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
       />
       <TempoOverlay beats={tempo.beats} />
       {setlistId && <SetInterstitial current={nav.current} />}
-      <PerformHints />
+      <PerformHints showAll={helpOpen} onClose={closeHelp} />
     </div>
   );
 }

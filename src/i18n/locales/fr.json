@@ -148,7 +148,6 @@
     "editSetlist": "Modifier la setlist",
     "editSong": "Modifier la chanson",
     "displaySettings": "Paramètres d\u2019affichage",
-    "deleteSong": "Supprimer la chanson",
     "exitToSetlist": "Retour à la setlist",
     "exitToSong": "Retour à la chanson",
     "exit": "Quitter",
@@ -159,13 +158,16 @@
     "transpose": "Transposer",
     "transposeDown": "Transposer vers le bas",
     "transposeUp": "Transposer vers le haut",
+    "help": "Gestes et raccourcis",
+    "editGroup": "Modifier",
     "hints": {
-      "tap": "Touchez pour afficher ou masquer les contrôles",
-      "swipe": "Glissez pour changer de chanson",
-      "doubleTapLeft": "Double-tap pour dézoomer",
-      "doubleTapRight": "Double-tap pour zoomer",
+      "tap": "Touchez l'écran : affiche ou masque les boutons",
+      "swipe": "Glissez : morceau suivant ou précédent",
+      "page": "Pédale, espace ou ↓ : page suivante",
+      "doubleTap": "Double-tap à droite pour zoomer, à gauche pour dézoomer",
       "myPart": "⋮ → Ma partie : votre instrument seul, ou les paroles seules",
-      "dismiss": "Touchez pour fermer"
+      "more": "Tout le reste est dans le menu ⋮, sous Gestes et raccourcis.",
+      "dismiss": "C'est parti"
     }
   },
   "performStage": {
