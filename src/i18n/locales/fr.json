@@ -472,6 +472,35 @@
       "inTune": "Accordé"
     }
   },
+  "quality": {
+    "title": "Qualité des chansons",
+    "average": "score moyen",
+    "empty": "Aucune chanson dans le catalogue.",
+    "points": "{{earned}}/{{total}} pts",
+    "weight_one": "{{count}} pt",
+    "weight_other": "{{count}} pts",
+    "categories": {
+      "metadata": "Métadonnées",
+      "structure": "Structure",
+      "chords": "Accords"
+    },
+    "flags": {
+      "has-artist": "A un artiste",
+      "has-key": "A une tonalité",
+      "has-bpm": "A un BPM",
+      "has-duration": "A une durée",
+      "has-tags": "A des tags",
+      "has-link": "A un lien (YouTube, Spotify...)",
+      "has-verse": "A un couplet",
+      "has-chorus": "A un refrain",
+      "has-bridge-or-other": "A un pont, une intro ou une autre section",
+      "no-orphan-lines": "Aucune ligne orpheline (hors section)",
+      "multiple-sections": "Plusieurs sections nommées (3+)",
+      "has-chords": "A des accords",
+      "chord-coverage": "Bonne couverture d’accords (>50 % des lignes de paroles)",
+      "chord-variety": "Variété d’accords (4+ accords différents)"
+    }
+  },
   "chordLib": {
     "title": "Bibliothèque d\u2019accords",
     "allRoots": "Toutes les notes",

@@ -1,9 +1,9 @@
 import type { Song } from "@db/song";
 import { type LyricLine, parse } from "./chordpro/parser";
 
+/** The UI names each flag by its id (`quality.flags.<id>`). */
 export interface QualityFlag {
   id: string;
-  label: string;
   passed: boolean;
   weight: number;
   category: "metadata" | "structure" | "chords";
@@ -24,7 +24,6 @@ export function analyzeSong(song: Song): QualityReport {
 
   flags.push({
     id: "has-artist",
-    label: "Has artist",
     passed: Boolean(song.artist || metadata.artist),
     weight: 6,
     category: "metadata",
@@ -32,7 +31,6 @@ export function analyzeSong(song: Song): QualityReport {
 
   flags.push({
     id: "has-key",
-    label: "Has key",
     passed: Boolean(song.key || metadata.key),
     weight: 6,
     category: "metadata",
@@ -40,7 +38,6 @@ export function analyzeSong(song: Song): QualityReport {
 
   flags.push({
     id: "has-bpm",
-    label: "Has BPM",
     passed: Boolean(song.bpm || metadata.bpm),
     weight: 6,
     category: "metadata",
@@ -48,7 +45,6 @@ export function analyzeSong(song: Song): QualityReport {
 
   flags.push({
     id: "has-duration",
-    label: "Has duration",
     passed: Boolean(song.duration || metadata.duration),
     weight: 4,
     category: "metadata",
@@ -56,7 +52,6 @@ export function analyzeSong(song: Song): QualityReport {
 
   flags.push({
     id: "has-tags",
-    label: "Has tags",
     passed: song.tags.length > 0 || Boolean(metadata.tags),
     weight: 4,
     category: "metadata",
@@ -64,7 +59,6 @@ export function analyzeSong(song: Song): QualityReport {
 
   flags.push({
     id: "has-link",
-    label: "Has a link (YouTube, Spotify...)",
     passed: Boolean(
       song.links?.youtube || song.links?.spotify || song.links?.deezer || metadata.youtube,
     ),
@@ -78,7 +72,6 @@ export function analyzeSong(song: Song): QualityReport {
 
   flags.push({
     id: "has-verse",
-    label: "Has verse section",
     passed: sectionTypes.includes("verse"),
     weight: 10,
     category: "structure",
@@ -86,7 +79,6 @@ export function analyzeSong(song: Song): QualityReport {
 
   flags.push({
     id: "has-chorus",
-    label: "Has chorus section",
     passed: sectionTypes.includes("chorus"),
     weight: 10,
     category: "structure",
@@ -94,7 +86,6 @@ export function analyzeSong(song: Song): QualityReport {
 
   flags.push({
     id: "has-bridge-or-other",
-    label: "Has bridge, intro, or other section",
     passed: sectionTypes.some(
       (t) => t === "bridge" || t === "intro" || t === "outro" || t === "solo" || t === "tab",
     ),
@@ -108,7 +99,6 @@ export function analyzeSong(song: Song): QualityReport {
   );
   flags.push({
     id: "no-orphan-lines",
-    label: "No orphan lines (outside sections)",
     passed: !hasOrphan,
     weight: 10,
     category: "structure",
@@ -117,7 +107,6 @@ export function analyzeSong(song: Song): QualityReport {
   const totalSections = sections.filter((s) => s.type !== "custom").length;
   flags.push({
     id: "multiple-sections",
-    label: "Multiple labeled sections (3+)",
     passed: totalSections >= 3,
     weight: 5,
     category: "structure",
@@ -139,7 +128,6 @@ export function analyzeSong(song: Song): QualityReport {
 
   flags.push({
     id: "has-chords",
-    label: "Has chords",
     passed: linesWithChords.length > 0,
     weight: 10,
     category: "chords",
@@ -149,7 +137,6 @@ export function analyzeSong(song: Song): QualityReport {
     linesWithLyrics.length > 0 ? lyricsWithChords.length / linesWithLyrics.length : 0;
   flags.push({
     id: "chord-coverage",
-    label: "Good chord coverage (>50% of lyric lines)",
     passed: chordCoverage > 0.5,
     weight: 10,
     category: "chords",
@@ -160,7 +147,6 @@ export function analyzeSong(song: Song): QualityReport {
   );
   flags.push({
     id: "chord-variety",
-    label: "Chord variety (4+ unique chords)",
     passed: uniqueChords.size >= 4,
     weight: 10,
     category: "chords",

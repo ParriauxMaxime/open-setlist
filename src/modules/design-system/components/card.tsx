@@ -115,7 +115,7 @@ export function ToggleRow({ label, description, checked, onChange }: ToggleRowPr
 }
 
 interface BadgeProps {
-  tone?: "accent" | "muted" | "warning";
+  tone?: "accent" | "muted" | "success" | "warning" | "danger";
   children: ReactNode;
 }
 
@@ -124,7 +124,9 @@ export function Badge({ tone = "accent", children }: BadgeProps) {
   const tones = {
     accent: "bg-accent-muted text-accent",
     muted: "bg-bg-hover text-text-muted",
+    success: "bg-success/15 text-success",
     warning: "bg-warning/15 text-warning",
+    danger: "bg-danger/15 text-danger",
   };
   return (
     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${tones[tone]}`}>

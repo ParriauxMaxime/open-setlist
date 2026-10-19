@@ -472,6 +472,35 @@
       "inTune": "In tune"
     }
   },
+  "quality": {
+    "title": "Song quality",
+    "average": "average score",
+    "empty": "No songs in catalog.",
+    "points": "{{earned}}/{{total}} pts",
+    "weight_one": "{{count}} pt",
+    "weight_other": "{{count}} pts",
+    "categories": {
+      "metadata": "Metadata",
+      "structure": "Structure",
+      "chords": "Chords"
+    },
+    "flags": {
+      "has-artist": "Has artist",
+      "has-key": "Has key",
+      "has-bpm": "Has BPM",
+      "has-duration": "Has duration",
+      "has-tags": "Has tags",
+      "has-link": "Has a link (YouTube, Spotify...)",
+      "has-verse": "Has verse section",
+      "has-chorus": "Has chorus section",
+      "has-bridge-or-other": "Has bridge, intro, or other section",
+      "no-orphan-lines": "No orphan lines (outside sections)",
+      "multiple-sections": "Multiple labeled sections (3+)",
+      "has-chords": "Has chords",
+      "chord-coverage": "Good chord coverage (>50% of lyric lines)",
+      "chord-variety": "Chord variety (4+ unique chords)"
+    }
+  },
   "chordLib": {
     "title": "Chord Library",
     "allRoots": "All roots",

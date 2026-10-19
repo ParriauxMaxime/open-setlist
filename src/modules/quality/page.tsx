@@ -3,10 +3,21 @@ import type { Song } from "@db/song";
 import { analyzeSong, type QualityFlag, type QualityReport } from "@domain/quality";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Badge, Card } from "../design-system/components/card";
+import { PageHeader } from "../design-system/components/page-header";
 
 interface ScoredSong {
   song: Song;
   report: QualityReport;
+}
+
+const CATEGORIES: QualityFlag["category"][] = ["metadata", "structure", "chords"];
+
+function scoreTone(score: number) {
+  if (score >= 80) return "success" as const;
+  if (score >= 50) return "warning" as const;
+  return "danger" as const;
 }
 
 function scoreColor(score: number): string {
@@ -15,39 +26,37 @@ function scoreColor(score: number): string {
   return "text-danger";
 }
 
-function scoreBg(score: number): string {
-  if (score >= 80) return "bg-success/15";
-  if (score >= 50) return "bg-warning/15";
-  return "bg-danger/15";
-}
-
-function FlagIcon({ passed }: { passed: boolean }) {
-  return <span className={passed ? "text-success" : "text-danger"}>{passed ? "+" : "-"}</span>;
-}
-
 function FlagGroup({ category, flags }: { category: string; flags: QualityFlag[] }) {
+  const { t } = useTranslation();
   const earned = flags.filter((f) => f.passed).reduce((s, f) => s + f.weight, 0);
   const total = flags.reduce((s, f) => s + f.weight, 0);
 
   return (
-    <div>
-      <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-text-muted">
-        {category} ({earned}/{total} pts)
-      </h4>
-      <ul className="flex flex-col gap-1">
-        {flags.map((flag) => (
-          <li key={flag.id} className="flex items-center gap-2 text-sm">
-            <FlagIcon passed={flag.passed} />
-            <span className={flag.passed ? "text-text" : "text-text-muted"}>{flag.label}</span>
-            <span className="ml-auto text-xs text-text-faint">{flag.weight} pts</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Card
+      title={t(`quality.categories.${category}`)}
+      aside={
+        <span className="text-xs text-text-faint">{t("quality.points", { earned, total })}</span>
+      }
+    >
+      {flags.map((flag) => (
+        <div key={flag.id} className="flex items-center gap-2 px-4 py-2 text-sm">
+          <span className={flag.passed ? "text-success" : "text-danger"}>
+            {flag.passed ? "+" : "-"}
+          </span>
+          <span className={flag.passed ? "text-text" : "text-text-muted"}>
+            {t(`quality.flags.${flag.id}`)}
+          </span>
+          <span className="ml-auto shrink-0 text-xs text-text-faint">
+            {t("quality.weight", { count: flag.weight })}
+          </span>
+        </div>
+      ))}
+    </Card>
   );
 }
 
 export function QualityPage() {
+  const { t } = useTranslation();
   const db = useDb();
   const songs = useLiveQuery(() => db.songs.toArray(), [db]) ?? [];
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -69,48 +78,50 @@ export function QualityPage() {
 
   return (
     <div className="p-page">
-      <h1 className="mb-2 text-2xl font-bold">Song Quality</h1>
+      <PageHeader
+        title={t("quality.title")}
+        subtitle={
+          <>
+            {t("sync.songCount", { count: scored.length })} · {t("quality.average")}{" "}
+            <span className={`font-semibold ${scoreColor(avgScore)}`}>{avgScore}%</span>
+          </>
+        }
+      />
 
-      <p className="mb-4 text-sm text-text-muted">
-        {scored.length} songs — average score:{" "}
-        <span className={`font-semibold ${scoreColor(avgScore)}`}>{avgScore}%</span>
-      </p>
-
-      <div className="flex flex-col gap-6 lg:flex-row">
-        {/* Song list */}
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          {scored.map(({ song, report }) => (
-            <button
-              key={song.id}
-              type="button"
-              onClick={() => setSelectedId(song.id === selectedId ? null : song.id)}
-              className={[
-                "flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
-                song.id === selectedId ? "bg-accent-muted text-accent" : "hover:bg-bg-hover",
-              ].join(" ")}
-            >
-              <span
-                className={`w-12 shrink-0 rounded-md px-2 py-0.5 text-center text-xs font-bold ${scoreBg(report.score)} ${scoreColor(report.score)}`}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        <div className="min-w-0 flex-1">
+          <Card>
+            {scored.map(({ song, report }) => (
+              <button
+                key={song.id}
+                type="button"
+                aria-pressed={song.id === selectedId}
+                onClick={() => setSelectedId(song.id === selectedId ? null : song.id)}
+                className={[
+                  "flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors first:rounded-t-lg last:rounded-b-lg",
+                  song.id === selectedId ? "bg-accent-muted" : "hover:bg-bg-hover",
+                ].join(" ")}
               >
-                {report.score}%
-              </span>
-              <span className="min-w-0 flex-1 truncate font-medium text-text">{song.title}</span>
-              <span className="shrink-0 truncate text-xs text-text-faint">
-                {song.artist || "—"}
-              </span>
-            </button>
-          ))}
+                <span className="w-12 shrink-0 text-center">
+                  <Badge tone={scoreTone(report.score)}>{report.score}%</Badge>
+                </span>
+                <span className="min-w-0 flex-1 truncate font-medium text-text">{song.title}</span>
+                <span className="shrink-0 truncate text-xs text-text-faint">
+                  {song.artist || "—"}
+                </span>
+              </button>
+            ))}
 
-          {scored.length === 0 && (
-            <p className="py-8 text-center text-text-muted">No songs in catalog.</p>
-          )}
+            {scored.length === 0 && (
+              <p className="px-4 py-8 text-center text-sm text-text-muted">{t("quality.empty")}</p>
+            )}
+          </Card>
         </div>
 
-        {/* Detail panel */}
         {selected && (
-          <div className="w-full shrink-0 rounded-lg border border-border bg-bg-surface p-5 lg:w-80">
+          <div className="w-full shrink-0 lg:sticky lg:top-4 lg:w-80">
             <div className="mb-4">
-              <h3 className="text-lg font-bold">{selected.song.title}</h3>
+              <h2 className="text-lg font-bold">{selected.song.title}</h2>
               {selected.song.artist && (
                 <p className="text-sm text-text-muted">{selected.song.artist}</p>
               )}
@@ -119,20 +130,13 @@ export function QualityPage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-4">
+            {CATEGORIES.map((category) => (
               <FlagGroup
-                category="Metadata"
-                flags={selected.report.flags.filter((f) => f.category === "metadata")}
+                key={category}
+                category={category}
+                flags={selected.report.flags.filter((f) => f.category === category)}
               />
-              <FlagGroup
-                category="Structure"
-                flags={selected.report.flags.filter((f) => f.category === "structure")}
-              />
-              <FlagGroup
-                category="Chords"
-                flags={selected.report.flags.filter((f) => f.category === "chords")}
-              />
-            </div>
+            ))}
           </div>
         )}
       </div>
