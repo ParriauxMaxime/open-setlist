@@ -28,7 +28,7 @@ export function PatchesField({ patches, setupLine, onChange }: PatchesFieldProps
   return (
     <Field label={t("midi.patches.label")}>
       <div className="flex flex-col gap-1.5">
-        {chartCode && !patches[PART.keys] && (
+        {chartCode && (
           <p className="text-sm text-text-muted">
             {partLabel(PART.keys, t, false)} : <span className="text-chord">{chartCode}</span>{" "}
             <span className="text-text-faint">({t("midi.patches.fromChart")})</span>

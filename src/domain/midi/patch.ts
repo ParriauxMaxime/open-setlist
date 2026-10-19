@@ -2,14 +2,13 @@
  * Patch codes: the sound a musician's gear switches to for a song, and the MIDI
  * messages that select it.
  *
- * The band writes the keyboard's code at the start of each chart (`{comment:17A🎸}`): three
- * rows of buttons on the synth, two digits 1 to 8 and a letter A to D, so 8 × 8 × 4 sounds.
- * Other instruments (drum pad, pedalboard) get a code per song in `Song.patches`, usually
- * a plain preset number.
+ * Each instrument gets a code per song in `Song.patches`, usually a plain preset number.
+ * The band also writes the keyboard player's synth code at the start of each chart
+ * (`{comment:17A🎸}`: two digits 1 to 8 and a letter A to D). That one is a reading aid
+ * shown next to the field, never sent: the MIDI number is mapped per song.
  */
 
 import type { Song } from "@db/song";
-import { parse } from "../chordpro/parser";
 import { PART } from "../parts";
 
 export const MIDI_ENCODING = {
@@ -55,15 +54,8 @@ export function extractPatchCode(setup: string): string | undefined {
   return match ? `${match[1]}${match[2].toUpperCase()}` : undefined;
 }
 
-/** A role's code for a song: its own field first, else the chart's code for the keyboard. */
-export function songPatch(
-  song: Pick<Song, "content" | "patches">,
-  role: string,
-): string | undefined {
-  const own = song.patches?.[role]?.trim();
-  if (own) return own;
-  if (role !== PART.keys) return undefined;
-  return extractPatchCode(parse(song.content).setup ?? "");
+export function songPatch(song: Pick<Song, "patches">, role: string): string | undefined {
+  return song.patches?.[role]?.trim() || undefined;
 }
 
 // ---------------------------------------------------------------------------

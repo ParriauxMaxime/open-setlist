@@ -67,7 +67,6 @@ export function MetadataPanel({
   const stageCount = [
     watch("transposition"),
     watch("scrollSpeed"),
-    Object.keys(watch("patches") ?? {}).length,
     Object.keys(overrides).length,
   ].filter(Boolean).length;
   const filingCount = [
@@ -148,6 +147,14 @@ export function MetadataPanel({
         </Field>
       </div>
 
+      <div className="rounded-lg border border-border bg-bg-surface p-4">
+        <PatchesField
+          patches={watch("patches") ?? {}}
+          setupLine={setupLine}
+          onChange={(patches) => setValue("patches", patches, { shouldDirty: true })}
+        />
+      </div>
+
       {/* What is set once, or rarely: folded away */}
       <Disclosure
         summary={
@@ -181,11 +188,6 @@ export function MetadataPanel({
               />
             </Field>
           </div>
-          <PatchesField
-            patches={watch("patches") ?? {}}
-            setupLine={setupLine}
-            onChange={(patches) => setValue("patches", patches, { shouldDirty: true })}
-          />
 
           {/* Display Overrides (existing songs only) */}
           {!isNew && (

@@ -63,24 +63,14 @@ describe("extractPatchCode", () => {
 });
 
 describe("songPatch", () => {
-  const chart = "{title: Jolene}\n{comment: 38B 🎙️🎹}\n[Am]Jolene";
-
-  it("takes the keyboard's code from the chart", () => {
-    expect(songPatch({ content: chart }, "keys")).toBe("38B");
+  it("reads each instrument's own field", () => {
+    expect(songPatch({ patches: { drums: " 12 " } }, "drums")).toBe("12");
+    expect(songPatch({ patches: { keys: "11A" } }, "keys")).toBe("11A");
   });
 
-  it("gives the other instruments their own field only", () => {
-    expect(songPatch({ content: chart }, "drums")).toBeUndefined();
-    expect(songPatch({ content: chart, patches: { drums: " 12 " } }, "drums")).toBe("12");
-  });
-
-  it("lets the keyboard's own field win over the chart", () => {
-    expect(songPatch({ content: chart, patches: { keys: "11A" } }, "keys")).toBe("11A");
-    expect(songPatch({ content: chart, patches: { keys: "  " } }, "keys")).toBe("38B");
-  });
-
-  it("has nothing for a chart without a setup line", () => {
-    expect(songPatch({ content: "[Am]Jolene" }, "keys")).toBeUndefined();
+  it("has nothing without a filled field", () => {
+    expect(songPatch({}, "keys")).toBeUndefined();
+    expect(songPatch({ patches: { keys: "  " } }, "keys")).toBeUndefined();
   });
 });
 

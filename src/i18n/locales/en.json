@@ -952,7 +952,7 @@
     },
     "patches": {
       "label": "Sounds (MIDI)",
-      "fromChart": "from the chart's first line",
+      "fromChart": "synth code on the chart's first line, not sent",
       "add": "Add an instrument…",
       "code": "Sound code for {{part}}",
       "remove": "Remove {{part}}",

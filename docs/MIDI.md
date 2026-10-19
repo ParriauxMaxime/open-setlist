@@ -6,8 +6,8 @@ When a musician changes song in performance mode, their device can make their ow
 
 Each song has one **sound code** per instrument (`src/domain/midi/patch.ts`):
 
-- **Keyboard**: read from the chart's setup line, the first comment (`{comment:17A🎸}`). The band's synth has three rows of buttons: two digits 1 to 8 and a letter A to D, so 8 × 8 × 4 = 256 sounds. A code in the song's own field wins over the chart.
-- **Other instruments**: a field per instrument on the song (editor → Sounds), stored in `Song.patches`. Usually a plain preset number.
+- A field per instrument on the song (editor → Sounds (MIDI)), stored in `Song.patches`. Usually a plain preset number; a song without one sends nothing for that instrument.
+- The keyboard player's synth code stays in the chart's setup line, the first comment (`{comment:17A🎸}`: two digits 1 to 8 and a letter A to D). The editor shows it next to the field as a reading aid; it is never sent. The band maps each song to a MIDI number by hand, since 128 sounds are enough in Ableton for now.
 
 A device sends only the code of its own instrument (Settings → Stage: MIDI → My instrument), on its own MIDI channel, so several musicians can send to the same computer:
 

@@ -952,7 +952,7 @@
     },
     "patches": {
       "label": "Sons (MIDI)",
-      "fromChart": "lu sur la première ligne de la grille",
+      "fromChart": "code synthé de la première ligne de la grille, pas envoyé",
       "add": "Ajouter un instrument…",
       "code": "Code de son pour {{part}}",
       "remove": "Retirer {{part}}",
