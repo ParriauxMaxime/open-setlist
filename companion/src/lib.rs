@@ -1,8 +1,11 @@
 pub mod ble;
 pub mod cli;
 pub mod fake;
+pub mod feedback;
 pub mod http;
 pub mod hub;
+pub mod inputs;
+pub mod latest;
 pub mod midi;
 pub mod net;
 pub mod page;

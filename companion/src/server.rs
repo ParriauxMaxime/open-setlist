@@ -126,6 +126,7 @@ fn route(request: &Request, hub: &Hub, settings: &Settings) -> Reply {
         ("POST", "/midi") => play(request, hub),
         ("POST", "/position") => publish(request, hub),
         ("GET", "/position") => next_position(&request.query, hub),
+        ("GET", "/feedback") => next_feedback(&request.query, hub),
         _ => error(404, "not-found"),
     }
 }
@@ -136,9 +137,11 @@ fn status(hub: &Hub, settings: &Settings) -> Value {
         "version": env!("CARGO_PKG_VERSION"),
         "name": settings.name,
         "midiOut": hub.midi_out(),
+        "midiIn": hub.midi_in(),
         "bluetooth": hub.bluetooth(),
         "sent": hub.sent(),
         "recent": hub.recent(),
+        "feedback": feedback(hub.feedback.current()),
     })
 }
 
@@ -177,7 +180,7 @@ fn label(from: Option<&str>, request: &Request) -> String {
 fn publish(request: &Request, hub: &Hub) -> Reply {
     match serde_json::from_slice::<Value>(&request.body) {
         Ok(position) if is_position(&position) => {
-            json_reply(200, json!({ "seq": hub.positions.publish(position) }))
+            json_reply(200, json!({ "seq": hub.positions.set(position) }))
         }
         _ => bad_request(),
     }
@@ -191,7 +194,7 @@ fn is_position(value: &Value) -> bool {
         && value["index"].is_u64()
 }
 
-/// `after` and `wait` from the query string of `GET /position`.
+/// `after` and `wait` from the query string of a request that waits.
 fn poll(query: &str) -> Option<(u64, Duration)> {
     let mut after = 0;
     let mut wait = DEFAULT_WAIT;
@@ -212,6 +215,21 @@ fn next_position(query: &str, hub: &Hub) -> Reply {
     };
     match hub.positions.next(after, wait) {
         Some((seq, position)) => json_reply(200, json!({ "seq": seq, "position": position })),
+        None => empty(),
+    }
+}
+
+fn feedback((seq, state): (u64, Vec<Message>)) -> Value {
+    json!({ "seq": seq, "state": state })
+}
+
+/// Holds the request until the gear has sent something newer than what the tablet saw.
+fn next_feedback(query: &str, hub: &Hub) -> Reply {
+    let Some((after, wait)) = poll(query) else {
+        return bad_request();
+    };
+    match hub.feedback.next(after, wait) {
+        Some(current) => json_reply(200, feedback(current)),
         None => empty(),
     }
 }

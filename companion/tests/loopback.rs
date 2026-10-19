@@ -15,7 +15,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use midir::os::unix::VirtualInput;
-use midir::{MidiInput, MidiInputConnection};
+use midir::{MidiInput, MidiInputConnection, MidiOutput};
 use open_setlist_companion::midi::{Message, MidiOut, NoOutput, PORT_NAME};
 use open_setlist_companion::ports::Ports;
 use serde_json::json;
@@ -127,6 +127,62 @@ fn midi_posted_over_http_comes_out_of_the_virtual_port() {
     let arrived: Vec<Message> = (0..3).map(|_| next(&received)).collect();
     assert_eq!(json!(arrived), messages);
     assert!(received.recv_timeout(Duration::from_millis(200)).is_err());
+}
+
+/// Sends to every output named like the companion's input, the way Ableton answers.
+fn answer(message: &[u8]) -> usize {
+    let midi = MidiOutput::new("loopback test").unwrap();
+    let ports: Vec<_> = midi
+        .ports()
+        .into_iter()
+        .filter(|port| {
+            midi.port_name(port)
+                .is_ok_and(|name| name.contains(PORT_NAME))
+        })
+        .collect();
+    let count = ports.len();
+    for port in ports {
+        let mut connection = MidiOutput::new("loopback test")
+            .unwrap()
+            .connect(&port, "loopback test")
+            .unwrap();
+        connection.send(message).unwrap();
+    }
+    count
+}
+
+#[test]
+#[ignore = "needs the MIDI system of a real computer"]
+fn what_the_gear_answers_on_the_virtual_input_is_served_as_feedback() {
+    let _alone = alone();
+    let port = free_port();
+    let _program = Program(
+        Command::new(env!("CARGO_BIN_EXE_open-setlist-companion"))
+            .args(["--no-bluetooth", "--no-open", "--port", &port.to_string()])
+            .stdout(Stdio::null())
+            .spawn()
+            .unwrap(),
+    );
+    let deadline = Instant::now() + Duration::from_secs(10);
+    let status = loop {
+        if let Some(answer) = common::request(port, "GET", "/status", "") {
+            break answer.json();
+        }
+        assert!(Instant::now() < deadline, "the program did not start");
+        thread::sleep(Duration::from_millis(50));
+    };
+    assert_eq!(status["midiIn"], PORT_NAME);
+
+    assert!(
+        answer(&[0xB0, 21, 1]) > 0,
+        "no MIDI output named {PORT_NAME}"
+    );
+    answer(&[0xB0, 20, 22]);
+    let reply = common::request(port, "GET", "/feedback?wait=3", "").unwrap();
+    assert_eq!(reply.status, 200);
+    let feedback = reply.json();
+    assert!(feedback["seq"].as_u64().unwrap() >= 2);
+    assert_eq!(feedback["state"], json!([[176, 20, 22], [176, 21, 1]]));
 }
 
 #[test]

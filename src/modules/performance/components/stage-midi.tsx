@@ -8,6 +8,7 @@ const CHIP = "shrink-0 rounded-md border px-2 py-1 text-sm font-medium tabular-n
 
 const MIDI_CHIP_TONE: Record<string, string> = {
   [STAGE_MIDI_STATE.sent]: "border-accent text-accent",
+  [STAGE_MIDI_STATE.confirmed]: "border-success text-success",
   [STAGE_MIDI_STATE.sending]: "border-border text-text-muted",
   [STAGE_MIDI_STATE.noPatch]: "border-border text-text-faint",
   [STAGE_MIDI_STATE.badCode]: "border-danger text-danger",

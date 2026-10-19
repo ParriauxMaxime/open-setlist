@@ -84,9 +84,11 @@ fn status_describes_the_companion() {
             "version": env!("CARGO_PKG_VERSION"),
             "name": "Stage PC",
             "midiOut": "Fake",
+            "midiIn": null,
             "bluetooth": "off",
             "sent": 0,
             "recent": [],
+            "feedback": { "seq": 0, "state": [] },
         })
     );
 }
@@ -333,6 +335,38 @@ fn waiting_tablets_hold_up_neither_each_other_nor_the_midi() {
         assert_eq!(answer.json(), json!({"seq": 1, "position": position(7)}));
     }
     assert!(started.elapsed() < Duration::from_secs(5));
+}
+
+#[test]
+fn feedback_is_held_until_the_gear_answers() {
+    let companion = Companion::start();
+    assert_eq!(companion.get("/feedback?wait=0").status, 204);
+
+    companion.hub.feedback.receive(vec![176, 21, 1]);
+    companion.hub.feedback.receive(vec![176, 20, 22]);
+    let answer = companion.get("/feedback");
+    assert_eq!(answer.status, 200);
+    assert_eq!(
+        answer.json(),
+        json!({"seq": 2, "state": [[176, 20, 22], [176, 21, 1]]})
+    );
+    assert_eq!(companion.get("/feedback?after=2&wait=0").status, 204);
+
+    let waiting = {
+        let port = companion.port;
+        thread::spawn(move || common::request(port, "GET", "/feedback?after=2", "").unwrap())
+    };
+    thread::sleep(Duration::from_millis(100));
+    companion.hub.set_midi_in(Some("Open Setlist".to_string()));
+    companion.hub.feedback.receive(vec![176, 20, 13]);
+    let answer = waiting.join().unwrap();
+    assert_eq!(
+        answer.json(),
+        json!({"seq": 3, "state": [[176, 20, 13], [176, 21, 1]]})
+    );
+    let status = companion.get("/status").json();
+    assert_eq!(status["midiIn"], "Open Setlist");
+    assert_eq!(status["feedback"]["seq"], 3);
 }
 
 #[test]

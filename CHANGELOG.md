@@ -19,6 +19,7 @@
 - The keyboard's sound code is read from the first line of the chart (`17A`); other instruments get a code per song in the editor (Sounds).
 - Two ways out, neither through the internet: the companion program on the stage computer over the band's Wi-Fi router, or Bluetooth MIDI.
 - Follow the leader is back as an option, relayed by the companion program on the local network.
+- Over Wi-Fi, the MIDI chip turns green once Ableton has echoed the sound change: the companion program listens on a second `Open Setlist` port, turn it on in Live as an output with Remote. Its status page shows the answers.
 
 ### No server at all
 - GitHub sync no longer fails on a real catalog ("Maximum call stack size exceeded" from about 50 songs).

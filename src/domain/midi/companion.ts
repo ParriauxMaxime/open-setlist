@@ -12,6 +12,8 @@ import { z } from "zod";
 const REQUEST_TIMEOUT_MS = 4000;
 /** Seconds the companion holds a position request open before answering "nothing new". */
 const POSITION_WAIT_SECONDS = 25;
+/** How long a sound change may take to be echoed by the gear before it counts as not taken. */
+export const FEEDBACK_WAIT_SECONDS = 5;
 
 export const COMPANION_ERROR = {
   /** Wrong address, program not running, another network, or permission refused. */
@@ -51,6 +53,14 @@ const positionSchema = z.object({
 export type StagePosition = z.infer<typeof positionSchema>;
 
 const positionReplySchema = z.object({ seq: z.number().int(), position: positionSchema });
+
+const feedbackSchema = z.object({
+  seq: z.number().int(),
+  /** The last value of each control the gear sent back, as MIDI messages. */
+  state: z.array(z.array(z.number().int())),
+});
+
+export type CompanionFeedback = z.infer<typeof feedbackSchema>;
 
 export interface CompanionOptions {
   fetch?: typeof fetch;
@@ -125,6 +135,48 @@ export async function waitPosition(
   const reply = positionReplySchema.safeParse(await res.json().catch(() => null));
   if (!res.ok || !reply.success) throw new CompanionError(COMPANION_ERROR.rejected);
   return reply.data;
+}
+
+/**
+ * What the gear has answered on the companion's MIDI input once it is newer than `after`;
+ * null when nothing came during the wait. Ableton echoes the value of each mapped control.
+ */
+export async function waitFeedback(
+  base: string,
+  after: number,
+  options: CompanionOptions = {},
+): Promise<CompanionFeedback | null> {
+  const url = `${base}/feedback?after=${after}&wait=${FEEDBACK_WAIT_SECONDS}`;
+  const res = await request(url, {}, options, (FEEDBACK_WAIT_SECONDS + 5) * 1000);
+  if (res.status === 204) return null;
+  const reply = feedbackSchema.safeParse(await res.json().catch(() => null));
+  if (!res.ok || !reply.success) throw new CompanionError(COMPANION_ERROR.rejected);
+  return reply.data;
+}
+
+/** Whether the gear's last known values include every message that was sent. */
+export function confirms(state: number[][], sent: number[][]): boolean {
+  const known = new Set(state.map((message) => message.join(",")));
+  return sent.length > 0 && sent.every((message) => known.has(message.join(",")));
+}
+
+/**
+ * Resolves once the gear has echoed every message. Rejects when the companion cannot be
+ * asked, or when aborted before anything matching came back.
+ */
+export async function awaitConfirmation(
+  base: string,
+  sent: number[][],
+  options: CompanionOptions = {},
+): Promise<void> {
+  let after = 0;
+  while (!options.signal?.aborted) {
+    const feedback = await waitFeedback(base, after, options);
+    if (!feedback) continue;
+    if (confirms(feedback.state, sent)) return;
+    after = feedback.seq;
+  }
+  throw new DOMException("No confirmation before the wait ended", "AbortError");
 }
 
 /**

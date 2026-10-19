@@ -1,5 +1,5 @@
 //! What the Wi-Fi server and the Bluetooth peripheral share: the MIDI output, the counters
-//! behind the status page, and the leader's position.
+//! behind the status page, the leader's position and what the gear sends back.
 
 use std::collections::VecDeque;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -8,6 +8,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
 
+use crate::feedback::Feedback;
 use crate::lock;
 use crate::midi::{Message, MidiOut, NoOutput};
 use crate::position::Positions;
@@ -45,7 +46,9 @@ pub struct Hub {
     sent: AtomicU64,
     recent: Mutex<VecDeque<Batch>>,
     bluetooth: Mutex<Bluetooth>,
+    midi_in: Mutex<Option<String>>,
     pub positions: Positions,
+    pub feedback: Arc<Feedback>,
 }
 
 impl Hub {
@@ -55,7 +58,9 @@ impl Hub {
             sent: AtomicU64::new(0),
             recent: Mutex::new(VecDeque::with_capacity(RECENT)),
             bluetooth: Mutex::new(bluetooth),
+            midi_in: Mutex::new(None),
             positions: Positions::default(),
+            feedback: Arc::default(),
         }
     }
 
@@ -79,6 +84,15 @@ impl Hub {
 
     pub fn midi_out(&self) -> Option<String> {
         self.out.name()
+    }
+
+    /// The input the gear answers on, once it is open.
+    pub fn midi_in(&self) -> Option<String> {
+        lock(&self.midi_in).clone()
+    }
+
+    pub fn set_midi_in(&self, name: Option<String>) {
+        *lock(&self.midi_in) = name;
     }
 
     pub fn sent(&self) -> u64 {

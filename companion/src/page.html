@@ -108,6 +108,7 @@
   <section>
     <p id="midi" class="row"><b>MIDI</b><span></span></p>
     <ol id="fix" hidden><li data-t="fix1"></li><li data-t="fix2"></li></ol>
+    <p id="midiIn" class="row"><b data-t="answers"></b><span></span></p>
     <p id="bluetooth" class="row"><b>Bluetooth</b><span></span></p>
   </section>
   <section>
@@ -124,6 +125,9 @@
       scan: "or point the tablet's camera here",
       offline: "Connect this computer to the band's Wi-Fi.",
       noMidi: "no output",
+      answers: "Answers",
+      noIn: "no input",
+      noAnswer: "nothing received yet (in Ableton, turn on “Open Setlist” as an output with Remote)",
       fix1: "Install loopMIDI (free) and add a port named “Open Setlist”.",
       fix2: "Leave loopMIDI open: this page finds the port by itself.",
       advertising: "ready",
@@ -142,6 +146,9 @@
       scan: "ou visez ici avec l'appareil photo de la tablette",
       offline: "Connectez cet ordinateur au Wi-Fi du groupe.",
       noMidi: "aucune sortie",
+      answers: "Réponses",
+      noIn: "aucune entrée",
+      noAnswer: "rien reçu pour l'instant (dans Ableton, activez «\u00a0Open Setlist\u00a0» en sortie avec Télécommande)",
       fix1: "Installez loopMIDI (gratuit) et ajoutez un port nommé «\u00a0Open Setlist\u00a0».",
       fix2: "Laissez loopMIDI ouvert\u00a0: cette page trouve le port toute seule.",
       advertising: "prêt",
@@ -188,6 +195,11 @@
     byId("midi").className = status.midiOut ? "row ok" : "row warn";
     byId("midi").lastElementChild.textContent = status.midiOut ?? texts.noMidi;
     byId("fix").hidden = Boolean(status.midiOut) || !windows;
+    const answers = status.feedback.state.map(describe).join(", ");
+    byId("midiIn").className = answers ? "row ok" : status.midiIn ? "row" : "row warn";
+    byId("midiIn").lastElementChild.textContent = status.midiIn
+      ? `${status.midiIn} · ${answers || texts.noAnswer}`
+      : texts.noIn;
     byId("bluetooth").className = status.bluetooth === "advertising" ? "row ok" : "row";
     byId("bluetooth").lastElementChild.textContent = texts[status.bluetooth];
     byId("none").hidden = status.recent.length > 0;

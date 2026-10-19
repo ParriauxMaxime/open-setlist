@@ -11,6 +11,7 @@ use std::time::Duration;
 
 use open_setlist_companion::cli::{self, Options, USAGE};
 use open_setlist_companion::hub::{Bluetooth, Hub};
+use open_setlist_companion::inputs::Inputs;
 use open_setlist_companion::midi::{MidiOut, PORT_NAME};
 use open_setlist_companion::ports::{self, Ports};
 use open_setlist_companion::server::{self, APP, Settings};
@@ -107,6 +108,9 @@ fn run(
         Bluetooth::Off
     };
     let hub = Arc::new(Hub::new(ports.clone(), bluetooth));
+    let inputs = Inputs::new(options.input.clone(), hub.feedback.clone());
+    inputs.refresh();
+    hub.set_midi_in(inputs.name());
     let settings = Settings {
         name: net::computer_name(),
         local_name: net::local_name(),
@@ -118,6 +122,8 @@ fn run(
     print_addresses(&settings);
     let mut midi_out = ports.name();
     print_midi(midi_out.as_deref(), options.out.as_deref());
+    let mut midi_in = inputs.name();
+    print_midi_in(midi_in.as_deref());
     for (wanted, found) in ports.copies() {
         match found {
             Some(name) => println!("Copy to:     {name}"),
@@ -148,6 +154,13 @@ fn run(
         if now != midi_out {
             print_midi(now.as_deref(), options.out.as_deref());
             midi_out = now;
+        }
+        inputs.refresh();
+        let now = inputs.name();
+        if now != midi_in {
+            print_midi_in(now.as_deref());
+            hub.set_midi_in(now.clone());
+            midi_in = now;
         }
     }
 }
@@ -188,6 +201,21 @@ fn print_midi(found: Option<&str>, wanted: Option<&str>) {
             println!("             \"{PORT_NAME}\": it is found within a few seconds.");
         }
         (None, None) => println!("MIDI output: the \"{PORT_NAME}\" port could not be created"),
+    }
+}
+
+fn print_midi_in(found: Option<&str>) {
+    match found {
+        Some(name) => {
+            println!(
+                "MIDI input:  {name} (in Ableton Live, turn it on as a MIDI output with Remote)"
+            )
+        }
+        None if cfg!(windows) => {
+            println!("MIDI input:  none. For Ableton's answers, add a loopMIDI port named");
+            println!("             \"{PORT_NAME} Feedback\" or start with --in <name>.");
+        }
+        None => println!("MIDI input:  the \"{PORT_NAME}\" port could not be created"),
     }
 }
 

@@ -1,11 +1,14 @@
 import { installMemoryLocalStorage } from "../sync/test-fakes";
 import {
+  awaitConfirmation,
   COMPANION_ERROR,
   CompanionError,
   companionStatus,
+  confirms,
   followIndex,
   postPosition,
   sendToCompanion,
+  waitFeedback,
   waitPosition,
 } from "./companion";
 import { MIDI_ENCODING } from "./patch";
@@ -135,6 +138,67 @@ describe("companion client", () => {
     expect(await waitPosition(BASE, 4, { fetch })).toBeNull();
   });
 
+  it("waits for the gear's answers and checks the sent messages are among them", async () => {
+    const sent = [
+      [0xb0, 21, 1],
+      [0xb0, 20, 22],
+    ];
+    // Nothing yet, then the letter alone, then both: the gear answers one control at a time
+    const answers = [
+      new Response(null, { status: 204 }),
+      json({ seq: 1, state: [[0xb0, 21, 1]] }),
+      json({
+        seq: 2,
+        state: [
+          [0xb0, 20, 22],
+          [0xb0, 21, 1],
+        ],
+      }),
+    ];
+    const { calls, fetch } = fakeFetch(
+      () => answers.shift() ?? new Response(null, { status: 204 }),
+    );
+
+    expect(await waitFeedback(BASE, 0, { fetch })).toBeNull();
+    expect(calls[0].url).toBe(`${BASE}/feedback?after=0&wait=5`);
+    expect(await waitFeedback(BASE, 0, { fetch })).toEqual({ seq: 1, state: [[0xb0, 21, 1]] });
+
+    expect(
+      confirms(
+        [
+          [0xb0, 20, 22],
+          [0xb0, 21, 1],
+        ],
+        sent,
+      ),
+    ).toBe(true);
+    expect(
+      confirms(
+        [
+          [0xb0, 20, 22],
+          [0xb0, 21, 2],
+        ],
+        sent,
+      ),
+    ).toBe(false);
+    expect(
+      confirms(
+        [
+          [0xb0, 20, 22],
+          [0xb0, 21, 1],
+        ],
+        [],
+      ),
+    ).toBe(false);
+
+    await awaitConfirmation(BASE, sent, { fetch });
+    expect(calls.map((call) => call.url.replace(BASE, ""))).toEqual([
+      "/feedback?after=0&wait=5",
+      "/feedback?after=0&wait=5",
+      "/feedback?after=0&wait=5",
+    ]);
+  });
+
   it("stops waiting when the page moves on", async () => {
     const abort = new AbortController();
     const fetch = ((_url: string, init: RequestInit) =>
@@ -145,6 +209,19 @@ describe("companion client", () => {
     abort.abort();
     const error = await waiting.catch((err: unknown) => err);
     expect(error).not.toBeInstanceOf(CompanionError);
+  });
+
+  it("does not count a confirmation that never came when the wait is given up", async () => {
+    const abort = new AbortController();
+    const { fetch } = fakeFetch(() => {
+      abort.abort();
+      return new Response(null, { status: 204 });
+    });
+    const error = await awaitConfirmation(BASE, [[0xb0, 20, 1]], {
+      fetch,
+      signal: abort.signal,
+    }).catch((err: unknown) => err);
+    expect(error).toBeInstanceOf(DOMException);
   });
 });
 

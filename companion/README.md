@@ -31,6 +31,11 @@ Keep it running during the gig; close its window to stop it.
   (the name of the loopback ports Microsoft announces for Windows MIDI Services). Windows
   asks twice on the first run: to run an unsigned program (More info > Run anyway), and to
   let it through the firewall. Allow the firewall, or tablets cannot reach it.
+- **Answers from Ableton**: the program also listens on a MIDI input. On macOS and Linux it
+  is a second `Open Setlist` port, which Ableton sees as an output: turn it on with Remote,
+  and Live echoes the value of each mapped control when it changes. Tablets read those
+  answers to confirm that the sound change was taken. On Windows, add a second loopMIDI
+  port whose name contains `feedback` and send Ableton's output there, or use `--in`.
 - **Bluetooth**: tablets find the computer as a BLE MIDI device named `Open Setlist`
   (under the computer's own name on Windows). macOS asks to allow Bluetooth the first time
   a given file is run.
@@ -40,6 +45,7 @@ Keep it running during the gig; close its window to stop it.
 | Option | |
 |---|---|
 | `--out <name>` | Send MIDI to the existing output whose name contains `<name>` |
+| `--in <name>` | Listen for the gear's answers on the existing input whose name contains `<name>` |
 | `--also <name>` | Also send every message to that output; can be repeated |
 | `--list` | List the MIDI outputs of this computer, then quit |
 | `--port <number>` | Listen on another port than 7777 |
@@ -57,6 +63,7 @@ JSON over HTTP, answered with the headers a web page from another origin needs.
 | `POST /midi` `{"messages":[[176,20,6]],"from":"Keys"}` | `{"sent":1}`; 400 if a message is not a channel voice message, 503 without a MIDI output |
 | `POST /position` `{"from","setlistId","songId","index"}` | `{"seq":1}` |
 | `GET /position?after=<seq>&wait=<seconds>` | The latest position once it is newer than `after`, or 204 when the wait runs out |
+| `GET /feedback?after=<seq>&wait=<seconds>` | `{"seq":3,"state":[[176,20,22],[176,21,1]]}`, the last value of each control the gear sent back, once newer than `after`; 204 when the wait runs out |
 | `GET /` | The status page |
 
 There is no authentication: the program is meant for a router that only the band uses.

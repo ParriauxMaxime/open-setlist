@@ -848,6 +848,7 @@
       "disconnected": "MIDI: Bluetooth not connected. Tap to connect",
       "sending": "MIDI: sending {{code}}",
       "sent": "MIDI: {{code}} sent. Tap to send again",
+      "confirmed": "MIDI: {{code}} taken by your gear. Tap to send again",
       "failed": "MIDI: {{code}} was not sent. Tap to try again"
     },
     "follow": {

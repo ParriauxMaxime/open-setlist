@@ -1,6 +1,6 @@
 [package]
 name = "open-setlist-companion"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "Plays the MIDI messages Open Setlist tablets send on song change, on the computer that runs Ableton Live"
 license = "MIT"

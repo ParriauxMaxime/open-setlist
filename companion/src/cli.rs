@@ -11,6 +11,7 @@ Double-click it, or run it without options: it tells you what to do next.
 Usage: open-setlist-companion [options]
 
   --out <name>      Send MIDI to the existing output whose name contains <name>
+  --in <name>       Listen for the gear's answers on the input whose name contains <name>
   --also <name>     Also send every message to that output (can be repeated)
   --list            List the MIDI outputs of this computer, then quit
   --port <number>   Listen on another port than 7777
@@ -22,6 +23,7 @@ Usage: open-setlist-companion [options]
 #[derive(Debug, PartialEq, Eq)]
 pub struct Options {
     pub out: Option<String>,
+    pub input: Option<String>,
     pub also: Vec<String>,
     pub port: u16,
     pub app_url: String,
@@ -33,6 +35,7 @@ impl Default for Options {
     fn default() -> Self {
         Self {
             out: None,
+            input: None,
             also: Vec::new(),
             port: DEFAULT_PORT,
             app_url: DEFAULT_APP_URL.to_string(),
@@ -69,6 +72,7 @@ pub fn parse(args: impl IntoIterator<Item = String>) -> Result<Command, String> 
         };
         match flag {
             "--out" => options.out = Some(value()?),
+            "--in" => options.input = Some(value()?),
             "--also" => options.also.push(value()?),
             "--app-url" => options.app_url = value()?,
             "--port" => {
@@ -111,6 +115,7 @@ mod tests {
         let command = parsed(&[
             "--out",
             "loopMIDI",
+            "--in=Feedback",
             "--also",
             "SPD-SX",
             "--also=HX Stomp",
@@ -124,6 +129,7 @@ mod tests {
             command,
             Ok(Command::Run(Options {
                 out: Some("loopMIDI".to_string()),
+                input: Some("Feedback".to_string()),
                 also: vec!["SPD-SX".to_string(), "HX Stomp".to_string()],
                 port: 7800,
                 app_url: "http://localhost:3000/settings".to_string(),

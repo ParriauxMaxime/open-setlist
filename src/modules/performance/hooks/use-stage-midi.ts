@@ -1,5 +1,6 @@
 import type { Song } from "@db";
 import { BLE_STATE, connectBleMidi } from "@domain/midi/bluetooth";
+import { awaitConfirmation, FEEDBACK_WAIT_SECONDS } from "@domain/midi/companion";
 import { parsePatchCode, patchMessages, songPatch } from "@domain/midi/patch";
 import { sendMidi } from "@domain/midi/send";
 import { MIDI_TRANSPORT, patchEncoding } from "@domain/midi/settings";
@@ -8,6 +9,8 @@ import { useBleMidi, useMidiSettings } from "../../shared/hooks/use-midi-setting
 
 /** Flipping through songs must not fire a sound change for each one passed. */
 const SETTLE_MS = 300;
+/** Past this, the gear did not echo the change: it stays "sent", not "confirmed". */
+const CONFIRM_MS = (FEEDBACK_WAIT_SECONDS + 1) * 1000;
 
 export const STAGE_MIDI_STATE = {
   /** This song has no code for the musician's instrument: nothing to send. */
@@ -18,6 +21,8 @@ export const STAGE_MIDI_STATE = {
   disconnected: "disconnected",
   sending: "sending",
   sent: "sent",
+  /** Over Wi-Fi: the gear echoed every message, Ableton has the sound. */
+  confirmed: "confirmed",
   failed: "failed",
 } as const;
 
@@ -64,16 +69,30 @@ export function useStageMidi(song: Song | undefined): StageMidi {
 
     setState(STAGE_MIDI_STATE.sending);
     const abort = new AbortController();
+    const { signal } = abort;
+    let confirmTimer: ReturnType<typeof setTimeout> | undefined;
+    const confirm = () => {
+      if (overBluetooth) return;
+      confirmTimer = setTimeout(() => abort.abort(), CONFIRM_MS);
+      awaitConfirmation(settings.companion, messages, { signal }).then(
+        () => setState(STAGE_MIDI_STATE.confirmed),
+        () => undefined,
+      );
+    };
     const timer = setTimeout(() => {
-      sendMidi(settings, messages, { signal: abort.signal }).then(
-        () => setState(STAGE_MIDI_STATE.sent),
+      sendMidi(settings, messages, { signal }).then(
         () => {
-          if (!abort.signal.aborted) setState(STAGE_MIDI_STATE.failed);
+          setState(STAGE_MIDI_STATE.sent);
+          confirm();
+        },
+        () => {
+          if (!signal.aborted) setState(STAGE_MIDI_STATE.failed);
         },
       );
     }, SETTLE_MS);
     return () => {
       clearTimeout(timer);
+      clearTimeout(confirmTimer);
       abort.abort();
     };
   }, [active, song?.id, code, messages, waitingForDevice, attempt]);
