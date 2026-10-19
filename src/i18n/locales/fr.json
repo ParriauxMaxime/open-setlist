@@ -272,6 +272,12 @@
     "transpositionChanged": "Transposition modifiée pendant la synchro",
     "transpositionDetail": "{{title}} : {{from}} → {{to}}",
     "backupHeading": "Sauvegarde et import",
+    "notConnected": "Non connecté",
+    "pulling": "Réception...",
+    "pushing": "Envoi...",
+    "upToDate": "Tout est à jour.",
+    "setlistHelper": "Setlist Helper",
+    "setlistHelperDesc": "Récupérez votre catalogue et vos setlists depuis l’appli Setlist Helper.",
     "files": {
       "synced": "Partitions\u00a0: {{sent}} envoyées, {{received}} reçues.",
       "failed": "Les chansons sont synchronisées, mais les partitions n’ont pas pu être transférées. Relancez la synchro plus tard.",

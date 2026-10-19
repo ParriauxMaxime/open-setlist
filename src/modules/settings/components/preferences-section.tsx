@@ -3,8 +3,8 @@ import { INSTRUMENT_VALUES } from "@domain/chords/types";
 import { ACCENT_PRESETS, type AppPreferences } from "@domain/preferences";
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
+import { Card, CardRow, Choice, ToggleRow } from "../../design-system/components/card";
 import { Select } from "../../design-system/components/form";
-import { Choice, SettingRow, SettingsGroup, ToggleRow } from "./setting-row";
 
 const SCHEME_KEYS: Record<string, string> = {
   light: "settings.scheme.light",
@@ -32,8 +32,8 @@ export function PreferencesSection({ prefs, update }: PreferencesSectionProps) {
 
   return (
     <>
-      <SettingsGroup>
-        <SettingRow label={t("settings.preferences.language")}>
+      <Card>
+        <CardRow label={t("settings.preferences.language")}>
           {(["en", "fr"] as const).map((loc) => (
             <Choice
               key={loc}
@@ -46,9 +46,9 @@ export function PreferencesSection({ prefs, update }: PreferencesSectionProps) {
               {loc === "en" ? "English" : "Français"}
             </Choice>
           ))}
-        </SettingRow>
+        </CardRow>
 
-        <SettingRow label={t("notation.label")} description={t("notation.desc")}>
+        <CardRow label={t("notation.label")} description={t("notation.desc")}>
           <Select
             value={prefs.notation}
             onChange={(e) => {
@@ -63,9 +63,9 @@ export function PreferencesSection({ prefs, update }: PreferencesSectionProps) {
               </option>
             ))}
           </Select>
-        </SettingRow>
+        </CardRow>
 
-        <SettingRow label={t("settings.instrument.label")}>
+        <CardRow label={t("settings.instrument.label")}>
           {INSTRUMENT_VALUES.map((inst) => (
             <Choice
               key={inst}
@@ -75,11 +75,11 @@ export function PreferencesSection({ prefs, update }: PreferencesSectionProps) {
               {t(`settings.instrument.${inst}`)}
             </Choice>
           ))}
-        </SettingRow>
-      </SettingsGroup>
+        </CardRow>
+      </Card>
 
-      <SettingsGroup title={t("settings.appearance.heading")}>
-        <SettingRow label={t("settings.scheme.label")}>
+      <Card title={t("settings.appearance.heading")}>
+        <CardRow label={t("settings.scheme.label")}>
           {(["light", "dark", "system"] as const).map((scheme) => (
             <Choice
               key={scheme}
@@ -89,9 +89,9 @@ export function PreferencesSection({ prefs, update }: PreferencesSectionProps) {
               {t(SCHEME_KEYS[scheme])}
             </Choice>
           ))}
-        </SettingRow>
+        </CardRow>
 
-        <SettingRow label={t("settings.accent.label")} stacked>
+        <CardRow label={t("settings.accent.label")} stacked>
           <div className="flex flex-wrap gap-2">
             {ACCENT_PRESETS.map((preset) => (
               <Choice
@@ -124,7 +124,7 @@ export function PreferencesSection({ prefs, update }: PreferencesSectionProps) {
               {t("common.custom")}
             </label>
           </div>
-        </SettingRow>
+        </CardRow>
 
         <ToggleRow
           label={t("settings.scheme.forceDark")}
@@ -132,7 +132,7 @@ export function PreferencesSection({ prefs, update }: PreferencesSectionProps) {
           checked={prefs.performForceDark}
           onChange={(performForceDark) => update({ performForceDark })}
         />
-      </SettingsGroup>
+      </Card>
     </>
   );
 }

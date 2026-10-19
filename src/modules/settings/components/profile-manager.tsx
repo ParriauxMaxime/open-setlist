@@ -14,8 +14,8 @@ import Dexie from "dexie";
 import type { TFunction } from "i18next";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Badge, Card } from "../../design-system/components/card";
 import { ConfirmModal } from "../../design-system/components/confirm-modal";
-import { SettingsGroup } from "./setting-row";
 
 const AVATAR_PRESETS = [
   "\u{1F3B8}",
@@ -40,7 +40,7 @@ export function ProfileManager() {
   }, [t]);
 
   return (
-    <SettingsGroup>
+    <Card>
       {profiles.map((p) => (
         <ProfileRow
           key={p.id}
@@ -54,7 +54,7 @@ export function ProfileManager() {
           {t("settings.profile.add")}
         </button>
       </div>
-    </SettingsGroup>
+    </Card>
   );
 }
 
@@ -157,11 +157,7 @@ function ProfileRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-sm font-medium text-text">{profile.name}</span>
-          {isActive && (
-            <span className="rounded-full bg-accent-muted px-1.5 py-0.5 text-xs text-accent">
-              {t("settings.profile.active")}
-            </span>
-          )}
+          {isActive && <Badge>{t("settings.profile.active")}</Badge>}
         </div>
         <p className="text-xs text-text-faint">{syncLabel(profile.id, t)}</p>
       </div>

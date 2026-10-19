@@ -1,9 +1,9 @@
 import Dexie from "dexie";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Card, CardRow } from "../../design-system/components/card";
 import { ConfirmModal } from "../../design-system/components/confirm-modal";
 import { WhatsNewCard } from "../../shared/components/whats-new-card";
-import { SettingRow, SettingsGroup } from "./setting-row";
 
 /** What the app is, what changed lately, and the one button that wipes this device. */
 export function AboutSection() {
@@ -25,8 +25,8 @@ export function AboutSection() {
       </p>
       <WhatsNewCard className="mb-6" />
 
-      <SettingsGroup title={t("settings.danger.heading")} danger>
-        <SettingRow
+      <Card title={t("settings.danger.heading")} danger>
+        <CardRow
           label={t("onboarding.about.resetTitle")}
           description={t("onboarding.about.resetMessage")}
         >
@@ -37,8 +37,8 @@ export function AboutSection() {
           >
             {t("settings.danger.reset")}
           </button>
-        </SettingRow>
-      </SettingsGroup>
+        </CardRow>
+      </Card>
 
       <p className="text-xs text-text-faint">{t("onboarding.about.version")}</p>
 

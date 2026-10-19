@@ -10,7 +10,7 @@ import {
 } from "@domain/preferences";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Choice, SettingRow, SettingsGroup, ToggleRow } from "./setting-row";
+import { Card, CardRow, Choice, ToggleRow } from "../../design-system/components/card";
 
 const THEME_NAME_KEYS: Record<string, string> = {
   "High Contrast": "settings.theme.highContrast",
@@ -68,7 +68,7 @@ export function DisplaySection({ prefs, update, replace }: DisplaySectionProps) 
 
   return (
     <>
-      <SettingsGroup title={t("settings.sizes.heading")}>
+      <Card title={t("settings.sizes.heading")}>
         <SliderRow
           label={t("settings.display.scale")}
           description={t("settings.display.scaleDesc")}
@@ -100,10 +100,10 @@ export function DisplaySection({ prefs, update, replace }: DisplaySectionProps) 
           checked={prefs.performDoubleTapScale}
           onChange={(performDoubleTapScale) => update({ performDoubleTapScale })}
         />
-      </SettingsGroup>
+      </Card>
 
-      <SettingsGroup title={t("settings.colors.heading")}>
-        <SettingRow label={t("settings.theme.heading")} stacked>
+      <Card title={t("settings.colors.heading")}>
+        <CardRow label={t("settings.theme.heading")} stacked>
           <div className="flex flex-wrap gap-2">
             {COLOR_THEMES.map((theme) => (
               <Choice
@@ -121,7 +121,7 @@ export function DisplaySection({ prefs, update, replace }: DisplaySectionProps) 
               </span>
             )}
           </div>
-        </SettingRow>
+        </CardRow>
         <ColorRow
           label={t("settings.colors.chords")}
           value={prefs.chordColor}
@@ -142,23 +142,23 @@ export function DisplaySection({ prefs, update, replace }: DisplaySectionProps) 
           value={prefs.bridgeColor}
           onChange={(bridgeColor) => update({ bridgeColor })}
         />
-      </SettingsGroup>
+      </Card>
 
-      <SettingsGroup title={t("settings.backup.heading")}>
-        <SettingRow label={t("settings.backup.file")} description={t("settings.backup.fileDesc")}>
+      <Card title={t("settings.backup.heading")}>
+        <CardRow label={t("settings.backup.file")} description={t("settings.backup.fileDesc")}>
           <button type="button" onClick={handleExport} className="btn btn-outline btn-sm">
             {t("common.export")}
           </button>
           <button type="button" onClick={handleImport} className="btn btn-ghost btn-sm">
             {t("common.import")}
           </button>
-        </SettingRow>
-        <SettingRow label={t("settings.preferences.resetToDefaults")}>
+        </CardRow>
+        <CardRow label={t("settings.preferences.resetToDefaults")}>
           <button type="button" onClick={handleReset} className="btn btn-ghost btn-sm">
             {t("settings.backup.reset")}
           </button>
-        </SettingRow>
-      </SettingsGroup>
+        </CardRow>
+      </Card>
 
       <div aria-live="polite">
         {status.type === "success" && <p className="text-sm text-accent">{status.message}</p>}
@@ -207,7 +207,7 @@ function SliderRow({
   onChange,
 }: SliderRowProps) {
   return (
-    <SettingRow label={label} description={description} stacked>
+    <CardRow label={label} description={description} stacked>
       <label className="flex items-center gap-3">
         <input
           type="range"
@@ -224,7 +224,7 @@ function SliderRow({
           {unit}
         </span>
       </label>
-    </SettingRow>
+    </CardRow>
   );
 }
 
@@ -236,7 +236,7 @@ interface ColorRowProps {
 
 function ColorRow({ label, value, onChange }: ColorRowProps) {
   return (
-    <SettingRow label={label}>
+    <CardRow label={label}>
       <div className="flex items-center gap-2">
         <input
           type="color"
@@ -257,6 +257,6 @@ function ColorRow({ label, value, onChange }: ColorRowProps) {
           aria-label={label}
         />
       </div>
-    </SettingRow>
+    </CardRow>
   );
 }

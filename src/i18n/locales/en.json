@@ -272,6 +272,12 @@
     "transpositionChanged": "Transposition changed during sync",
     "transpositionDetail": "{{title}}: {{from}} → {{to}}",
     "backupHeading": "Backup and import",
+    "notConnected": "Not connected",
+    "pulling": "Pulling...",
+    "pushing": "Pushing...",
+    "upToDate": "Everything is up to date.",
+    "setlistHelper": "Setlist Helper",
+    "setlistHelperDesc": "Bring your catalog and setlists over from the Setlist Helper app.",
     "files": {
       "synced": "Sheet music: {{sent}} sent, {{received}} received.",
       "failed": "Songs are in sync, but the sheet music could not be transferred. Sync again later.",

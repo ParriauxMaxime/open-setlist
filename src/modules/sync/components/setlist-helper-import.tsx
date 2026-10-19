@@ -94,7 +94,7 @@ export function SetlistHelperImport({ disabled, onSuccess, onError }: SetlistHel
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={disabled || busy}
-        className="btn btn-ghost"
+        className="btn btn-ghost btn-sm"
       >
         {busy ? t("importSetlistHelper.reading") : t("importSetlistHelper.button")}
       </button>

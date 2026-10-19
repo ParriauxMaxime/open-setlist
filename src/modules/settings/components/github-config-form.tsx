@@ -7,7 +7,6 @@ import {
 } from "@domain/sync/config";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { GitHubIcon } from "../../design-system/components/icons";
 import { GitHubInvitePanel } from "./github-invite-panel";
 
 type Status =
@@ -92,19 +91,9 @@ export function GitHubConfigForm({
   const [inviteOpen, setInviteOpen] = useState(false);
 
   return (
-    <details
-      id="github"
-      open={defaultOpen || undefined}
-      className="accordion group rounded-md border border-border"
-    >
-      <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-semibold select-none">
-        <GitHubIcon className="h-4 w-4" />
+    <details id="github" open={defaultOpen || undefined} className="accordion group">
+      <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm select-none">
         {t("settings.github.heading")}
-        {isConnected && (
-          <span className="mr-2 rounded-full bg-accent-muted px-2 py-0.5 text-xs text-accent">
-            {t("settings.github.connected", { repo: `${existing.owner}/${existing.repo}` })}
-          </span>
-        )}
       </summary>
 
       <div className="accordion-content">

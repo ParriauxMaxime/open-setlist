@@ -6,7 +6,6 @@ import { createDriveFile, createGoogleDriveAdapter } from "@domain/sync/adapters
 import { clearSyncConfig, loadSyncConfig, saveSyncConfig } from "@domain/sync/config";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { GoogleDriveIcon } from "../../design-system/components/icons";
 
 type Status =
   | { type: "idle" }
@@ -126,19 +125,9 @@ export function GoogleDriveConfigForm({
   if (!available) return null;
 
   return (
-    <details
-      id="google-drive"
-      open={defaultOpen || undefined}
-      className="accordion group rounded-md border border-border"
-    >
-      <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-semibold select-none">
-        <GoogleDriveIcon className="h-4 w-4" />
+    <details id="google-drive" open={defaultOpen || undefined} className="accordion group">
+      <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm select-none">
         {t("settings.googleDrive.heading")}
-        {isConnected && (
-          <span className="mr-2 rounded-full bg-accent-muted px-2 py-0.5 text-xs text-accent">
-            {t("settings.googleDrive.connected")}
-          </span>
-        )}
       </summary>
 
       <div className="accordion-content">

@@ -23,10 +23,10 @@ import {
 import { PART_VALUES } from "@domain/parts";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Card, CardRow, Choice, ToggleRow } from "../../design-system/components/card";
 import { Input, Select } from "../../design-system/components/form";
 import { partLabel } from "../../performance/components/my-part-menu";
 import { useBleMidi, useMidiSettings } from "../../shared/hooks/use-midi-settings";
-import { Choice, SettingRow, SettingsGroup, ToggleRow } from "./setting-row";
 
 type Check =
   | { type: "idle" }
@@ -102,8 +102,8 @@ export function StageMidiSettings() {
 
   return (
     <>
-      <SettingsGroup>
-        <SettingRow label={t("midi.role.label")} description={t("midi.role.hint")}>
+      <Card>
+        <CardRow label={t("midi.role.label")} description={t("midi.role.hint")}>
           <Select
             value={settings.role ?? ""}
             onChange={(e) => saveMidiSettings({ role: e.target.value || undefined })}
@@ -116,16 +116,16 @@ export function StageMidiSettings() {
               </option>
             ))}
           </Select>
-        </SettingRow>
+        </CardRow>
         <ToggleRow
           label={t("midi.enabled")}
           checked={settings.enabled}
           onChange={(enabled) => saveMidiSettings({ enabled })}
         />
-      </SettingsGroup>
+      </Card>
 
-      <SettingsGroup>
-        <SettingRow label={t("midi.transport.label")}>
+      <Card>
+        <CardRow label={t("midi.transport.label")}>
           {MIDI_TRANSPORT_VALUES.map((transport) => (
             <Choice
               key={transport}
@@ -138,10 +138,10 @@ export function StageMidiSettings() {
               {t(`midi.transport.${transport}`)}
             </Choice>
           ))}
-        </SettingRow>
+        </CardRow>
 
         {overWifi ? (
-          <SettingRow label={t("midi.wifi.address")} description={t("midi.wifi.desc")} stacked>
+          <CardRow label={t("midi.wifi.address")} description={t("midi.wifi.desc")} stacked>
             <div className="flex max-w-md gap-2">
               <Input
                 value={address}
@@ -159,11 +159,11 @@ export function StageMidiSettings() {
             </div>
             <p className="text-xs text-text-faint">{t("midi.wifi.permission")}</p>
             {checkMessage}
-          </SettingRow>
+          </CardRow>
         ) : ble.state === BLE_STATE.unsupported ? (
           <div className="px-4 py-3 text-sm text-warning">{t("midi.bluetooth.unsupported")}</div>
         ) : (
-          <SettingRow
+          <CardRow
             label={t(`midi.bluetooth.state.${ble.state}`, { name: ble.deviceName ?? "" })}
             description={`${t("midi.bluetooth.desc")} ${t("midi.bluetooth.reconnect")}`}
           >
@@ -180,12 +180,12 @@ export function StageMidiSettings() {
                 {t("midi.bluetooth.disconnect")}
               </button>
             )}
-          </SettingRow>
+          </CardRow>
         )}
-      </SettingsGroup>
+      </Card>
 
-      <SettingsGroup title={t("midi.test.label")}>
-        <SettingRow label={t("midi.test.code")} description={t("midi.test.desc")} stacked>
+      <Card title={t("midi.test.label")}>
+        <CardRow label={t("midi.test.code")} description={t("midi.test.desc")} stacked>
           <div className="flex flex-wrap items-center gap-2">
             <Input
               value={testCode}
@@ -209,11 +209,11 @@ export function StageMidiSettings() {
             )}
           </div>
           {!overWifi && checkMessage}
-        </SettingRow>
-      </SettingsGroup>
+        </CardRow>
+      </Card>
 
-      <SettingsGroup title={t("midi.advanced.label")}>
-        <SettingRow label={t("midi.advanced.channel")}>
+      <Card title={t("midi.advanced.label")}>
+        <CardRow label={t("midi.advanced.channel")}>
           <Input
             type="number"
             min={1}
@@ -224,8 +224,8 @@ export function StageMidiSettings() {
             aria-label={t("midi.advanced.channel")}
             className="w-24"
           />
-        </SettingRow>
-        <SettingRow label={t("midi.advanced.encoding")}>
+        </CardRow>
+        <CardRow label={t("midi.advanced.encoding")}>
           <Select
             value={encoding.encoding}
             onChange={(e) => saveMidiSettings({ encoding: e.target.value })}
@@ -237,10 +237,10 @@ export function StageMidiSettings() {
               </option>
             ))}
           </Select>
-        </SettingRow>
+        </CardRow>
         {encoding.encoding === MIDI_ENCODING.ccPair ? (
           <>
-            <SettingRow label={t("midi.advanced.ccBank")}>
+            <CardRow label={t("midi.advanced.ccBank")}>
               <Input
                 type="number"
                 min={0}
@@ -250,8 +250,8 @@ export function StageMidiSettings() {
                 aria-label={t("midi.advanced.ccBank")}
                 className="w-24"
               />
-            </SettingRow>
-            <SettingRow label={t("midi.advanced.ccSlot")}>
+            </CardRow>
+            <CardRow label={t("midi.advanced.ccSlot")}>
               <Input
                 type="number"
                 min={0}
@@ -261,7 +261,7 @@ export function StageMidiSettings() {
                 aria-label={t("midi.advanced.ccSlot")}
                 className="w-24"
               />
-            </SettingRow>
+            </CardRow>
           </>
         ) : (
           <ToggleRow
@@ -270,7 +270,7 @@ export function StageMidiSettings() {
             onChange={(programFromOne) => saveMidiSettings({ programFromOne })}
           />
         )}
-      </SettingsGroup>
+      </Card>
     </>
   );
 }

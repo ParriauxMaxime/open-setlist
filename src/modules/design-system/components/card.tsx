@@ -1,17 +1,24 @@
 import type { ReactNode } from "react";
 
-interface SettingsGroupProps {
-  title?: string;
+interface CardProps {
+  title?: ReactNode;
   description?: string;
+  /** Right side of the title line: a status badge, a button. */
+  aside?: ReactNode;
   danger?: boolean;
   children: ReactNode;
 }
 
-/** A card of related rows, like a block of macOS System Settings. */
-export function SettingsGroup({ title, description, danger, children }: SettingsGroupProps) {
+/** A bordered block of related rows, like a block of system settings. */
+export function Card({ title, description, aside, danger, children }: CardProps) {
   return (
     <section className="mb-6">
-      {title && <h3 className="mb-1 text-sm font-semibold text-text">{title}</h3>}
+      {(title || aside) && (
+        <div className="mb-1 flex items-center justify-between gap-3">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-text">{title}</h3>
+          {aside}
+        </div>
+      )}
       {description && <p className="mb-2 text-xs text-text-muted">{description}</p>}
       <div
         className={[
@@ -25,16 +32,16 @@ export function SettingsGroup({ title, description, danger, children }: Settings
   );
 }
 
-interface SettingRowProps {
-  label: string;
+interface CardRowProps {
+  label: ReactNode;
   description?: string;
   /** Control under the label on every screen: sliders, wide pickers. */
   stacked?: boolean;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 /** Label and help text on the left, the control on the right. */
-export function SettingRow({ label, description, stacked, children }: SettingRowProps) {
+export function CardRow({ label, description, stacked, children }: CardRowProps) {
   return (
     <div
       className={[
@@ -46,9 +53,11 @@ export function SettingRow({ label, description, stacked, children }: SettingRow
         <div className="text-sm text-text">{label}</div>
         {description && <p className="mt-0.5 text-xs text-text-faint">{description}</p>}
       </div>
-      <div className={stacked ? "" : "flex shrink-0 flex-wrap items-center gap-2 sm:justify-end"}>
-        {children}
-      </div>
+      {children && (
+        <div className={stacked ? "" : "flex shrink-0 flex-wrap items-center gap-2 sm:justify-end"}>
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -102,5 +111,24 @@ export function ToggleRow({ label, description, checked, onChange }: ToggleRowPr
         className="h-4 w-4 shrink-0 rounded accent-[var(--color-accent)]"
       />
     </label>
+  );
+}
+
+interface BadgeProps {
+  tone?: "accent" | "muted" | "warning";
+  children: ReactNode;
+}
+
+/** A small pill of state: connected, active, pending. */
+export function Badge({ tone = "accent", children }: BadgeProps) {
+  const tones = {
+    accent: "bg-accent-muted text-accent",
+    muted: "bg-bg-hover text-text-muted",
+    warning: "bg-warning/15 text-warning",
+  };
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${tones[tone]}`}>
+      {children}
+    </span>
   );
 }

@@ -1,6 +1,5 @@
 import { useDb } from "@db/provider";
 import { exportSnapshot, importSnapshot } from "@db/snapshot";
-import { formatTimeAgo } from "@domain/format";
 import { isGoogleDriveAvailable, requestAccessToken } from "@domain/google-auth";
 import { useActiveProfileId } from "@domain/profiles";
 import { fileAdapter } from "@domain/sync/adapters/file";
@@ -11,14 +10,14 @@ import type { TranspositionMismatch } from "@domain/sync/transposition-mismatch"
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Card, CardRow } from "../design-system/components/card";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { GitHubIcon, GoogleDriveIcon } from "../design-system/components/icons";
 import { GitHubConfigForm } from "../settings/components/github-config-form";
 import { GoogleDriveConfigForm } from "../settings/components/google-drive-config-form";
-import { FileSyncSummary } from "./components/file-sync-summary";
+import { ProviderCard } from "./components/provider-card";
 import { SetlistHelperImport } from "./components/setlist-helper-import";
 import { SetlistHelperSetlistImport } from "./components/setlist-helper-setlist-import";
-import { SyncReview } from "./components/sync-review";
 import { TranspositionAlert } from "./components/transposition-alert";
 import { useRemoteSync } from "./hooks/use-remote-sync";
 
@@ -63,9 +62,6 @@ export function SyncPage() {
     prepare: requestAccessToken,
     onTranspositionMismatches: setTranspositionMismatches,
   });
-  const ghStatus = github.status;
-  const gdStatus = googleDrive.status;
-
   const handleExport = useCallback(async () => {
     setStatus({ type: "exporting" });
     try {
@@ -109,222 +105,92 @@ export function SyncPage() {
         mismatches={transpositionMismatches}
         onDismiss={() => setTranspositionMismatches([])}
       />
-      <h1 className="mb-4 text-2xl font-bold">{t("sync.title")}</h1>
-
+      <h1 className="text-2xl font-bold">{t("sync.title")}</h1>
       <p className="mb-6 text-sm text-text-muted">
         {t("sync.songCount", { count: songCount })},{" "}
         {t("sync.setlistCount", { count: setlistCount })}
       </p>
 
-      {/* GitHub sync section */}
-      <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-        <GitHubIcon className="h-5 w-5" />
-        GitHub
-      </h2>
+      <div className="max-w-2xl">
+        <ProviderCard
+          icon={<GitHubIcon className="h-4 w-4" />}
+          name="GitHub"
+          i18nKey="sync.github"
+          connectedLabel={
+            ghConfigured
+              ? t("settings.github.connected", {
+                  repo: `${syncConfig.owner}/${syncConfig.repo}`,
+                })
+              : undefined
+          }
+          lastSyncedAt={ghConfigured ? syncConfig.lastSyncedAt : undefined}
+          sync={github}
+        >
+          <GitHubConfigForm
+            profileId={profileId}
+            defaultOpen={!ghConfigured}
+            onChange={refreshConnection}
+          />
+        </ProviderCard>
 
-      {!ghConfigured ? (
-        <p className="mb-3 text-sm text-text-muted">{t("sync.github.intro")}</p>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {/* Review mode */}
-          {ghStatus.type === "review" ? (
-            <SyncReview
-              key={`${ghStatus.ctx.versionToken}:${ghStatus.ctx.local.exportedAt}`}
-              diff={ghStatus.ctx.diff}
-              onConfirm={github.confirm}
-              onCancel={github.reset}
-              busy={false}
-              notice={ghStatus.refreshed ? t("syncConflicts.reviewRefreshed") : undefined}
-            />
-          ) : (
-            <>
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={github.start}
-                  disabled={github.busy}
-                  className="btn btn-primary"
-                >
-                  {ghStatus.type === "pulling"
-                    ? "Pulling..."
-                    : ghStatus.type === "pushing"
-                      ? "Pushing..."
-                      : t("sync.github.sync")}
-                </button>
-
-                {syncConfig.lastSyncedAt && ghStatus.type === "idle" && (
-                  <span className="text-sm text-text-muted">
-                    {t("sync.github.lastSync", {
-                      time: formatTimeAgo(syncConfig.lastSyncedAt),
-                    })}
-                  </span>
-                )}
-              </div>
-
-              <div aria-live="polite">
-                {ghStatus.type === "success" && (
-                  <p className="text-sm text-accent">
-                    {ghStatus.result.status === "created"
-                      ? t("sync.github.syncCreated", {
-                          songs: ghStatus.result.songCount,
-                          setlists: ghStatus.result.setlistCount,
-                        })
-                      : ghStatus.result.status === "up-to-date"
-                        ? "Everything is up to date."
-                        : t("sync.github.syncSuccess", {
-                            songs: ghStatus.result.songCount,
-                            setlists: ghStatus.result.setlistCount,
-                          })}
-                  </p>
-                )}
-
-                {ghStatus.type === "success" && <FileSyncSummary files={ghStatus.files} />}
-
-                {ghStatus.type === "error" && (
-                  <p className="text-sm text-danger">
-                    {t("sync.github.syncFailed", { error: ghStatus.message })}
-                  </p>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      <div className="mt-4">
-        <GitHubConfigForm
-          profileId={profileId}
-          defaultOpen={!ghConfigured}
-          onChange={refreshConnection}
-        />
-      </div>
-
-      {/* Google Drive sync section */}
-      {isGoogleDriveAvailable() && (
-        <>
-          <hr className="my-6 border-border" />
-
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-            <GoogleDriveIcon className="h-5 w-5" />
-            Google Drive
-          </h2>
-
-          {!gdConfigured ? (
-            <p className="mb-3 text-sm text-text-muted">{t("sync.googleDrive.intro")}</p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {gdStatus.type === "review" ? (
-                <SyncReview
-                  key={`${gdStatus.ctx.versionToken}:${gdStatus.ctx.local.exportedAt}`}
-                  diff={gdStatus.ctx.diff}
-                  onConfirm={googleDrive.confirm}
-                  onCancel={googleDrive.reset}
-                  busy={false}
-                  notice={gdStatus.refreshed ? t("syncConflicts.reviewRefreshed") : undefined}
-                />
-              ) : (
-                <>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={googleDrive.start}
-                      disabled={googleDrive.busy}
-                      className="btn btn-primary"
-                    >
-                      {gdStatus.type === "authenticating"
-                        ? t("sync.googleDrive.authenticating")
-                        : gdStatus.type === "pulling"
-                          ? "Pulling..."
-                          : gdStatus.type === "pushing"
-                            ? "Pushing..."
-                            : t("sync.googleDrive.sync")}
-                    </button>
-
-                    {syncConfig.lastSyncedAt && gdStatus.type === "idle" && (
-                      <span className="text-sm text-text-muted">
-                        {t("sync.googleDrive.lastSync", {
-                          time: formatTimeAgo(syncConfig.lastSyncedAt),
-                        })}
-                      </span>
-                    )}
-                  </div>
-
-                  <div aria-live="polite">
-                    {gdStatus.type === "success" && (
-                      <p className="text-sm text-accent">
-                        {gdStatus.result.status === "created"
-                          ? t("sync.googleDrive.syncCreated", {
-                              songs: gdStatus.result.songCount,
-                              setlists: gdStatus.result.setlistCount,
-                            })
-                          : gdStatus.result.status === "up-to-date"
-                            ? t("sync.googleDrive.upToDate")
-                            : t("sync.googleDrive.syncSuccess", {
-                                songs: gdStatus.result.songCount,
-                                setlists: gdStatus.result.setlistCount,
-                              })}
-                      </p>
-                    )}
-
-                    {gdStatus.type === "error" && (
-                      <p className="text-sm text-danger">
-                        {t("sync.googleDrive.syncFailed", { error: gdStatus.message })}
-                      </p>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          <div className="mt-4">
+        {isGoogleDriveAvailable() && (
+          <ProviderCard
+            icon={<GoogleDriveIcon className="h-4 w-4" />}
+            name="Google Drive"
+            i18nKey="sync.googleDrive"
+            connectedLabel={gdConfigured ? t("settings.googleDrive.connected") : undefined}
+            lastSyncedAt={gdConfigured ? syncConfig.lastSyncedAt : undefined}
+            sync={googleDrive}
+          >
             <GoogleDriveConfigForm
               profileId={profileId}
               defaultOpen={!gdConfigured}
               onChange={refreshConnection}
             />
-          </div>
-        </>
-      )}
+          </ProviderCard>
+        )}
 
-      <hr className="my-6 border-border" />
-
-      <h2 className="mb-2 text-lg font-semibold">{t("sync.backupHeading")}</h2>
-
-      <p className="mb-4 text-sm text-text-muted">{t("sync.description")}</p>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={handleExport} disabled={busy} className="btn btn-primary">
-          {status.type === "exporting" ? t("sync.exporting") : t("sync.exportToFile")}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setConfirmImport(true)}
-          disabled={busy}
-          className="btn btn-ghost"
-        >
-          {status.type === "importing" ? t("sync.importing") : t("sync.importFile")}
-        </button>
-
-        <SetlistHelperImport
-          disabled={busy}
-          onSuccess={(message) => setStatus({ type: "success", message })}
-          onError={(message) => setStatus({ type: "error", message })}
-        />
-        <SetlistHelperSetlistImport
-          disabled={busy}
-          onSuccess={(message) => setStatus({ type: "success", message })}
-          onError={(message) => setStatus({ type: "error", message })}
-        />
+        <Card title={t("sync.backupHeading")}>
+          <CardRow label={t("sync.exportToFile")} description={t("sync.description")}>
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={busy}
+              className="btn btn-outline btn-sm"
+            >
+              {status.type === "exporting" ? t("sync.exporting") : t("common.export")}
+            </button>
+          </CardRow>
+          <CardRow label={t("sync.importFile")} description={t("sync.importNote")}>
+            <button
+              type="button"
+              onClick={() => setConfirmImport(true)}
+              disabled={busy}
+              className="btn btn-ghost btn-sm"
+            >
+              {status.type === "importing" ? t("sync.importing") : t("common.import")}
+            </button>
+          </CardRow>
+          <CardRow label={t("sync.setlistHelper")} description={t("sync.setlistHelperDesc")}>
+            <SetlistHelperImport
+              disabled={busy}
+              onSuccess={(message) => setStatus({ type: "success", message })}
+              onError={(message) => setStatus({ type: "error", message })}
+            />
+            <SetlistHelperSetlistImport
+              disabled={busy}
+              onSuccess={(message) => setStatus({ type: "success", message })}
+              onError={(message) => setStatus({ type: "error", message })}
+            />
+          </CardRow>
+          {(status.type === "success" || status.type === "error") && (
+            <div aria-live="polite" className="px-4 py-3">
+              {status.type === "success" && <p className="text-sm text-accent">{status.message}</p>}
+              {status.type === "error" && <p className="text-sm text-danger">{status.message}</p>}
+            </div>
+          )}
+        </Card>
       </div>
-
-      <div aria-live="polite">
-        {status.type === "success" && <p className="mt-4 text-sm text-accent">{status.message}</p>}
-        {status.type === "error" && <p className="mt-4 text-sm text-danger">{status.message}</p>}
-      </div>
-
-      <p className="mt-6 text-xs text-text-faint">{t("sync.importNote")}</p>
 
       {confirmImport && (
         <ConfirmModal

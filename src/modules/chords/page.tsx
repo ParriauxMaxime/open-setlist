@@ -49,10 +49,10 @@ export function ChordsPage() {
 
   return (
     <div className="p-page">
-      <div className="mb-6 flex flex-wrap items-center gap-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">{t("chordLib.title")}</h1>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:w-[32rem]">
           <select
             className="field-sm"
             aria-label={t("chordLib.instrument")}
