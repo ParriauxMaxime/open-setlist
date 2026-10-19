@@ -7,6 +7,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
+import { Card } from "../design-system/components/card";
 import { EditorHeader } from "../design-system/components/editor-header";
 import { useNotation } from "../shared/hooks/use-notation";
 
@@ -52,7 +53,7 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
   const totalSongs = setlist.sets.reduce((n, s) => n + s.songIds.length, 0);
 
   return (
-    <div className="p-page">
+    <div className="max-w-3xl p-page">
       <EditorHeader
         breadcrumbs={[{ label: t("nav.setlists"), to: Router.Setlists() }, { label: setlist.name }]}
         actions={
@@ -67,7 +68,7 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
       {totalSongs === 0 ? (
         <p className="text-text-muted">{t("techSheet.noSongs")}</p>
       ) : (
-        <div className="flex flex-col gap-6">
+        <div>
           {setlist.sets.map((set, setIdx) => {
             if (set.songIds.length === 0) return null;
             let songNumber = 0;
@@ -76,36 +77,37 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
             }
 
             return (
-              <div key={set.name}>
-                {setlist.sets.length > 1 && (
-                  <h2 className="mb-3 text-lg font-semibold text-text">{set.name}</h2>
-                )}
-                <div className="flex flex-col gap-2">
-                  {set.songIds.map((songId) => {
-                    const song = songMap.get(songId);
-                    if (!song) return null;
-                    songNumber++;
+              <Card key={set.name} title={setlist.sets.length > 1 ? set.name : undefined}>
+                {set.songIds.map((songId) => {
+                  const song = songMap.get(songId);
+                  if (!song) return null;
+                  songNumber++;
 
-                    const flatIndex = songNumber - 1;
+                  const flatIndex = songNumber - 1;
 
-                    return (
-                      <Link
-                        key={songId}
-                        to={`${Router.Perform({ setlistId })}?start=${flatIndex}`}
-                        className="block rounded-md border border-border bg-bg-surface px-4 py-3 hover:bg-bg-hover transition-colors"
-                      >
-                        <div className="font-semibold text-text">
-                          {songNumber}. {song.title}
+                  return (
+                    <Link
+                      key={songId}
+                      to={`${Router.Perform({ setlistId })}?start=${flatIndex}`}
+                      className="flex gap-3 px-4 py-3 transition-colors first:rounded-t-lg last:rounded-b-lg hover:bg-bg-hover"
+                    >
+                      <span className="w-6 shrink-0 pt-0.5 text-right text-sm tabular-nums text-text-faint">
+                        {songNumber}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-text">
+                          {song.title}
                           {song.artist && (
-                            <span className="font-normal text-text-muted">
-                              {" "}
-                              &mdash; {song.artist}
-                            </span>
+                            <span className="font-normal text-text-muted"> · {song.artist}</span>
                           )}
                         </div>
-                        <div className="mt-1 flex flex-wrap gap-3 text-sm text-text-muted">
-                          {song.key && <span>Key: {formatKey(song.key, notation)}</span>}
-                          {song.bpm && <span>BPM: {song.bpm}</span>}
+                        <div className="mt-0.5 flex flex-wrap gap-3 text-xs text-text-muted">
+                          {song.key && (
+                            <span className="text-chord">
+                              {t("print.key", { key: formatKey(song.key, notation) })}
+                            </span>
+                          )}
+                          {song.bpm && <span>{t("print.bpm", { bpm: song.bpm })}</span>}
                           {song.duration && <span>{formatDuration(song.duration)}</span>}
                         </div>
                         {song.notes && (
@@ -120,11 +122,11 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
                             {song.techNotes}
                           </div>
                         )}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </Card>
             );
           })}
         </div>
