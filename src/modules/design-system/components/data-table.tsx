@@ -37,6 +37,7 @@ interface DataTableProps<T> {
   initialColumnFilters?: ColumnFiltersState;
 }
 
+/** A searchable, sortable table in a card: the filters sit in a toolbar above it. */
 export function DataTable<T>({
   columns,
   data,
@@ -75,33 +76,63 @@ export function DataTable<T>({
   });
 
   const rowCount = table.getRowModel().rows.length;
+  const filterColumns = table.getAllLeafColumns().filter((c) => c.columnDef.meta?.filterType);
+  const initial = initialColumnFilters ?? [];
+  const filtering =
+    globalFilter !== "" || JSON.stringify(columnFilters) !== JSON.stringify(initial);
+  const resetFilters = () => {
+    setGlobalFilter("");
+    setColumnFilters(initial);
+  };
+  const showEverything = () => {
+    setGlobalFilter("");
+    setColumnFilters([]);
+  };
+
+  if (data.length === 0) {
+    return <p className="text-text-muted">{emptyMessage ?? t("common.noData")}</p>;
+  }
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Global search */}
-      {globalSearchFields && (
-        <input
-          type="search"
-          placeholder={searchPlaceholder ?? t("common.search")}
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          aria-label={searchPlaceholder ?? t("common.search")}
-          className="field"
-        />
+      {(globalSearchFields || filterColumns.length > 0) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {globalSearchFields && (
+            <input
+              type="search"
+              placeholder={searchPlaceholder ?? t("common.search")}
+              value={globalFilter}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              aria-label={searchPlaceholder ?? t("common.search")}
+              className="field min-w-48 flex-1"
+            />
+          )}
+          {filterColumns.map((column) => (
+            <div
+              key={column.id}
+              className={column.columnDef.meta?.hideFilterOnMobile ? "hidden md:block" : undefined}
+            >
+              <ColumnFilter column={column} data={data} />
+            </div>
+          ))}
+          {filtering && (
+            <button type="button" onClick={resetFilters} className="btn btn-ghost btn-sm">
+              {t("common.clearFilters")}
+            </button>
+          )}
+        </div>
       )}
 
-      {data.length === 0 ? (
-        <p className="text-text-muted">{emptyMessage ?? t("common.noData")}</p>
-      ) : (
+      <div className="overflow-hidden rounded-lg border border-border bg-bg-surface">
         <table className="w-full text-base md:text-sm">
           <thead>
             {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id} className="border-b border-border text-left">
+              <tr key={hg.id} className="border-b border-border bg-bg-hover/40 text-left">
                 {hg.headers.map((header) => (
                   <th
                     key={header.id}
                     className={[
-                      "px-3 py-2 font-medium text-text-muted",
+                      "px-3 py-2 text-xs font-medium text-text-muted",
                       header.column.columnDef.meta?.className,
                     ]
                       .filter(Boolean)
@@ -117,55 +148,32 @@ export function DataTable<T>({
                         : undefined
                     }
                   >
-                    {header.isPlaceholder ? null : (
-                      <div className="flex flex-col gap-1">
-                        {header.column.getCanSort() ? (
-                          <button
-                            type="button"
-                            onClick={header.column.getToggleSortingHandler()}
-                            className={[
-                              "inline-flex cursor-pointer items-center gap-1 transition-colors hover:text-text",
-                              header.column.getIsSorted() ? "text-accent" : "",
-                            ].join(" ")}
-                          >
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                            <SortIndicator direction={header.column.getIsSorted()} />
-                          </button>
-                        ) : (
-                          flexRender(header.column.columnDef.header, header.getContext())
-                        )}
-                        {header.column.getCanFilter() && (
-                          <div
-                            className={
-                              header.column.columnDef.meta?.hideFilterOnMobile
-                                ? "hidden md:block"
-                                : undefined
-                            }
-                          >
-                            <ColumnFilter column={header.column} data={data} />
-                          </div>
-                        )}
-                      </div>
+                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                      <button
+                        type="button"
+                        onClick={header.column.getToggleSortingHandler()}
+                        className={[
+                          "inline-flex cursor-pointer items-center gap-1 transition-colors hover:text-text",
+                          header.column.getIsSorted() ? "text-accent" : "",
+                        ].join(" ")}
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        <SortIndicator direction={header.column.getIsSorted()} />
+                      </button>
+                    ) : (
+                      flexRender(header.column.columnDef.header, header.getContext())
                     )}
                   </th>
                 ))}
               </tr>
             ))}
           </thead>
-          <tbody>
-            {/* The header stays so that the filters that hid everything can be undone */}
+          <tbody className="divide-y divide-border/60">
             {rowCount === 0 && (
               <tr>
                 <td colSpan={columns.length} className="px-3 py-6 text-text-muted">
                   <span className="mr-3">{t("common.noResults")}</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setGlobalFilter("");
-                      setColumnFilters([]);
-                    }}
-                    className="btn btn-outline"
-                  >
+                  <button type="button" onClick={showEverything} className="btn btn-outline btn-sm">
                     {t("common.clearFilters")}
                   </button>
                 </td>
@@ -177,7 +185,7 @@ export function DataTable<T>({
                 <tr
                   key={row.id}
                   className={[
-                    "border-b border-border/50 transition-colors hover:bg-bg-hover",
+                    "transition-colors hover:bg-bg-hover",
                     href ? "cursor-pointer" : "",
                   ].join(" ")}
                 >
@@ -212,9 +220,13 @@ export function DataTable<T>({
             })}
           </tbody>
         </table>
-      )}
+      </div>
     </div>
   );
+}
+
+function columnName<T>(column: Column<T, unknown>): string {
+  return typeof column.columnDef.header === "string" ? column.columnDef.header : "";
 }
 
 function ColumnFilter<T>({ column, data }: { column: Column<T, unknown>; data: T[] }) {
@@ -228,26 +240,26 @@ function ColumnFilter<T>({ column, data }: { column: Column<T, unknown>; data: T
     return <SelectFilter column={column} data={data} />;
   }
 
-  // Text filter
   const value = (column.getFilterValue() as string) ?? "";
-  const columnName = typeof column.columnDef.header === "string" ? column.columnDef.header : "";
+  const name = columnName(column);
   return (
     <input
       type="text"
       value={value}
       onChange={(e) => column.setFilterValue(e.target.value || undefined)}
-      placeholder={t("common.filter")}
-      aria-label={columnName ? `Filter ${columnName}` : t("common.filter")}
+      placeholder={name || t("common.filter")}
+      aria-label={name ? `Filter ${name}` : t("common.filter")}
       className="field-sm"
     />
   );
 }
 
+/** The unfiltered option reads as the column name, so the toolbar reads "Status, Artist, Key". */
 function SelectFilter<T>({ column, data }: { column: Column<T, unknown>; data: T[] }) {
   const { t } = useTranslation();
   const meta = column.columnDef.meta;
   const value = (column.getFilterValue() as string) ?? "";
-  const columnName = typeof column.columnDef.header === "string" ? column.columnDef.header : "";
+  const name = columnName(column);
 
   const options = useMemo(() => {
     if (!meta?.filterOptions) return [];
@@ -261,10 +273,13 @@ function SelectFilter<T>({ column, data }: { column: Column<T, unknown>; data: T
     <select
       value={value}
       onChange={(e) => column.setFilterValue(e.target.value || undefined)}
-      aria-label={columnName ? `Filter ${columnName}` : t("common.filter")}
-      className="field-sm"
+      aria-label={name ? `Filter ${name}` : t("common.filter")}
+      className={[
+        "field-sm max-w-48 cursor-pointer truncate rounded-full !px-3 !py-1.5 !text-sm",
+        value ? "!border-accent !text-accent" : "",
+      ].join(" ")}
     >
-      <option value="">{t("common.all")}</option>
+      <option value="">{name ? `${name}: ${t("common.all")}` : t("common.all")}</option>
       {options.map((opt) => (
         <option key={opt} value={opt}>
           {meta?.filterOptionLabel?.(opt) ?? opt}

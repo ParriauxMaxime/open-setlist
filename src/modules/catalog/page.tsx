@@ -20,6 +20,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
+import { Badge } from "../design-system/components/card";
 import { DataTable } from "../design-system/components/data-table";
 import { SongStatusDot } from "../shared/components/song-status-dot";
 import { WhatsNewCard } from "../shared/components/whats-new-card";
@@ -97,7 +98,6 @@ export function CatalogPage() {
     col.accessor((song) => resolveSongStatus(song.status), {
       id: "status",
       header: t("songStatus.label"),
-      size: 140,
       sortingFn: (a, b) => songStatusRank(a.original.status) - songStatusRank(b.original.status),
       filterFn: (row, _columnId, filterValue) =>
         matchesStatusFilter(row.original.status, filterValue as string | undefined),
@@ -157,7 +157,13 @@ export function CatalogPage() {
       cell: (info) => {
         const tags = info.getValue();
         return tags.length > 0 ? (
-          <span className="text-text-faint">{tags.slice(0, 3).join(", ")}</span>
+          <span className="flex flex-wrap gap-1">
+            {tags.slice(0, 3).map((tag) => (
+              <Badge key={tag} tone="muted">
+                {tag}
+              </Badge>
+            ))}
+          </span>
         ) : null;
       },
       meta: {
@@ -187,7 +193,14 @@ export function CatalogPage() {
   return (
     <div className="p-page">
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">{t("catalog.title")}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{t("catalog.title")}</h1>
+          {songs && (
+            <p className="text-sm text-text-muted">
+              {t("sync.songCount", { count: songs.length })}
+            </p>
+          )}
+        </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ChartFileImport
             onSuccess={(message) => setImportStatus({ ok: true, message })}
