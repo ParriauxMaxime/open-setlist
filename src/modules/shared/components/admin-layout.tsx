@@ -26,6 +26,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     "SongEdit",
     "Setlists",
     "SetlistEdit",
+    "TechSheet",
     "Chords",
     "Tuner",
     "Quality",
@@ -35,7 +36,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   ]);
 
   const section = route
-    ? route.name === "Setlists" || route.name === "SetlistEdit"
+    ? route.name === "Setlists" || route.name === "SetlistEdit" || route.name === "TechSheet"
       ? "setlists"
       : route.name === "Sync"
         ? "sync"
@@ -95,6 +96,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <button
         type="button"
         onClick={() => setToolsOpen((o) => !o)}
+        aria-expanded={toolsOpen}
         className={[
           "flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
           section === "tools"
@@ -128,6 +130,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <button
         type="button"
         onClick={() => setPlaygroundOpen((o) => !o)}
+        aria-expanded={playgroundOpen}
         className="flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-bg-hover hover:text-text"
       >
         <span className="text-lg" aria-hidden="true">
@@ -168,7 +171,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-bg focus:shadow-lg"
       >
-        Skip to main content
+        {t("a11y.skipToContent")}
       </a>
 
       {/* Sidebar — always visible on desktop */}

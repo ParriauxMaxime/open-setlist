@@ -7,8 +7,10 @@ import {
   useProfiles,
 } from "@domain/profiles";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export function ProfileSwitcher() {
+  const { t } = useTranslation();
   const profiles = useProfiles();
   const activeId = useActiveProfileId();
   const [open, setOpen] = useState(false);
@@ -79,14 +81,14 @@ export function ProfileSwitcher() {
       >
         <span className="text-lg">{active?.avatar ?? "\u{1F3B5}"}</span>
         <span className="flex-1 truncate text-sm font-bold text-text">
-          {active?.name ?? "Profile"}
+          {active?.name ?? t("settings.profile.heading")}
         </span>
         <span className="text-xs text-text-faint">{open ? "\u25B4" : "\u25BE"}</span>
       </button>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute left-0 right-0 top-full z-40 mt-1 rounded-md border border-border bg-bg-surface shadow-lg">
+        <div className="absolute left-0 right-0 top-full z-40 mt-1 overflow-hidden rounded-lg border border-border bg-bg-surface shadow-lg">
           {/* Profile list */}
           {profiles.map((p) => (
             <button
@@ -119,13 +121,13 @@ export function ProfileSwitcher() {
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="Profile name"
-                className="field flex-1 text-sm"
+                placeholder={t("settings.profile.name")}
+                className="field-sm flex-1"
                 // biome-ignore lint/a11y/noAutofocus: focus the input when creating a new profile
                 autoFocus
               />
               <button type="submit" className="text-sm font-medium text-accent">
-                Add
+                {t("common.add")}
               </button>
             </form>
           ) : (
@@ -135,14 +137,12 @@ export function ProfileSwitcher() {
               className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm text-text-muted hover:bg-bg-hover"
             >
               <span className="text-lg">+</span>
-              <span>New Profile</span>
+              <span>{t("settings.profile.newName")}</span>
             </button>
           )}
 
           <div className="border-t border-border px-3 py-1.5">
-            <p className="text-xs text-text-faint">
-              Each profile has its own songs, setlists & sync
-            </p>
+            <p className="text-xs text-text-faint">{t("settings.profile.desc")}</p>
           </div>
         </div>
       )}
