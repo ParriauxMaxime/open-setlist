@@ -8,7 +8,7 @@ leader is on.
 Everything stays on the band's own Wi-Fi router: no internet, no account, no server.
 
 ```
-Tablets -- Wi-Fi, HTTP on port 7777 --+
+Tablets -- Wi-Fi, HTTP or HTTPS on port 7777 --+
                                       +--> companion --> "Open Setlist" MIDI port --> Ableton Live
 Tablets -- Bluetooth, BLE MIDI -------+             \--> --also outputs: drum pad, pedalboard
 ```
@@ -36,6 +36,12 @@ Keep it running during the gig; close its window to stop it.
   and Live echoes the value of each mapped control when it changes. Tablets read those
   answers to confirm that the sound change was taken. On Windows, add a second loopMIDI
   port whose name contains `feedback` and send Ableton's output there, or use `--in`.
+- **Firefox and Safari** on a tablet refuse a plain-HTTP call from Open Setlist, which is
+  served over HTTPS. The companion also answers HTTPS on the same port, with a certificate
+  it signs itself and keeps in its config folder (`~/Library/Application Support`,
+  `%APPDATA%` or `~/.config`, under `open-setlist-companion`). Open `https://<address>` once
+  on the tablet, accept the warning, and Open Setlist reaches it from then on. Chrome needs
+  none of this: it asks once to reach the local network.
 - **Bluetooth**: tablets find the computer as a BLE MIDI device named `Open Setlist`
   (under the computer's own name on Windows). macOS asks to allow Bluetooth the first time
   a given file is run.

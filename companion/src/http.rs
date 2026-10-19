@@ -3,8 +3,10 @@
 //! keeps nothing open, and nothing here can stop the program from listening.
 
 use std::io::{self, Read, Write};
-use std::net::{IpAddr, TcpStream};
+use std::net::IpAddr;
 use std::time::{Duration, Instant};
+
+use crate::tls::Connection;
 
 /// How long a request may take to arrive whole, and its answer to leave.
 const PATIENCE: Duration = Duration::from_secs(10);
@@ -79,7 +81,7 @@ fn parse_head(received: &[u8]) -> Result<Option<Head>, ()> {
 }
 
 /// Reads more of the request, unless the connection closed or the deadline passed.
-fn read_more(stream: &mut TcpStream, into: &mut Vec<u8>, deadline: Instant) -> bool {
+fn read_more(stream: &mut Connection, into: &mut Vec<u8>, deadline: Instant) -> bool {
     let left = deadline.saturating_duration_since(Instant::now());
     let mut chunk = [0; 4096];
     if left.is_zero() || stream.set_read_timeout(Some(left)).is_err() {
@@ -95,7 +97,7 @@ fn read_more(stream: &mut TcpStream, into: &mut Vec<u8>, deadline: Instant) -> b
 }
 
 /// Reads the one request of a connection, with a body of `max_body` bytes at most.
-pub fn read(stream: &mut TcpStream, max_body: usize) -> Incoming {
+pub fn read(stream: &mut Connection, max_body: usize) -> Incoming {
     let deadline = Instant::now() + PATIENCE;
     let mut received = Vec::new();
     let head = loop {
@@ -133,7 +135,7 @@ pub fn read(stream: &mut TcpStream, max_body: usize) -> Incoming {
         path: path.to_string(),
         query: query.to_string(),
         body,
-        from: stream.peer_addr().ok().map(|address| address.ip()),
+        from: stream.peer_ip(),
     })
 }
 
@@ -149,7 +151,7 @@ fn reason(status: u16) -> &'static str {
 }
 
 /// Sends the answer; the connection closes after it. `with_body` is false for HEAD.
-pub fn write(stream: &mut TcpStream, reply: &Reply, with_body: bool) -> io::Result<()> {
+pub fn write(stream: &mut Connection, reply: &Reply, with_body: bool) -> io::Result<()> {
     let mut message = format!("HTTP/1.1 {} {}\r\n", reply.status, reason(reply.status));
     for (name, value) in &reply.headers {
         message += &format!("{name}: {value}\r\n");
@@ -164,7 +166,9 @@ pub fn write(stream: &mut TcpStream, reply: &Reply, with_body: bool) -> io::Resu
         message.extend_from_slice(&reply.body);
     }
     stream.set_write_timeout(Some(PATIENCE))?;
-    stream.write_all(&message)
+    stream.write_all(&message)?;
+    stream.finish();
+    Ok(())
 }
 
 #[cfg(test)]

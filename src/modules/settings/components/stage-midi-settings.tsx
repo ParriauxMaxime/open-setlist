@@ -1,10 +1,5 @@
 import { BLE_STATE, connectBleMidi, disconnectBleMidi } from "@domain/midi/bluetooth";
-import {
-  COMPANION_ERROR,
-  CompanionError,
-  type CompanionStatus,
-  companionStatus,
-} from "@domain/midi/companion";
+import { COMPANION_ERROR, CompanionError, probeCompanion } from "@domain/midi/companion";
 import {
   MIDI_ENCODING,
   MIDI_ENCODING_VALUES,
@@ -17,6 +12,7 @@ import {
   MIDI_TRANSPORT,
   MIDI_TRANSPORT_VALUES,
   normalizeCompanionAddress,
+  otherScheme,
   patchEncoding,
   saveMidiSettings,
 } from "@domain/midi/settings";
@@ -38,6 +34,11 @@ function numberOrUndefined(value: string): number | undefined {
   return value === "" ? undefined : Number(value);
 }
 
+/** The companion's own page over HTTPS, where a browser can be told to trust its certificate. */
+function securePage(base: string): string {
+  return `${base.startsWith("https://") ? base : otherScheme(base)}/`;
+}
+
 /** Stage MIDI: what this device sends when the song changes, and through what. */
 export function StageMidiSettings() {
   const { t } = useTranslation();
@@ -56,12 +57,13 @@ export function StageMidiSettings() {
   };
 
   const testCompanion = async () => {
-    const base = normalizeCompanionAddress(address);
-    if (!base) return setCheck({ type: "error", message: t("midi.errors.badAddress") });
-    saveMidiSettings({ companion: base });
+    const typed = normalizeCompanionAddress(address);
+    if (!typed) return setCheck({ type: "error", message: t("midi.errors.badAddress") });
+    saveMidiSettings({ companion: typed });
     setCheck({ type: "busy" });
     try {
-      const status: CompanionStatus = await companionStatus(base);
+      const { base, status } = await probeCompanion(typed);
+      saveMidiSettings({ companion: base });
       setCheck(
         status.midiOut
           ? {
@@ -158,6 +160,19 @@ export function StageMidiSettings() {
               </button>
             </div>
             <p className="text-xs text-text-faint">{t("midi.wifi.permission")}</p>
+            <p className="text-xs text-text-faint">
+              {t("midi.wifi.trust")}{" "}
+              {settings.companion && (
+                <a
+                  href={securePage(settings.companion)}
+                  target="_blank"
+                  rel="noopener"
+                  className="link-accent"
+                >
+                  {t("midi.wifi.openPage")}
+                </a>
+              )}
+            </p>
             {checkMessage}
           </CardRow>
         ) : ble.state === BLE_STATE.unsupported ? (

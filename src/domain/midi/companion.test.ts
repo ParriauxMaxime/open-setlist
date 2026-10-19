@@ -7,6 +7,7 @@ import {
   confirms,
   followIndex,
   postPosition,
+  probeCompanion,
   sendToCompanion,
   waitFeedback,
   waitPosition,
@@ -17,6 +18,7 @@ import {
   displayCompanionAddress,
   loadMidiSettings,
   normalizeCompanionAddress,
+  otherScheme,
   patchEncoding,
   saveMidiSettings,
 } from "./settings";
@@ -242,12 +244,51 @@ describe("followIndex", () => {
   });
 });
 
+describe("probeCompanion", () => {
+  const only = (scheme: string) =>
+    fakeFetch(({ url }) => {
+      if (!url.startsWith(`${scheme}://`)) throw new TypeError("blocked");
+      return json(STATUS);
+    });
+
+  it("keeps the scheme that answers first", async () => {
+    const { calls, fetch } = only("https");
+    const found = await probeCompanion("https://192.168.1.20:7777", { fetch });
+    expect(found.base).toBe("https://192.168.1.20:7777");
+    expect(found.status.name).toBe("Stage PC");
+    expect(calls).toHaveLength(1);
+  });
+
+  it("falls back to the other scheme, as Chrome needs plain HTTP and Firefox HTTPS", async () => {
+    const { calls, fetch } = only("http");
+    const found = await probeCompanion("https://192.168.1.20:7777", { fetch });
+    expect(found.base).toBe(BASE);
+    expect(calls.map((call) => call.url)).toEqual([
+      "https://192.168.1.20:7777/status",
+      "http://192.168.1.20:7777/status",
+    ]);
+  });
+
+  it("reports the companion unreachable when neither scheme answers", async () => {
+    const { fetch } = fakeFetch(() => {
+      throw new TypeError("blocked");
+    });
+    expect(await errorKind(probeCompanion(BASE, { fetch }))).toBe(COMPANION_ERROR.unreachable);
+  });
+});
+
 describe("companion address", () => {
-  it("accepts what a musician types or scans", () => {
-    expect(normalizeCompanionAddress("192.168.1.20")).toBe(BASE);
-    expect(normalizeCompanionAddress(" 192.168.1.20:7777 ")).toBe(BASE);
+  it("accepts what a musician types or scans, over HTTPS unless told otherwise", () => {
+    expect(normalizeCompanionAddress("192.168.1.20")).toBe("https://192.168.1.20:7777");
+    expect(normalizeCompanionAddress(" 192.168.1.20:7777 ")).toBe("https://192.168.1.20:7777");
     expect(normalizeCompanionAddress("http://192.168.1.20:7777/")).toBe(BASE);
-    expect(normalizeCompanionAddress("Stage-PC.local:8080")).toBe("http://stage-pc.local:8080");
+    expect(normalizeCompanionAddress("https://192.168.1.20/")).toBe("https://192.168.1.20:7777");
+    expect(normalizeCompanionAddress("Stage-PC.local:8080")).toBe("https://stage-pc.local:8080");
+  });
+
+  it("names the same companion over the other scheme", () => {
+    expect(otherScheme(BASE)).toBe("https://192.168.1.20:7777");
+    expect(otherScheme("https://192.168.1.20:7777")).toBe(BASE);
   });
 
   it("refuses what is not an address", () => {
@@ -258,6 +299,7 @@ describe("companion address", () => {
 
   it("shows it back without the default port", () => {
     expect(displayCompanionAddress(BASE)).toBe("192.168.1.20");
+    expect(displayCompanionAddress("https://192.168.1.20:7777")).toBe("192.168.1.20");
     expect(displayCompanionAddress("http://stage-pc.local:8080")).toBe("stage-pc.local:8080");
     expect(displayCompanionAddress("")).toBe("");
   });

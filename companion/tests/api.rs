@@ -12,6 +12,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use open_setlist_companion::fake::FakeOut;
 use open_setlist_companion::hub::{Bluetooth, Hub};
 use open_setlist_companion::server::{self, Settings};
+use open_setlist_companion::tls;
 use serde_json::{Value, json};
 
 use common::Answer;
@@ -43,10 +44,76 @@ impl Companion {
             port,
             app_url: "https://example.org/settings".to_string(),
         };
-        server::start(listener, hub.clone(), settings).unwrap();
+        let certificates = std::env::temp_dir().join(format!("{}-api-test", server::APP));
+        let tls = tls::config(&certificates).unwrap();
+        server::start(listener, hub.clone(), settings, Some(tls)).unwrap();
         Self { port, out, hub }
     }
 
+    /// The same request as `request`, but spoken over TLS without checking the certificate,
+    /// the way a browser does once the musician accepted it.
+    fn secure_request(&self, method: &str, path: &str, body: &str) -> Answer {
+        let config = rustls::ClientConfig::builder()
+            .dangerous()
+            .with_custom_certificate_verifier(Arc::new(TrustAnything))
+            .with_no_client_auth();
+        let name = rustls::pki_types::ServerName::try_from("localhost").unwrap();
+        let connection = rustls::ClientConnection::new(Arc::new(config), name).unwrap();
+        let socket = common::connect(self.port).unwrap();
+        let mut stream = rustls::StreamOwned::new(connection, socket);
+        write!(
+            stream,
+            "{method} {path} HTTP/1.1\r\nHost: localhost\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{body}",
+            body.len()
+        )
+        .unwrap();
+        let mut raw = String::new();
+        stream.read_to_string(&mut raw).unwrap();
+        common::parse(&raw).expect("an answer")
+    }
+}
+
+#[derive(Debug)]
+struct TrustAnything;
+
+impl rustls::client::danger::ServerCertVerifier for TrustAnything {
+    fn verify_server_cert(
+        &self,
+        _: &rustls::pki_types::CertificateDer<'_>,
+        _: &[rustls::pki_types::CertificateDer<'_>],
+        _: &rustls::pki_types::ServerName<'_>,
+        _: &[u8],
+        _: rustls::pki_types::UnixTime,
+    ) -> Result<rustls::client::danger::ServerCertVerified, rustls::Error> {
+        Ok(rustls::client::danger::ServerCertVerified::assertion())
+    }
+
+    fn verify_tls12_signature(
+        &self,
+        _: &[u8],
+        _: &rustls::pki_types::CertificateDer<'_>,
+        _: &rustls::DigitallySignedStruct,
+    ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+        Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+    }
+
+    fn verify_tls13_signature(
+        &self,
+        _: &[u8],
+        _: &rustls::pki_types::CertificateDer<'_>,
+        _: &rustls::DigitallySignedStruct,
+    ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+        Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+    }
+
+    fn supported_verify_schemes(&self) -> Vec<rustls::SignatureScheme> {
+        rustls::crypto::ring::default_provider()
+            .signature_verification_algorithms
+            .supported_schemes()
+    }
+}
+
+impl Companion {
     fn request(&self, method: &str, path: &str, body: &str) -> Answer {
         common::request(self.port, method, path, body).expect("an answer")
     }
@@ -129,6 +196,24 @@ fn every_answer_can_be_read_by_a_page_from_another_origin() {
             assert_eq!(answer.header(name), Some(value), "{name}");
         }
     }
+}
+
+/// Firefox and Safari refuse a plain-HTTP call from a page served over HTTPS: the same port
+/// answers over TLS too, with the certificate the musician accepted once.
+#[test]
+fn the_same_port_answers_over_tls() {
+    let companion = Companion::start();
+    let answer = companion.secure_request("GET", "/status", "");
+    assert_eq!(answer.status, 200);
+    assert_eq!(answer.json()["app"], "open-setlist-companion");
+    let answer = companion.secure_request(
+        "POST",
+        "/midi",
+        &json!({"messages": [[176, 20, 6]]}).to_string(),
+    );
+    assert_eq!(answer.json(), json!({"sent": 1}));
+    assert_eq!(answer.header("access-control-allow-origin"), Some("*"));
+    assert_eq!(companion.get("/status").json()["sent"], 1);
 }
 
 #[test]

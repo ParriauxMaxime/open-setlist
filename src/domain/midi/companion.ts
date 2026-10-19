@@ -3,11 +3,15 @@
  * that plays the MIDI messages it receives and tells the tablets which song the leader
  * is on. It is reached on the band's own Wi-Fi router, never through the internet.
  *
- * The app is served over HTTPS and the companion speaks plain HTTP on a private address:
- * Chrome allows it after asking the musician once ("Local Network Access").
+ * The app is served over HTTPS and the companion sits on a private address, where it
+ * answers both HTTPS, with a self-signed certificate, and plain HTTP, on the same port.
+ * Chrome lets the plain call through after asking the musician once ("Local Network
+ * Access"); Firefox and Safari only take the HTTPS one, after the musician accepted the
+ * certificate on the companion's own page.
  */
 
 import { z } from "zod";
+import { otherScheme } from "./settings";
 
 const REQUEST_TIMEOUT_MS = 4000;
 /** Seconds the companion holds a position request open before answering "nothing new". */
@@ -98,6 +102,27 @@ export async function companionStatus(
   // Something answers at that address, but it is not the companion
   if (!res.ok || !status.success) throw new CompanionError(COMPANION_ERROR.unreachable);
   return status.data;
+}
+
+/**
+ * The companion at `base`, over the scheme this browser lets through: `base` first, then
+ * the other one. Rejects with the first failure when neither answers.
+ */
+export async function probeCompanion(
+  base: string,
+  options: CompanionOptions = {},
+): Promise<{ base: string; status: CompanionStatus }> {
+  try {
+    return { base, status: await companionStatus(base, options) };
+  } catch (err) {
+    if (options.signal?.aborted) throw err;
+    const fallback = otherScheme(base);
+    try {
+      return { base: fallback, status: await companionStatus(fallback, options) };
+    } catch {
+      throw err;
+    }
+  }
 }
 
 export async function sendToCompanion(

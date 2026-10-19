@@ -40,6 +40,10 @@ pub fn connect(port: u16) -> Option<TcpStream> {
 pub fn answer(stream: &mut TcpStream) -> Option<Answer> {
     let mut raw = String::new();
     stream.read_to_string(&mut raw).ok()?;
+    parse(&raw)
+}
+
+pub fn parse(raw: &str) -> Option<Answer> {
     let (head, body) = raw.split_once("\r\n\r\n")?;
     let mut lines = head.lines();
     let status = lines.next()?.split(' ').nth(1)?.parse().ok()?;

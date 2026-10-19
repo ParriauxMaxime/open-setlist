@@ -12,6 +12,7 @@ pub mod page;
 pub mod ports;
 pub mod position;
 pub mod server;
+pub mod tls;
 
 use std::sync::{Mutex, MutexGuard};
 

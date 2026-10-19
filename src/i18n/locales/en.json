@@ -824,7 +824,9 @@
       "address": "Address of the companion program",
       "test": "Test",
       "connected": "Connected to {{name}}. MIDI goes out on “{{port}}”.",
-      "permission": "The first time, Chrome asks whether this site may reach devices on your local network: allow it."
+      "permission": "The first time, Chrome asks whether this site may reach devices on your local network: allow it.",
+      "trust": "Firefox and Safari: open the companion's page on this device first and accept the warning about its certificate, then test again.",
+      "openPage": "Open the companion's page"
     },
     "bluetooth": {
       "desc": "Connects to the companion program or to any Bluetooth MIDI device.",

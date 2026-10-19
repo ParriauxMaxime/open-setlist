@@ -1,17 +1,19 @@
 //! The Wi-Fi side: what the tablets and the status page ask over HTTP.
 
 use std::io;
-use std::net::{TcpListener, TcpStream};
+use std::net::TcpListener;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
+use rustls::ServerConfig;
 use serde::Deserialize;
 use serde_json::{Value, json};
 
 use crate::http::{self, Incoming, Reply, Request};
 use crate::hub::{Hub, Via};
 use crate::midi::{Message, NoOutput, is_channel_voice};
+use crate::tls::Connection;
 use crate::{net, page};
 
 pub const APP: &str = "open-setlist-companion";
@@ -79,8 +81,14 @@ fn bad_request() -> Reply {
     error(400, "bad-request")
 }
 
-/// Starts answering on `listener`, on threads of its own.
-pub fn start(listener: TcpListener, hub: Arc<Hub>, settings: Settings) -> io::Result<()> {
+/// Starts answering on `listener`, on threads of its own. With `tls`, the same port also
+/// takes HTTPS: each connection is read for what it speaks.
+pub fn start(
+    listener: TcpListener,
+    hub: Arc<Hub>,
+    settings: Settings,
+    tls: Option<Arc<ServerConfig>>,
+) -> io::Result<()> {
     let settings = Arc::new(settings);
     thread::Builder::new()
         .name("http".to_string())
@@ -92,19 +100,24 @@ pub fn start(listener: TcpListener, hub: Arc<Hub>, settings: Settings) -> io::Re
                     thread::sleep(ACCEPT_AGAIN);
                     continue;
                 };
-                let (hub, settings) = (hub.clone(), settings.clone());
+                let (hub, settings, tls) = (hub.clone(), settings.clone(), tls.clone());
                 // A thread for each connection: a tablet that waits for a position, or one
                 // that stalls, holds up neither the others nor `/midi`. If the thread
                 // cannot start, the connection is closed and the tablet asks again.
                 let _ = thread::Builder::new()
                     .name("request".to_string())
-                    .spawn(move || converse(stream, &hub, &settings));
+                    .spawn(move || {
+                        let _ = stream.set_read_timeout(Some(Duration::from_secs(10)));
+                        if let Some(stream) = Connection::accept(stream, tls.as_ref()) {
+                            converse(stream, &hub, &settings);
+                        }
+                    });
             }
         })?;
     Ok(())
 }
 
-fn converse(mut stream: TcpStream, hub: &Hub, settings: &Settings) {
+fn converse(mut stream: Connection, hub: &Hub, settings: &Settings) {
     let (reply, with_body) = match http::read(&mut stream, MAX_BODY) {
         Incoming::Request(request) => (route(&request, hub, settings), request.method != "HEAD"),
         Incoming::Malformed => (bad_request(), true),

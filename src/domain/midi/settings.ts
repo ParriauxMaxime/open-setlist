@@ -80,23 +80,31 @@ export function patchEncoding(settings: MidiSettings): PatchEncoding {
 
 /**
  * What the musician typed or scanned (`192.168.1.20`, `studio.local:7777`, a full URL)
- * as the companion's base URL. null when it is not an address.
+ * as the companion's base URL, over HTTPS unless the input said `http://`. null when it is
+ * not an address. The companion answers both on its one port; `probeCompanion` finds out
+ * which one this browser lets through.
  */
 export function normalizeCompanionAddress(input: string): string | null {
-  const text = input
-    .trim()
-    .replace(/^https?:\/\//i, "")
-    .replace(/\/.*$/, "");
+  const trimmed = input.trim();
+  const scheme = /^http:\/\//i.test(trimmed) ? "http" : "https";
+  const text = trimmed.replace(/^https?:\/\//i, "").replace(/\/.*$/, "");
   const match = /^([a-z0-9]([a-z0-9.-]*[a-z0-9])?)(?::(\d{1,5}))?$/i.exec(text);
   if (!match) return null;
   const port = match[3] ? Number(match[3]) : COMPANION_DEFAULT_PORT;
   if (port < 1 || port > 65535) return null;
-  return `http://${match[1].toLowerCase()}:${port}`;
+  return `${scheme}://${match[1].toLowerCase()}:${port}`;
 }
 
-/** `http://192.168.1.20:7777` → `192.168.1.20`, the default port left out. */
+/** The same companion over the other scheme: `https://…` ⇄ `http://…`. */
+export function otherScheme(base: string): string {
+  return base.startsWith("https://")
+    ? base.replace(/^https:\/\//, "http://")
+    : base.replace(/^http:\/\//, "https://");
+}
+
+/** `https://192.168.1.20:7777` → `192.168.1.20`, the default port left out. */
 export function displayCompanionAddress(base: string): string {
-  return base.replace(/^http:\/\//, "").replace(new RegExp(`:${COMPANION_DEFAULT_PORT}$`), "");
+  return base.replace(/^https?:\/\//, "").replace(new RegExp(`:${COMPANION_DEFAULT_PORT}$`), "");
 }
 
 // ---------------------------------------------------------------------------

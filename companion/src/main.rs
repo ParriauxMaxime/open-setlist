@@ -15,7 +15,7 @@ use open_setlist_companion::inputs::Inputs;
 use open_setlist_companion::midi::{MidiOut, PORT_NAME};
 use open_setlist_companion::ports::{self, Ports};
 use open_setlist_companion::server::{self, APP, Settings};
-use open_setlist_companion::{ble, net};
+use open_setlist_companion::{ble, net, tls};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const LOOK_FOR_PORTS: Duration = Duration::from_secs(3);
@@ -137,7 +137,18 @@ fn run(
     println!("\nStatus page: {}", status_page(port));
     println!("Keep this window open. Close it to stop.\n");
 
-    server::start(listener, hub.clone(), settings)
+    let tls = match tls::config_dir().ok_or(io::Error::other("no home folder")) {
+        Ok(dir) => tls::config(&dir),
+        Err(error) => Err(error),
+    };
+    let tls = match tls {
+        Ok(config) => Some(config),
+        Err(error) => {
+            println!("No HTTPS: {error}. Firefox and Safari will not reach this program.\n");
+            None
+        }
+    };
+    server::start(listener, hub.clone(), settings, tls)
         .map_err(|error| format!("Cannot start: {error}."))?;
     if !may_use_bluetooth {
         ble::unavailable(&hub, "macOS did not let this program ask for it");
@@ -184,9 +195,12 @@ fn print_addresses(settings: &Settings) {
         .chain(settings.local_name.clone());
     for (index, host) in hosts.enumerate() {
         let or = if index == 0 { "  " } else { "or" };
-        println!("  {or} http://{host}:{}", settings.port);
+        println!("  {or} {host}:{}", settings.port);
     }
     println!();
+    println!("Chrome asks once to reach the local network: allow it.");
+    println!("Firefox and Safari: on the tablet, open https://<address> first and accept");
+    println!("the warning about the certificate, then enter the address in Open Setlist.\n");
 }
 
 fn print_midi(found: Option<&str>, wanted: Option<&str>) {
