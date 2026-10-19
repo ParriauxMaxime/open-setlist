@@ -92,8 +92,6 @@ export function DataTable<T>({
 
       {data.length === 0 ? (
         <p className="text-text-muted">{emptyMessage ?? t("common.noData")}</p>
-      ) : rowCount === 0 ? (
-        <p className="text-text-muted">{t("common.noResults")}</p>
       ) : (
         <table className="w-full text-base md:text-sm">
           <thead>
@@ -155,6 +153,24 @@ export function DataTable<T>({
             ))}
           </thead>
           <tbody>
+            {/* The header stays so that the filters that hid everything can be undone */}
+            {rowCount === 0 && (
+              <tr>
+                <td colSpan={columns.length} className="px-3 py-6 text-text-muted">
+                  <span className="mr-3">{t("common.noResults")}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGlobalFilter("");
+                      setColumnFilters([]);
+                    }}
+                    className="btn btn-outline"
+                  >
+                    {t("common.clearFilters")}
+                  </button>
+                </td>
+              </tr>
+            )}
             {table.getRowModel().rows.map((row) => {
               const href = getRowHref?.(row.original);
               return (

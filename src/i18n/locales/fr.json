@@ -24,6 +24,7 @@
     "yes": "Oui",
     "unknown": "Inconnu",
     "noResults": "Aucun résultat ne correspond à vos filtres.",
+    "clearFilters": "Effacer les filtres",
     "noData": "Aucune donnée.",
     "all": "Tous",
     "filter": "Filtrer...",
