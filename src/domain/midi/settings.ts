@@ -50,6 +50,7 @@ const midiSettingsSchema = z.object({
   encoding: z.enum(MIDI_ENCODING_VALUES as [string, ...string[]]).optional(),
   ccBank: z.number().int().min(0).max(127).default(21),
   ccSlot: z.number().int().min(0).max(127).default(20),
+  bankSelectCc: z.number().int().min(0).max(127).default(0),
   programFromOne: z.boolean().default(true),
 });
 
@@ -74,6 +75,7 @@ export function patchEncoding(settings: MidiSettings): PatchEncoding {
       MIDI_ENCODING_VALUES.find((e) => e === settings.encoding) ?? defaultMidiEncoding(role),
     ccBank: settings.ccBank,
     ccSlot: settings.ccSlot,
+    bankSelectCc: settings.bankSelectCc,
     programFromOne: settings.programFromOne,
   };
 }

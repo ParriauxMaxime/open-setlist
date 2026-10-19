@@ -279,11 +279,27 @@ export function StageMidiSettings() {
             </CardRow>
           </>
         ) : (
-          <ToggleRow
-            label={t("midi.advanced.programFromOne")}
-            checked={settings.programFromOne}
-            onChange={(programFromOne) => saveMidiSettings({ programFromOne })}
-          />
+          <>
+            <CardRow
+              label={t("midi.advanced.bankSelectCc")}
+              description={t("midi.advanced.bankSelectCcHint")}
+            >
+              <Input
+                type="number"
+                min={0}
+                max={127}
+                value={settings.bankSelectCc}
+                onChange={(e) => saveMidiSettings({ bankSelectCc: Number(e.target.value) })}
+                aria-label={t("midi.advanced.bankSelectCc")}
+                className="w-24"
+              />
+            </CardRow>
+            <ToggleRow
+              label={t("midi.advanced.programFromOne")}
+              checked={settings.programFromOne}
+              onChange={(programFromOne) => saveMidiSettings({ programFromOne })}
+            />
+          </>
         )}
       </Card>
     </>

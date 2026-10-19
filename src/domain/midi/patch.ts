@@ -77,13 +77,14 @@ export interface PatchEncoding {
   /** Controller numbers of the `cc-pair` encoding. */
   ccBank: number;
   ccSlot: number;
+  /** Controller of the Bank Select before a Program Change: 0 (MSB) for most gear, some want 32 (LSB). */
+  bankSelectCc: number;
   /** The gear numbers its presets from 1 (most do): preset 1 is Program Change 0. */
   programFromOne: boolean;
 }
 
 const CONTROL_CHANGE = 0xb0;
 const PROGRAM_CHANGE = 0xc0;
-const BANK_SELECT = 0;
 
 function clamp7(value: number): number {
   return Math.max(0, Math.min(127, value));
@@ -120,6 +121,6 @@ export function patchMessages(code: PatchCode, settings: PatchEncoding): number[
       ? [cc(settings.ccBank, code.bank), cc(settings.ccSlot, code.slot)]
       : [cc(settings.ccSlot, code.value)];
   }
-  if (code.kind === "grid") return [cc(BANK_SELECT, code.bank), program(code.slot)];
+  if (code.kind === "grid") return [cc(settings.bankSelectCc, code.bank), program(code.slot)];
   return [program(settings.programFromOne ? code.value - 1 : code.value)];
 }

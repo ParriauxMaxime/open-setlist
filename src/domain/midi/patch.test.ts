@@ -15,6 +15,7 @@ const ABLETON: PatchEncoding = {
   encoding: MIDI_ENCODING.ccPair,
   ccBank: 21,
   ccSlot: 20,
+  bankSelectCc: 0,
   programFromOne: true,
 };
 const HARDWARE: PatchEncoding = { ...ABLETON, channel: 10, encoding: MIDI_ENCODING.program };
@@ -110,6 +111,13 @@ describe("patchMessages", () => {
   it("selects the bank before the program for a lettered code on hardware", () => {
     expect(messages("21C", HARDWARE)).toEqual([
       [0xb9, 0, 2],
+      [0xc9, 8],
+    ]);
+  });
+
+  it("sends the bank on the controller the gear listens to", () => {
+    expect(messages("21C", { ...HARDWARE, bankSelectCc: 32 })).toEqual([
+      [0xb9, 32, 2],
       [0xc9, 8],
     ]);
   });

@@ -918,6 +918,8 @@
       },
       "ccBank": "CC for the letter",
       "ccSlot": "CC for the digits",
+      "bankSelectCc": "CC for the letter (Bank Select)",
+      "bankSelectCcHint": "Sent before the Program Change when the code has a letter. 0 for most gear, 32 for some.",
       "programFromOne": "My gear numbers its presets from 1"
     },
     "errors": {

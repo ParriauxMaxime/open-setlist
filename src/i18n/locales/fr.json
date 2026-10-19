@@ -918,6 +918,8 @@
       },
       "ccBank": "CC de la lettre",
       "ccSlot": "CC des chiffres",
+      "bankSelectCc": "CC pour la lettre (Bank Select)",
+      "bankSelectCcHint": "Envoyé avant le Program Change quand le code a une lettre. 0 pour la plupart des appareils, 32 pour certains.",
       "programFromOne": "Mon matériel numérote ses presets à partir de 1"
     },
     "errors": {
