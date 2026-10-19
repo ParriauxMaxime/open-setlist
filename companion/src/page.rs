@@ -116,12 +116,14 @@ mod tests {
         assert!(page.contains(&format!(r#"data-os="{}""#, std::env::consts::OS)));
     }
 
+    /// A link the person may click is not a load: the page works with no internet.
     #[test]
     fn loads_nothing_from_anywhere_else() {
         let page = render(&settings(), &[Ipv4Addr::new(192, 168, 1, 20)]);
-        for external in ["src=", "href=", "url(", "@import", "https://"] {
+        for external in ["src=", "<link", "url(", "@import"] {
             assert!(!page.contains(external), "the page contains {external}");
         }
+        assert_eq!(page.matches("href=").count(), 1);
     }
 
     #[test]
