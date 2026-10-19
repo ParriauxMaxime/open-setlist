@@ -18,11 +18,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
+import { Disclosure } from "../design-system/components/card";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { EditorHeader } from "../design-system/components/editor-header";
 import { AttachmentsPanel } from "./components/attachments-panel";
 import { ChordProEditor } from "./components/chordpro-editor";
 import { ChordProHelp } from "./components/chordpro-help";
+import { DeleteSongCard } from "./components/delete-song-card";
 import { MetadataPanel } from "./components/metadata-panel";
 import { MyNotePanel } from "./components/my-note-panel";
 import { PasteChartModal } from "./components/paste-chart-modal";
@@ -316,16 +318,6 @@ export function EditSongPage({ songId }: EditSongPageProps) {
                       >
                         {t("editor.resetChanges")}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setConfirmDelete(true);
-                          setMenuOpen(false);
-                        }}
-                        className="block w-full px-4 py-2 text-left text-sm text-danger hover:bg-bg-hover"
-                      >
-                        {t("common.delete")}
-                      </button>
                     </div>
                   )}
                 </div>
@@ -336,7 +328,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
 
         {/* An empty chart: pasting one is the quickest way in */}
         {!watch("content").trim() && (
-          <div className="mb-3 flex flex-wrap items-center gap-3 rounded-md border border-accent bg-accent-muted px-3 py-3">
+          <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-accent bg-accent-muted px-4 py-3">
             <p className="min-w-40 flex-1 text-sm text-text">{t("chartImport.emptyHint")}</p>
             <button
               type="button"
@@ -395,34 +387,28 @@ export function EditSongPage({ songId }: EditSongPageProps) {
 
         {/* Metadata — mobile: collapsible accordion | desktop: side drawer */}
         <div className="order-1 lg:order-none lg:min-h-0">
-          {/* Mobile: native <details> accordion */}
-          <details open={isNew} className="group rounded-md border border-border lg:hidden">
-            <summary className="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-text-muted">
-              {t("editor.metadata")}
-            </summary>
-            <div className="border-t border-border px-3 py-3">
-              <MetadataPanel
-                register={register}
-                errors={errors}
-                watch={watch}
-                setValue={setValue}
-                tags={tags}
-                tagInput={tagInput}
-                onTagInputChange={setTagInput}
-                onAddTag={addTag}
-                onRemoveTag={removeTag}
-                isNew={isNew}
-                songId={songId}
-                overrides={overrides}
-                overridesOpen={overridesOpen}
-                onOverridesOpenChange={setOverridesOpen}
-                globalPrefs={globalPrefs}
-                onUpdateOverride={updateOverride}
-                onClearOverrideKey={clearOverrideKey}
-                onClearAllOverrides={clearAllOverrides}
-              />
-            </div>
-          </details>
+          <Disclosure summary={t("editor.metadata")} defaultOpen={isNew} className="lg:hidden">
+            <MetadataPanel
+              register={register}
+              errors={errors}
+              watch={watch}
+              setValue={setValue}
+              tags={tags}
+              tagInput={tagInput}
+              onTagInputChange={setTagInput}
+              onAddTag={addTag}
+              onRemoveTag={removeTag}
+              isNew={isNew}
+              songId={songId}
+              overrides={overrides}
+              overridesOpen={overridesOpen}
+              onOverridesOpenChange={setOverridesOpen}
+              globalPrefs={globalPrefs}
+              onUpdateOverride={updateOverride}
+              onClearOverrideKey={clearOverrideKey}
+              onClearAllOverrides={clearAllOverrides}
+            />
+          </Disclosure>
 
           {/* Desktop: collapsible drawer */}
           <div className="hidden lg:flex lg:h-full lg:flex-col">
@@ -456,12 +442,23 @@ export function EditSongPage({ songId }: EditSongPageProps) {
                     onClearOverrideKey={clearOverrideKey}
                     onClearAllOverrides={clearAllOverrides}
                   />
+                  {!isNew && (
+                    <div className="mt-8">
+                      <DeleteSongCard onDelete={() => setConfirmDelete(true)} />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </form>
+
+      {!isNew && (
+        <div className="mt-8 lg:hidden">
+          <DeleteSongCard onDelete={() => setConfirmDelete(true)} />
+        </div>
+      )}
 
       {showLookup && (
         <SongLookupModal onSelect={onLookupSelect} onClose={() => setShowLookup(false)} />

@@ -11,6 +11,7 @@ import { createId } from "@domain/id";
 import { PART_VALUES } from "@domain/parts";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Badge, Disclosure } from "../../design-system/components/card";
 import { Select } from "../../design-system/components/form";
 import { partLabel } from "../../performance/components/my-part-menu";
 
@@ -53,15 +54,17 @@ export function AttachmentsPanel({ attachments, onChange }: AttachmentsPanelProp
     onChange(attachments.map((a) => (a.id === id ? { ...a, part: part || undefined } : a)));
 
   return (
-    <details
-      open={attachments.length > 0}
-      className="mb-3 rounded-md border border-border bg-bg-surface"
+    <Disclosure
+      summary={
+        <>
+          📄 {t("attachments.panelTitle")}
+          {attachments.length > 0 && <Badge tone="muted">{attachments.length}</Badge>}
+        </>
+      }
+      defaultOpen={attachments.length > 0}
+      className="mb-3"
     >
-      <summary className="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-text-muted">
-        📄 {t("attachments.panelTitle")}
-        {attachments.length > 0 && ` (${attachments.length})`}
-      </summary>
-      <div className="flex flex-col gap-2 border-t border-border px-3 py-3">
+      <div className="flex flex-col gap-2">
         {attachments.map((attachment) => (
           <div key={attachment.id} className="flex flex-wrap items-center gap-2 text-sm">
             <div className="min-w-0 flex-1">
@@ -120,6 +123,6 @@ export function AttachmentsPanel({ attachments, onChange }: AttachmentsPanelProp
         </button>
         <p className="text-xs text-text-muted">{t("attachments.hint")}</p>
       </div>
-    </details>
+    </Disclosure>
   );
 }

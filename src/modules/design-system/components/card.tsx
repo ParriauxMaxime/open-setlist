@@ -114,6 +114,42 @@ export function ToggleRow({ label, description, checked, onChange }: ToggleRowPr
   );
 }
 
+interface DisclosureProps {
+  summary: ReactNode;
+  defaultOpen?: boolean;
+  /** `note`: the yellow of personal notes. */
+  tone?: "default" | "note";
+  className?: string;
+  children: ReactNode;
+}
+
+/** A card folded under a one-line summary, for what is set once or rarely. */
+export function Disclosure({
+  summary,
+  defaultOpen,
+  tone = "default",
+  className = "",
+  children,
+}: DisclosureProps) {
+  const border = tone === "note" ? "border-note-border" : "border-border";
+  const background = tone === "note" ? "bg-note-bg" : "bg-bg-surface";
+  return (
+    <details
+      open={defaultOpen || undefined}
+      className={`accordion group rounded-lg border ${border} ${background} ${className}`}
+    >
+      <summary className="flex cursor-pointer select-none items-center gap-2 px-4 py-3 text-sm font-medium">
+        {summary}
+      </summary>
+      <div className="accordion-content">
+        <div className="accordion-inner">
+          <div className={`border-t px-4 py-3 ${border}`}>{children}</div>
+        </div>
+      </div>
+    </details>
+  );
+}
+
 interface BadgeProps {
   tone?: "accent" | "muted" | "success" | "warning" | "danger";
   children: ReactNode;

@@ -1,6 +1,7 @@
 import { getMyNote, MY_NOTE_MAX_LENGTH, setMyNote } from "@domain/my-notes";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Disclosure } from "../../design-system/components/card";
 import { Textarea } from "../../design-system/components/form";
 
 interface MyNotePanelProps {
@@ -19,11 +20,13 @@ export function MyNotePanel({ profileId, songId }: MyNotePanelProps) {
   const [openOnLoad] = useState(() => draft !== "");
 
   return (
-    <details open={openOnLoad} className="mb-3 rounded-md border border-note-border bg-note-bg">
-      <summary className="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-note-text">
-        📌 {t("myNotes.panelTitle")}
-      </summary>
-      <div className="flex flex-col gap-1.5 border-t border-note-border px-3 py-3">
+    <Disclosure
+      summary={<span className="text-note-text">📌 {t("myNotes.panelTitle")}</span>}
+      defaultOpen={openOnLoad}
+      tone="note"
+      className="mb-3"
+    >
+      <div className="flex flex-col gap-1.5">
         <Textarea
           value={draft}
           onChange={(e) => {
@@ -40,6 +43,6 @@ export function MyNotePanel({ profileId, songId }: MyNotePanelProps) {
           {t("myNotes.privateHint")} {t("myNotes.autosaved")}
         </p>
       </div>
-    </details>
+    </Disclosure>
   );
 }

@@ -8,6 +8,7 @@ import { resolveSongStatus, SONG_STATUS_LIST } from "@domain/song-status";
 import { useId, useMemo } from "react";
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { Badge, Disclosure } from "../../design-system/components/card";
 import { Field, Input, Select, Textarea } from "../../design-system/components/form";
 import { SongStatusDot } from "../../shared/components/song-status-dot";
 import { useNotation } from "../../shared/hooks/use-notation";
@@ -90,71 +91,73 @@ export function MetadataPanel({
         </button>
       )}
 
-      {/* Title */}
-      <Field label={t("editor.titleLabel")} error={errors.title?.message}>
-        <Input {...register("title")} placeholder={t("editor.titlePlaceholder")} />
-      </Field>
-
-      {/* Artist */}
-      <Field label={t("editor.artistLabel")} error={errors.artist?.message}>
-        <Input {...register("artist")} placeholder={t("editor.artistPlaceholder")} />
-      </Field>
-
-      {/* Key / BPM / Duration / Transposition / Scroll speed — 2-col grid for narrow panel */}
-      <div className="grid grid-cols-2 gap-3">
-        <Field label={t("editor.keyLabel")} error={errors.key?.message}>
-          <Select {...register("key", { setValueAs: (v: string) => v || undefined })}>
-            <option value="">—</option>
-            <optgroup label={t("editor.majorGroup")}>
-              {MAJOR_KEYS.map((k) => (
-                <option key={k} value={k}>
-                  {formatKey(k, notation)}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label={t("editor.minorGroup")}>
-              {MINOR_KEYS.map((k) => (
-                <option key={k} value={k}>
-                  {formatKey(k, notation)}
-                </option>
-              ))}
-            </optgroup>
-          </Select>
+      <div className="flex flex-col gap-4 rounded-lg border border-border bg-bg-surface p-4">
+        <Field label={t("editor.titleLabel")} error={errors.title?.message}>
+          <Input {...register("title")} placeholder={t("editor.titlePlaceholder")} />
         </Field>
 
-        <Field label={t("editor.bpmLabel")} error={errors.bpm?.message}>
-          <Input
-            type="number"
-            {...register("bpm", {
-              setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
-            })}
-            placeholder="120"
+        <Field label={t("editor.artistLabel")} error={errors.artist?.message}>
+          <Input {...register("artist")} placeholder={t("editor.artistPlaceholder")} />
+        </Field>
+
+        {/* Key / BPM / Duration / Transposition / Scroll speed — 2-col grid for narrow panel */}
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={t("editor.keyLabel")} error={errors.key?.message}>
+            <Select {...register("key", { setValueAs: (v: string) => v || undefined })}>
+              <option value="">—</option>
+              <optgroup label={t("editor.majorGroup")}>
+                {MAJOR_KEYS.map((k) => (
+                  <option key={k} value={k}>
+                    {formatKey(k, notation)}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label={t("editor.minorGroup")}>
+                {MINOR_KEYS.map((k) => (
+                  <option key={k} value={k}>
+                    {formatKey(k, notation)}
+                  </option>
+                ))}
+              </optgroup>
+            </Select>
+          </Field>
+
+          <Field label={t("editor.bpmLabel")} error={errors.bpm?.message}>
+            <Input
+              type="number"
+              {...register("bpm", {
+                setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
+              })}
+              placeholder="120"
+            />
+          </Field>
+
+          <DurationField
+            value={watch("duration")}
+            onChange={(seconds) => setValue("duration", seconds, { shouldDirty: true })}
+          />
+        </div>
+
+        <Field label={t("editor.notesLabel")} error={errors.notes?.message}>
+          <Textarea
+            {...register("notes")}
+            placeholder={t("editor.notesPlaceholder")}
+            rows={2}
+            className="resize-y"
           />
         </Field>
-
-        <DurationField
-          value={watch("duration")}
-          onChange={(seconds) => setValue("duration", seconds, { shouldDirty: true })}
-        />
       </div>
 
-      {/* Notes */}
-      <Field label={t("editor.notesLabel")} error={errors.notes?.message}>
-        <Textarea
-          {...register("notes")}
-          placeholder={t("editor.notesPlaceholder")}
-          rows={2}
-          className="resize-y"
-        />
-      </Field>
-
       {/* What is set once, or rarely: folded away */}
-      <details className="group rounded-md border border-border">
-        <summary className="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-text-muted">
-          {t("editor.stageSection")}
-          {stageCount > 0 && ` (${stageCount})`}
-        </summary>
-        <div className="flex flex-col gap-4 border-t border-border px-3 py-3">
+      <Disclosure
+        summary={
+          <>
+            {t("editor.stageSection")}
+            {stageCount > 0 && <Badge tone="muted">{stageCount}</Badge>}
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("editor.transpositionLabel")} error={errors.transposition?.message}>
               <Input
@@ -186,7 +189,7 @@ export function MetadataPanel({
 
           {/* Display Overrides (existing songs only) */}
           {!isNew && (
-            <fieldset className="rounded-md border border-border p-4">
+            <fieldset className="rounded-lg border border-border p-4">
               <legend className="px-1 text-sm font-semibold text-text-muted">
                 {t("editor.displayOverrides")}
               </legend>
@@ -293,14 +296,17 @@ export function MetadataPanel({
             </fieldset>
           )}
         </div>
-      </details>
+      </Disclosure>
 
-      <details className="group rounded-md border border-border">
-        <summary className="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-text-muted">
-          {t("editor.filingSection")}
-          {filingCount > 0 && ` (${filingCount})`}
-        </summary>
-        <div className="flex flex-col gap-4 border-t border-border px-3 py-3">
+      <Disclosure
+        summary={
+          <>
+            {t("editor.filingSection")}
+            {filingCount > 0 && <Badge tone="muted">{filingCount}</Badge>}
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
           <StatusControl
             value={watch("status")}
             onChange={(status) => setValue("status", status, { shouldDirty: true })}
@@ -318,10 +324,10 @@ export function MetadataPanel({
                   <button
                     type="button"
                     onClick={() => onRemoveTag(tag)}
-                    aria-label={`Remove ${tag}`}
-                    className="ml-0.5 text-text-faint hover:text-danger"
+                    aria-label={t("editor.removeTag", { tag })}
+                    className="ml-0.5 text-xs text-text-faint hover:text-danger"
                   >
-                    x
+                    ✕
                   </button>
                 </span>
               ))}
@@ -356,12 +362,8 @@ export function MetadataPanel({
             />
           </Field>
 
-          {/* Links */}
-          <details className="group rounded-md border border-border">
-            <summary className="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-text-muted">
-              {t("editor.linksLabel")}
-            </summary>
-            <div className="flex flex-col gap-3 border-t border-border px-3 py-3">
+          <Disclosure summary={t("editor.linksLabel")}>
+            <div className="flex flex-col gap-3">
               <Field label="YouTube">
                 <Input
                   {...register("links.youtube")}
@@ -378,9 +380,9 @@ export function MetadataPanel({
                 <Input {...register("links.deezer")} placeholder="https://deezer.com/track/..." />
               </Field>
             </div>
-          </details>
+          </Disclosure>
         </div>
-      </details>
+      </Disclosure>
     </div>
   );
 }
@@ -454,6 +456,7 @@ function OverrideSizeField({
   onUpdate: (patch: Partial<SongDisplayPrefs>) => void;
   onClear: (key: keyof SongDisplayPrefs) => void;
 }) {
+  const { t } = useTranslation();
   const active = overrides[field] !== undefined;
   const value = overrides[field] ?? globalValue;
 
@@ -478,7 +481,8 @@ function OverrideSizeField({
           type="button"
           onClick={() => onClear(field)}
           className="text-xs text-text-faint hover:text-danger"
-          title="Reset to global"
+          title={t("editor.resetToGlobal")}
+          aria-label={t("editor.resetToGlobal")}
         >
           ✕
         </button>
@@ -504,6 +508,7 @@ function OverrideColorField({
   onUpdate: (patch: Partial<SongDisplayPrefs>) => void;
   onClear: (key: keyof SongDisplayPrefs) => void;
 }) {
+  const { t } = useTranslation();
   const active = overrides[field] !== undefined;
   const value = overrides[field] ?? globalValue;
 
@@ -531,7 +536,8 @@ function OverrideColorField({
           type="button"
           onClick={() => onClear(field)}
           className="text-xs text-text-faint hover:text-danger"
-          title="Reset to global"
+          title={t("editor.resetToGlobal")}
+          aria-label={t("editor.resetToGlobal")}
         >
           ✕
         </button>
