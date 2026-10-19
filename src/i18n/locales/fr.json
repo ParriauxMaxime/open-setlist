@@ -502,6 +502,7 @@
     }
   },
   "chordLib": {
+    "subtitle": "Toutes les positions d’accords, par type, pour votre instrument.",
     "title": "Bibliothèque d\u2019accords",
     "allRoots": "Toutes les notes",
     "allQualities": "Tous les types",

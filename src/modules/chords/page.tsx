@@ -14,6 +14,8 @@ import { INSTRUMENT_VALUES, type InstrumentType } from "@domain/chords/types";
 import { loadPreferences } from "@domain/preferences";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Card } from "../design-system/components/card";
+import { PageHeader } from "../design-system/components/page-header";
 import { useNotation } from "../shared/hooks/use-notation";
 import { FretboardDiagram } from "./components/fretboard-diagram";
 import { KeyboardDiagram } from "./components/keyboard-diagram";
@@ -49,62 +51,66 @@ export function ChordsPage() {
 
   return (
     <div className="p-page">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">{t("chordLib.title")}</h1>
+      <PageHeader
+        title={t("chordLib.title")}
+        subtitle={t("chordLib.subtitle")}
+        actions={
+          <div className="grid grid-cols-3 gap-2 sm:w-[32rem]">
+            <select
+              className="field-sm"
+              aria-label={t("chordLib.instrument")}
+              value={instrument}
+              onChange={(e) => setInstrument(e.target.value as InstrumentType)}
+            >
+              {INSTRUMENT_VALUES.map((value) => (
+                <option key={value} value={value}>
+                  {t(`settings.instrument.${value}`)}
+                </option>
+              ))}
+            </select>
 
-        <div className="grid grid-cols-3 gap-2 sm:w-[32rem]">
-          <select
-            className="field-sm"
-            aria-label={t("chordLib.instrument")}
-            value={instrument}
-            onChange={(e) => setInstrument(e.target.value as InstrumentType)}
-          >
-            {INSTRUMENT_VALUES.map((value) => (
-              <option key={value} value={value}>
-                {t(`settings.instrument.${value}`)}
-              </option>
-            ))}
-          </select>
+            <select
+              className="field-sm"
+              aria-label={t("chordLib.root")}
+              value={rootFilter}
+              onChange={(e) => setRootFilter(e.target.value)}
+            >
+              <option value="">{t("chordLib.allRoots")}</option>
+              {CHROMATIC_ROOTS.map((note) => (
+                <option key={note} value={note}>
+                  {formatChord(note, notation)}
+                </option>
+              ))}
+            </select>
 
-          <select
-            className="field-sm"
-            aria-label={t("chordLib.root")}
-            value={rootFilter}
-            onChange={(e) => setRootFilter(e.target.value)}
-          >
-            <option value="">{t("chordLib.allRoots")}</option>
-            {CHROMATIC_ROOTS.map((note) => (
-              <option key={note} value={note}>
-                {formatChord(note, notation)}
-              </option>
-            ))}
-          </select>
-
-          <select
-            className="field-sm"
-            aria-label={t("chordLib.quality")}
-            value={qualityFilter}
-            onChange={(e) => setQualityFilter(e.target.value as QualityId | "")}
-          >
-            <option value="">{t("chordLib.allQualities")}</option>
-            {QUALITY_IDS.map((id) => (
-              <option key={id} value={id}>
-                {t(`chordLib.qualities.${id}`)}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+            <select
+              className="field-sm"
+              aria-label={t("chordLib.quality")}
+              value={qualityFilter}
+              onChange={(e) => setQualityFilter(e.target.value as QualityId | "")}
+            >
+              <option value="">{t("chordLib.allQualities")}</option>
+              {QUALITY_IDS.map((id) => (
+                <option key={id} value={id}>
+                  {t(`chordLib.qualities.${id}`)}
+                </option>
+              ))}
+            </select>
+          </div>
+        }
+      />
 
       {groups.map((group) => (
-        <section key={group.qualityId} className="mb-8">
-          <h2 className="mb-4 text-lg font-semibold text-text-muted">
-            {t(`chordLib.qualities.${group.qualityId}`)}
-            <span className="ml-2 text-sm font-normal text-text-faint">
-              {group.quality.formula}
-            </span>
-          </h2>
-          <div className="flex flex-wrap gap-4">
+        <Card
+          key={group.qualityId}
+          title={
+            <>
+              {t(`chordLib.qualities.${group.qualityId}`)}
+              <span className="text-xs font-normal text-text-faint">{group.quality.formula}</span>
+            </>
+          }
+        >
+          <div className="flex flex-wrap justify-center gap-4 p-4 sm:justify-start">
             {group.chords.flatMap((chord) =>
               chord.fingerings.map((f) => (
                 <FretboardDiagram
@@ -128,7 +134,7 @@ export function ChordsPage() {
                 ),
             )}
           </div>
-        </section>
+        </Card>
       ))}
     </div>
   );

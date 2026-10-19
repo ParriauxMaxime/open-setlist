@@ -503,6 +503,7 @@
   },
   "chordLib": {
     "title": "Chord Library",
+    "subtitle": "Every chord shape, by type, for your instrument.",
     "allRoots": "All roots",
     "allQualities": "All chord types",
     "instrument": "Instrument",
