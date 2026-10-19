@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { InstrumentTuning } from "../../../domain/tunings";
 import type { ActiveStringResult } from "../hooks/use-active-string";
 import { TunerString } from "./tuner-string";
@@ -12,6 +13,7 @@ const PADDING_Y = 24;
 const STRING_SPACING = 32;
 
 export function StringVisualization({ tuning, activeString }: StringVisualizationProps) {
+  const { t } = useTranslation();
   const stringCount = tuning.strings.length;
   const svgHeight = PADDING_Y * 2 + (stringCount - 1) * STRING_SPACING;
 
@@ -20,7 +22,7 @@ export function StringVisualization({ tuning, activeString }: StringVisualizatio
       viewBox={`0 0 ${SVG_WIDTH} ${svgHeight}`}
       className="w-full max-w-sm"
       role="img"
-      aria-label="String tuning"
+      aria-label={t("tuner.strings.label")}
     >
       {tuning.strings.map((s, i) => {
         const isActive = activeString?.stringIndex === i;

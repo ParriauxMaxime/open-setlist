@@ -450,6 +450,7 @@
   },
   "tuner": {
     "title": "Tuner",
+    "subtitle": "Listens through the microphone of this device.",
     "start": "Start",
     "stop": "Stop",
     "cents": "cents",
@@ -467,6 +468,7 @@
       "banjo": "Banjo"
     },
     "strings": {
+      "label": "Strings of the instrument",
       "inTune": "In tune"
     }
   },

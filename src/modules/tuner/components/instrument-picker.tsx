@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { TUNINGS } from "../../../domain/tunings";
+import { Choice } from "../../design-system/components/card";
 
 interface InstrumentPickerProps {
   selectedId: string | null;
@@ -18,20 +19,15 @@ export function InstrumentPicker({ selectedId, onSelect }: InstrumentPickerProps
   ];
 
   return (
-    <div className="flex flex-wrap justify-center gap-2">
+    <div className="flex flex-wrap gap-2">
       {options.map((option) => (
-        <button
+        <Choice
           key={option.id ?? "chromatic"}
-          type="button"
+          selected={selectedId === option.id}
           onClick={() => onSelect(option.id)}
-          className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-            selectedId === option.id
-              ? "bg-[var(--color-accent)] text-white"
-              : "bg-[var(--color-surface)] text-text-muted hover:text-text"
-          }`}
         >
           {option.label}
-        </button>
+        </Choice>
       ))}
     </div>
   );

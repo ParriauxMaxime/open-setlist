@@ -450,6 +450,7 @@
   },
   "tuner": {
     "title": "Accordeur",
+    "subtitle": "Écoute par le micro de cet appareil.",
     "start": "Démarrer",
     "stop": "Arrêter",
     "cents": "cents",
@@ -467,6 +468,7 @@
       "banjo": "Banjo"
     },
     "strings": {
+      "label": "Cordes de l’instrument",
       "inTune": "Accordé"
     }
   },
