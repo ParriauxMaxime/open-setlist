@@ -23,24 +23,16 @@ import {
 import { PART_VALUES } from "@domain/parts";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Field, Input, Select } from "../../design-system/components/form";
+import { Input, Select } from "../../design-system/components/form";
 import { partLabel } from "../../performance/components/my-part-menu";
 import { useBleMidi, useMidiSettings } from "../../shared/hooks/use-midi-settings";
+import { Choice, SettingRow, SettingsGroup, ToggleRow } from "./setting-row";
 
 type Check =
   | { type: "idle" }
   | { type: "busy" }
   | { type: "ok"; message: string }
   | { type: "error"; message: string };
-
-function choiceClass(selected: boolean): string {
-  return [
-    "rounded-md border px-3 py-1.5 text-sm transition-colors",
-    selected
-      ? "border-accent bg-accent-muted text-accent"
-      : "border-border text-text-muted hover:border-text-faint hover:text-text",
-  ].join(" ");
-}
 
 function numberOrUndefined(value: string): number | undefined {
   return value === "" ? undefined : Number(value);
@@ -100,62 +92,56 @@ export function StageMidiSettings() {
     send(only === undefined ? messages : messages.slice(only, only + 1));
   };
 
+  const checkMessage = (
+    <div aria-live="polite" className="min-h-5 text-sm">
+      {check.type === "busy" && <span className="text-text-muted">{t("midi.test.busy")}</span>}
+      {check.type === "ok" && <span className="text-accent">{check.message}</span>}
+      {check.type === "error" && <span className="text-danger">{check.message}</span>}
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-5">
-      <fieldset>
-        <legend className="mb-2 text-sm font-semibold uppercase tracking-wide text-text-muted">
-          {t("midi.role.label")}
-        </legend>
-        <Select
-          value={settings.role ?? ""}
-          onChange={(e) => saveMidiSettings({ role: e.target.value || undefined })}
-          aria-label={t("midi.role.label")}
-          className="max-w-xs"
-        >
-          <option value="">—</option>
-          {PART_VALUES.map((part) => (
-            <option key={part} value={part}>
-              {partLabel(part, t, false)}
-            </option>
-          ))}
-        </Select>
-        <p className="mt-1 text-xs text-text-faint">{t("midi.role.hint")}</p>
-      </fieldset>
-
-      <label className="flex cursor-pointer items-center gap-3">
-        <input
-          type="checkbox"
+    <>
+      <SettingsGroup>
+        <SettingRow label={t("midi.role.label")} description={t("midi.role.hint")}>
+          <Select
+            value={settings.role ?? ""}
+            onChange={(e) => saveMidiSettings({ role: e.target.value || undefined })}
+            aria-label={t("midi.role.label")}
+          >
+            <option value="">—</option>
+            {PART_VALUES.map((part) => (
+              <option key={part} value={part}>
+                {partLabel(part, t, false)}
+              </option>
+            ))}
+          </Select>
+        </SettingRow>
+        <ToggleRow
+          label={t("midi.enabled")}
           checked={settings.enabled}
-          onChange={(e) => saveMidiSettings({ enabled: e.target.checked })}
-          className="h-4 w-4 accent-accent"
+          onChange={(enabled) => saveMidiSettings({ enabled })}
         />
-        <span className="text-sm text-text">{t("midi.enabled")}</span>
-      </label>
+      </SettingsGroup>
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-semibold uppercase tracking-wide text-text-muted">
-          {t("midi.transport.label")}
-        </legend>
-        <div className="mb-3 flex flex-wrap gap-2">
+      <SettingsGroup>
+        <SettingRow label={t("midi.transport.label")}>
           {MIDI_TRANSPORT_VALUES.map((transport) => (
-            <button
+            <Choice
               key={transport}
-              type="button"
-              aria-pressed={settings.transport === transport}
+              selected={settings.transport === transport}
               onClick={() => {
                 saveMidiSettings({ transport });
                 setCheck({ type: "idle" });
               }}
-              className={choiceClass(settings.transport === transport)}
             >
               {t(`midi.transport.${transport}`)}
-            </button>
+            </Choice>
           ))}
-        </div>
+        </SettingRow>
 
         {overWifi ? (
-          <div className="flex flex-col gap-2">
-            <p className="text-sm text-text-muted">{t("midi.wifi.desc")}</p>
+          <SettingRow label={t("midi.wifi.address")} description={t("midi.wifi.desc")} stacked>
             <div className="flex max-w-md gap-2">
               <Input
                 value={address}
@@ -172,130 +158,119 @@ export function StageMidiSettings() {
               </button>
             </div>
             <p className="text-xs text-text-faint">{t("midi.wifi.permission")}</p>
-          </div>
+            {checkMessage}
+          </SettingRow>
         ) : ble.state === BLE_STATE.unsupported ? (
-          <p className="text-sm text-warning">{t("midi.bluetooth.unsupported")}</p>
+          <div className="px-4 py-3 text-sm text-warning">{t("midi.bluetooth.unsupported")}</div>
         ) : (
-          <div className="flex flex-col gap-2">
-            <p className="text-sm text-text-muted">{t("midi.bluetooth.desc")}</p>
-            <div className="flex flex-wrap items-center gap-3">
-              {ble.state === BLE_STATE.disconnected ? (
-                <button
-                  type="button"
-                  onClick={() => connectBleMidi().catch(() => undefined)}
-                  className="btn btn-outline"
-                >
-                  {t("midi.bluetooth.connect")}
-                </button>
-              ) : (
-                <button type="button" onClick={disconnectBleMidi} className="btn btn-ghost">
-                  {t("midi.bluetooth.disconnect")}
-                </button>
-              )}
-              <span className="text-sm text-text-muted">
-                {t(`midi.bluetooth.state.${ble.state}`, { name: ble.deviceName ?? "" })}
-              </span>
-            </div>
-            <p className="text-xs text-text-faint">{t("midi.bluetooth.reconnect")}</p>
-          </div>
+          <SettingRow
+            label={t(`midi.bluetooth.state.${ble.state}`, { name: ble.deviceName ?? "" })}
+            description={`${t("midi.bluetooth.desc")} ${t("midi.bluetooth.reconnect")}`}
+          >
+            {ble.state === BLE_STATE.disconnected ? (
+              <button
+                type="button"
+                onClick={() => connectBleMidi().catch(() => undefined)}
+                className="btn btn-outline btn-sm"
+              >
+                {t("midi.bluetooth.connect")}
+              </button>
+            ) : (
+              <button type="button" onClick={disconnectBleMidi} className="btn btn-ghost btn-sm">
+                {t("midi.bluetooth.disconnect")}
+              </button>
+            )}
+          </SettingRow>
         )}
-      </fieldset>
+      </SettingsGroup>
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-semibold uppercase tracking-wide text-text-muted">
-          {t("midi.test.label")}
-        </legend>
-        <p className="mb-2 text-sm text-text-muted">{t("midi.test.desc")}</p>
-        <div className="flex flex-wrap items-center gap-2">
-          <Input
-            value={testCode}
-            onChange={(e) => setTestCode(e.target.value)}
-            placeholder={defaultTestCode}
-            aria-label={t("midi.test.code")}
-            className="max-w-28"
-          />
-          <button type="button" onClick={() => sendTest()} className="btn btn-outline">
-            {t("midi.test.send")}
-          </button>
-          {encoding.encoding === MIDI_ENCODING.ccPair && (
-            <>
-              <button type="button" onClick={() => sendTest(0)} className="btn btn-ghost">
-                {t("midi.test.bankOnly", { cc: encoding.ccBank })}
-              </button>
-              <button type="button" onClick={() => sendTest(1)} className="btn btn-ghost">
-                {t("midi.test.slotOnly", { cc: encoding.ccSlot })}
-              </button>
-            </>
-          )}
-        </div>
-        <div aria-live="polite" className="mt-2 min-h-5 text-sm">
-          {check.type === "busy" && <span className="text-text-muted">{t("midi.test.busy")}</span>}
-          {check.type === "ok" && <span className="text-accent">{check.message}</span>}
-          {check.type === "error" && <span className="text-danger">{check.message}</span>}
-        </div>
-      </fieldset>
-
-      <details className="rounded-md border border-border">
-        <summary className="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-text-muted">
-          {t("midi.advanced.label")}
-        </summary>
-        <div className="grid max-w-md grid-cols-2 gap-3 border-t border-border px-3 py-3 text-sm">
-          <Field label={t("midi.advanced.channel")}>
+      <SettingsGroup title={t("midi.test.label")}>
+        <SettingRow label={t("midi.test.code")} description={t("midi.test.desc")} stacked>
+          <div className="flex flex-wrap items-center gap-2">
             <Input
-              type="number"
-              min={1}
-              max={16}
-              value={settings.channel ?? ""}
-              placeholder={String(encoding.channel)}
-              onChange={(e) => saveMidiSettings({ channel: numberOrUndefined(e.target.value) })}
+              value={testCode}
+              onChange={(e) => setTestCode(e.target.value)}
+              placeholder={defaultTestCode}
+              aria-label={t("midi.test.code")}
+              className="max-w-28"
             />
-          </Field>
-          <Field label={t("midi.advanced.encoding")}>
-            <Select
-              value={encoding.encoding}
-              onChange={(e) => saveMidiSettings({ encoding: e.target.value })}
-            >
-              {MIDI_ENCODING_VALUES.map((value) => (
-                <option key={value} value={value}>
-                  {t(`midi.advanced.encodings.${value}`)}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          {encoding.encoding === MIDI_ENCODING.ccPair ? (
-            <>
-              <Field label={t("midi.advanced.ccBank")}>
-                <Input
-                  type="number"
-                  min={0}
-                  max={127}
-                  value={settings.ccBank}
-                  onChange={(e) => saveMidiSettings({ ccBank: Number(e.target.value) })}
-                />
-              </Field>
-              <Field label={t("midi.advanced.ccSlot")}>
-                <Input
-                  type="number"
-                  min={0}
-                  max={127}
-                  value={settings.ccSlot}
-                  onChange={(e) => saveMidiSettings({ ccSlot: Number(e.target.value) })}
-                />
-              </Field>
-            </>
-          ) : (
-            <label className="col-span-2 flex cursor-pointer items-center gap-3">
-              <input
-                type="checkbox"
-                checked={settings.programFromOne}
-                onChange={(e) => saveMidiSettings({ programFromOne: e.target.checked })}
-                className="h-4 w-4 accent-accent"
+            <button type="button" onClick={() => sendTest()} className="btn btn-outline">
+              {t("midi.test.send")}
+            </button>
+            {encoding.encoding === MIDI_ENCODING.ccPair && (
+              <>
+                <button type="button" onClick={() => sendTest(0)} className="btn btn-ghost">
+                  {t("midi.test.bankOnly", { cc: encoding.ccBank })}
+                </button>
+                <button type="button" onClick={() => sendTest(1)} className="btn btn-ghost">
+                  {t("midi.test.slotOnly", { cc: encoding.ccSlot })}
+                </button>
+              </>
+            )}
+          </div>
+          {!overWifi && checkMessage}
+        </SettingRow>
+      </SettingsGroup>
+
+      <SettingsGroup title={t("midi.advanced.label")}>
+        <SettingRow label={t("midi.advanced.channel")}>
+          <Input
+            type="number"
+            min={1}
+            max={16}
+            value={settings.channel ?? ""}
+            placeholder={String(encoding.channel)}
+            onChange={(e) => saveMidiSettings({ channel: numberOrUndefined(e.target.value) })}
+            aria-label={t("midi.advanced.channel")}
+            className="w-24"
+          />
+        </SettingRow>
+        <SettingRow label={t("midi.advanced.encoding")}>
+          <Select
+            value={encoding.encoding}
+            onChange={(e) => saveMidiSettings({ encoding: e.target.value })}
+            aria-label={t("midi.advanced.encoding")}
+          >
+            {MIDI_ENCODING_VALUES.map((value) => (
+              <option key={value} value={value}>
+                {t(`midi.advanced.encodings.${value}`)}
+              </option>
+            ))}
+          </Select>
+        </SettingRow>
+        {encoding.encoding === MIDI_ENCODING.ccPair ? (
+          <>
+            <SettingRow label={t("midi.advanced.ccBank")}>
+              <Input
+                type="number"
+                min={0}
+                max={127}
+                value={settings.ccBank}
+                onChange={(e) => saveMidiSettings({ ccBank: Number(e.target.value) })}
+                aria-label={t("midi.advanced.ccBank")}
+                className="w-24"
               />
-              {t("midi.advanced.programFromOne")}
-            </label>
-          )}
-        </div>
-      </details>
-    </div>
+            </SettingRow>
+            <SettingRow label={t("midi.advanced.ccSlot")}>
+              <Input
+                type="number"
+                min={0}
+                max={127}
+                value={settings.ccSlot}
+                onChange={(e) => saveMidiSettings({ ccSlot: Number(e.target.value) })}
+                aria-label={t("midi.advanced.ccSlot")}
+                className="w-24"
+              />
+            </SettingRow>
+          </>
+        ) : (
+          <ToggleRow
+            label={t("midi.advanced.programFromOne")}
+            checked={settings.programFromOne}
+            onChange={(programFromOne) => saveMidiSettings({ programFromOne })}
+          />
+        )}
+      </SettingsGroup>
+    </>
   );
 }

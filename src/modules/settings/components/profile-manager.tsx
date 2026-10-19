@@ -11,9 +11,11 @@ import {
 } from "@domain/profiles";
 import { loadSyncConfig } from "@domain/sync/config";
 import Dexie from "dexie";
+import type { TFunction } from "i18next";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ConfirmModal } from "../../design-system/components/confirm-modal";
+import { SettingsGroup } from "./setting-row";
 
 const AVATAR_PRESETS = [
   "\u{1F3B8}",
@@ -38,7 +40,7 @@ export function ProfileManager() {
   }, [t]);
 
   return (
-    <div className="flex flex-col gap-3">
+    <SettingsGroup>
       {profiles.map((p) => (
         <ProfileRow
           key={p.id}
@@ -47,11 +49,22 @@ export function ProfileManager() {
           canDelete={profiles.length > 1}
         />
       ))}
-      <button type="button" onClick={handleAdd} className="link-accent text-sm">
-        {t("settings.profile.add")}
-      </button>
-    </div>
+      <div className="px-4 py-3">
+        <button type="button" onClick={handleAdd} className="link-accent text-sm">
+          {t("settings.profile.add")}
+        </button>
+      </div>
+    </SettingsGroup>
   );
+}
+
+function syncLabel(profileId: string, t: TFunction): string {
+  const config = loadSyncConfig(profileId);
+  if (config?.adapter === "github") {
+    return t("settings.profile.syncGitHub", { repo: `${config.owner}/${config.repo}` });
+  }
+  if (config?.adapter === "google-drive") return t("settings.profile.syncGoogleDrive");
+  return t("settings.profile.syncNone");
 }
 
 function ProfileRow({
@@ -69,21 +82,13 @@ function ProfileRow({
   const [avatar, setAvatar] = useState(profile.avatar ?? "");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const syncConfig = loadSyncConfig(profile.id);
-  const syncLabel =
-    syncConfig?.adapter === "github"
-      ? `GitHub: ${syncConfig.owner}/${syncConfig.repo}`
-      : "Not configured";
-
   const handleSave = useCallback(() => {
     updateProfile(profile.id, { name: name.trim() || profile.name, avatar: avatar || undefined });
     setEditing(false);
   }, [profile.id, profile.name, name, avatar]);
 
   const handleDelete = useCallback(() => {
-    // Delete profile-keyed Dexie database
     Dexie.delete(`open-setlist-${profile.id}`);
-    // Remove profile-keyed localStorage entries
     localStorage.removeItem(`open-setlist-sync-config-${profile.id}`);
     localStorage.removeItem(`open-setlist-tombstones-${profile.id}`);
     clearMyNotes(profile.id);
@@ -93,24 +98,24 @@ function ProfileRow({
 
   if (editing) {
     return (
-      <div className="rounded-md border border-border bg-bg-surface p-3">
-        <div className="mb-3 flex items-center gap-2">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="field flex-1 text-sm"
-            placeholder="Profile name"
-          />
-        </div>
-        <div className="mb-3">
-          <p className="mb-1 text-xs text-text-muted">Avatar</p>
+      <div className="flex flex-col gap-3 px-4 py-3">
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="field text-sm"
+          placeholder={t("settings.profile.name")}
+          aria-label={t("settings.profile.name")}
+        />
+        <div>
+          <p className="mb-1 text-xs text-text-muted">{t("settings.profile.avatar")}</p>
           <div className="flex flex-wrap gap-1">
             {AVATAR_PRESETS.map((emoji) => (
               <button
                 key={emoji}
                 type="button"
                 onClick={() => setAvatar(emoji)}
+                aria-pressed={avatar === emoji}
                 className={[
                   "flex h-8 w-8 items-center justify-center rounded-md border text-lg transition-colors",
                   avatar === emoji
@@ -128,15 +133,16 @@ function ProfileRow({
               className="field w-12 text-center text-sm"
               placeholder="..."
               maxLength={2}
+              aria-label={t("settings.profile.avatar")}
             />
           </div>
         </div>
         <div className="flex gap-2">
           <button type="button" onClick={handleSave} className="btn btn-primary btn-sm">
-            Save
+            {t("common.save")}
           </button>
           <button type="button" onClick={() => setEditing(false)} className="btn btn-ghost btn-sm">
-            Cancel
+            {t("common.cancel")}
           </button>
         </div>
       </div>
@@ -144,26 +150,37 @@ function ProfileRow({
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-md border border-border bg-bg-surface px-3 py-2">
-      <span className="text-lg">{profile.avatar ?? profile.name.slice(0, 1).toUpperCase()}</span>
-      <div className="flex-1">
+    <div className="flex items-center gap-3 px-4 py-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-hover text-lg">
+        {profile.avatar ?? profile.name.slice(0, 1).toUpperCase()}
+      </span>
+      <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-text">{profile.name}</span>
+          <span className="truncate text-sm font-medium text-text">{profile.name}</span>
           {isActive && (
             <span className="rounded-full bg-accent-muted px-1.5 py-0.5 text-xs text-accent">
-              Active
+              {t("settings.profile.active")}
             </span>
           )}
         </div>
-        <p className="text-xs text-text-faint">Sync: {syncLabel}</p>
+        <p className="text-xs text-text-faint">{syncLabel(profile.id, t)}</p>
       </div>
-      <div className="flex gap-1">
+      <div className="flex shrink-0 gap-1">
+        {!isActive && (
+          <button
+            type="button"
+            onClick={() => setActiveProfileId(profile.id)}
+            className="btn btn-ghost btn-sm text-xs"
+          >
+            {t("settings.profile.use")}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => setEditing(true)}
           className="btn btn-ghost btn-sm text-xs"
         >
-          Edit
+          {t("settings.profile.edit")}
         </button>
         {canDelete && (
           <button
@@ -171,7 +188,7 @@ function ProfileRow({
             onClick={() => setConfirmDelete(true)}
             className="btn btn-ghost btn-sm text-xs text-danger"
           >
-            Delete
+            {t("common.delete")}
           </button>
         )}
       </div>

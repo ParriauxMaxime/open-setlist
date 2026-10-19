@@ -31,6 +31,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     "Quality",
     "Sync",
     "Settings",
+    "SettingsSection",
   ]);
 
   const section = route
@@ -38,7 +39,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       ? "setlists"
       : route.name === "Sync"
         ? "sync"
-        : route.name === "Settings"
+        : route.name === "Settings" || route.name === "SettingsSection"
           ? "settings"
           : (TOOLS_ROUTES as readonly string[]).includes(route.name)
             ? "tools"

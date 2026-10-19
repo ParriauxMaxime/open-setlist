@@ -507,9 +507,25 @@
   },
   "settings": {
     "title": "Settings",
-    "autoSaveNote": "Changes apply immediately and are saved to your browser.",
+    "appearance": {
+      "heading": "Appearance"
+    },
+    "backup": {
+      "heading": "Backup",
+      "file": "Display settings file",
+      "fileDesc": "Save these sizes and colors to a file, or load them on another device.",
+      "reset": "Reset"
+    },
+    "danger": {
+      "heading": "Danger zone",
+      "reset": "Reset the app"
+    },
+    "about": {
+      "desc": "What this app is, what changed lately, and how to start over."
+    },
     "preferences": {
       "heading": "Preferences",
+      "desc": "Language, notation and the look of the app on this device.",
       "language": "Language",
       "resetToDefaults": "Reset to defaults",
       "exported": "Preferences exported.",
@@ -544,7 +560,6 @@
     "display": {
       "heading": "Display",
       "desc": "Performance mode appearance — font sizes and section colors.",
-      "globalSize": "Global Size",
       "scale": "Scale",
       "scaleDesc": "Multiplies all font sizes — quick adjust for your device distance."
     },
@@ -567,16 +582,21 @@
       "bridge": "Bridge section"
     },
     "sync": {
-      "heading": "Synchronization",
-      "moved": "GitHub and Google Drive are connected on the Sync page.",
-      "open": "Open the Sync page",
-      "desc": "Connect a remote storage provider to sync your data across devices."
+      "heading": "Synchronization"
     },
     "profile": {
       "heading": "Profiles",
       "desc": "Each profile has its own songs, setlists and sync connection.",
       "add": "+ Add profile",
       "newName": "New profile",
+      "name": "Profile name",
+      "avatar": "Avatar",
+      "active": "Active",
+      "use": "Switch to",
+      "edit": "Edit",
+      "syncNone": "Not synced",
+      "syncGitHub": "GitHub: {{repo}}",
+      "syncGoogleDrive": "Google Drive",
       "deleteConfirmTitle": "Delete profile?",
       "deleteConfirmMessage": "This will permanently delete the profile and all its data."
     },

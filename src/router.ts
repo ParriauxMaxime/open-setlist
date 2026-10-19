@@ -18,6 +18,7 @@ export const Router = createRouter(
     Tuner: "/tuner",
     Sync: "/sync",
     Settings: "/settings?:companion",
+    SettingsSection: "/settings/:section",
     Quality: "/quality",
   },
   { basePath },

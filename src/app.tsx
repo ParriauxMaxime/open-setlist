@@ -32,6 +32,7 @@ export function App() {
     "Tuner",
     "Sync",
     "Settings",
+    "SettingsSection",
     "Quality",
   ]);
 
@@ -90,6 +91,7 @@ function AdminRoutes({
         | "Tuner"
         | "Sync"
         | "Settings"
+        | "SettingsSection"
         | "Quality"
       >
     >
@@ -119,6 +121,8 @@ function AdminRoutes({
       return <SyncPage />;
     case "Settings":
       return <SettingsPage companion={route.params.companion} />;
+    case "SettingsSection":
+      return <SettingsPage section={route.params.section} />;
     case "Quality":
       return <QualityPage />;
   }
