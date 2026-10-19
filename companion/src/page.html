@@ -107,7 +107,10 @@
   <div id="where">{{WHERE}}</div>
   <section>
     <p id="midi" class="row"><b>MIDI</b><span></span></p>
-    <ol id="fix" hidden><li data-t="fix1"></li><li data-t="fix2"></li></ol>
+    <ol id="fix" hidden>
+      <li><a href="https://www.tobias-erichsen.de/software/loopmidi.html" target="_blank" rel="noopener">loopMIDI</a> <span data-t="fix1"></span></li>
+      <li data-t="fix2"></li>
+    </ol>
     <p id="midiIn" class="row"><b data-t="answers"></b><span></span></p>
     <p id="bluetooth" class="row"><b>Bluetooth</b><span></span></p>
   </section>
@@ -128,8 +131,8 @@
       answers: "Answers",
       noIn: "no input",
       noAnswer: "nothing received yet (in Ableton, turn on “Open Setlist” as an output with Remote)",
-      fix1: "Install loopMIDI (free) and add a port named “Open Setlist”.",
-      fix2: "Leave loopMIDI open: this page finds the port by itself.",
+      fix1: "(free): install it and add a port named “Open Setlist”. For Ableton's answers, a second one named “Open Setlist Feedback”.",
+      fix2: "Leave loopMIDI open: this page finds the ports by itself.",
       advertising: "ready",
       off: "off",
       unavailable: "unavailable",

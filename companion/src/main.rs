@@ -19,6 +19,7 @@ use open_setlist_companion::{ble, net};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const LOOK_FOR_PORTS: Duration = Duration::from_secs(3);
+const LOOPMIDI_URL: &str = "https://www.tobias-erichsen.de/software/loopmidi.html";
 
 fn main() -> ExitCode {
     let options = match cli::parse(std::env::args().skip(1)) {
@@ -199,6 +200,7 @@ fn print_midi(found: Option<&str>, wanted: Option<&str>) {
         (None, None) if cfg!(windows) => {
             println!("MIDI output: none yet. Install loopMIDI (free) and add a port named");
             println!("             \"{PORT_NAME}\": it is found within a few seconds.");
+            println!("             {LOOPMIDI_URL}");
         }
         (None, None) => println!("MIDI output: the \"{PORT_NAME}\" port could not be created"),
     }
@@ -214,6 +216,7 @@ fn print_midi_in(found: Option<&str>) {
         None if cfg!(windows) => {
             println!("MIDI input:  none. For Ableton's answers, add a loopMIDI port named");
             println!("             \"{PORT_NAME} Feedback\" or start with --in <name>.");
+            println!("             {LOOPMIDI_URL}");
         }
         None => println!("MIDI input:  the \"{PORT_NAME}\" port could not be created"),
     }
