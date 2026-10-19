@@ -4,6 +4,8 @@ dist/
 *.log
 .env
 .claude/worktrees/
+.claude/reviews/
+.claude/settings.local.json
 scripts/demo-video/node_modules/
 scripts/demo-video/frames-*/
 scripts/demo-video/*.mp4
