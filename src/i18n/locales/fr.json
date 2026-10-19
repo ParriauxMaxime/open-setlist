@@ -129,6 +129,8 @@
     "deleteSetlistConfirm": "Supprimer la setlist\u00a0?",
     "deleteConfirmTitle": "Supprimer la setlist\u00a0?",
     "deleteConfirmMessage": "Cette action est irréversible.",
+    "deleteTitle": "Supprimer cette setlist",
+    "deleteDesc": "La retire de ce profil, et du groupe à la prochaine synchronisation.",
     "resetChanges": "Réinitialiser",
     "removeSet": "Retirer le set",
     "noSongsInSet": "Aucune chanson dans ce set.",
@@ -836,7 +838,11 @@
     "moreOptions": "Plus d'options",
     "previousSong": "Chanson précédente",
     "nextSong": "Chanson suivante",
-    "close": "Fermer"
+    "close": "Fermer",
+    "dragToReorder": "Glisser pour réordonner",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "remove": "Retirer"
   },
   "midi": {
     "heading": "Scène : MIDI",

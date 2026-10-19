@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 interface SortableSongItemProps {
   id: string;
@@ -9,6 +10,7 @@ interface SortableSongItemProps {
 }
 
 export function SortableSongItem({ id, songTitle, children }: SortableSongItemProps) {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
     data: { songTitle },
@@ -24,10 +26,11 @@ export function SortableSongItem({ id, songTitle, children }: SortableSongItemPr
     <li
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 rounded-sm bg-bg-raised px-2 py-1.5"
+      className="flex items-center gap-2 bg-bg-surface px-3 py-2 hover:bg-bg-hover"
     >
       <button
         type="button"
+        aria-label={t("a11y.dragToReorder")}
         className="cursor-grab touch-none px-0.5 text-text-faint hover:text-text active:cursor-grabbing"
         {...attributes}
         {...listeners}

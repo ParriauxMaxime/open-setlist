@@ -68,12 +68,16 @@ export function SetEditor({
   };
 
   return (
-    <div ref={setDroppableRef} className="rounded-md border border-border bg-bg-surface p-3">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+    <div
+      ref={setDroppableRef}
+      className="divide-y divide-border rounded-lg border border-border bg-bg-surface"
+    >
+      <div className="flex items-center justify-between gap-2 px-4 py-2">
+        <div className="flex min-w-0 items-center gap-2">
           {dragHandle && (
             <button
               type="button"
+              aria-label={t("a11y.dragToReorder")}
               className="cursor-grab touch-none text-lg text-text-faint hover:text-text active:cursor-grabbing"
               {...dragHandle.dragAttributes}
               {...dragHandle.dragListeners}
@@ -81,37 +85,43 @@ export function SetEditor({
               ⠿
             </button>
           )}
-          <input
-            type="text"
-            value={set.name}
-            onChange={(e) => onUpdate({ ...set, name: e.target.value })}
-            className="field max-w-48 font-medium"
-          />
+          <div className="w-48 min-w-0">
+            <input
+              type="text"
+              value={set.name}
+              aria-label={t("setlist.set")}
+              onChange={(e) => onUpdate({ ...set, name: e.target.value })}
+              className="field-sm font-medium"
+            />
+          </div>
         </div>
         {canRemove && (
-          <button type="button" onClick={onRemove} className="btn-danger text-sm">
+          <button type="button" onClick={onRemove} className="btn btn-danger btn-sm">
             {t("setlist.removeSet")}
           </button>
         )}
       </div>
 
       {set.songIds.length === 0 ? (
-        <p className="py-2 text-sm text-text-faint">{t("setlist.noSongsInSet")}</p>
+        <p className="px-4 py-3 text-sm text-text-faint">{t("setlist.noSongsInSet")}</p>
       ) : (
         <SortableContext items={songDragIds} strategy={verticalListSortingStrategy}>
-          <ol className="mb-2 flex flex-col gap-1">
+          <ol className="divide-y divide-border">
             {set.songIds.map((songId, i) => {
               const song = songs?.find((s) => s?.id === songId);
               const dragId = songDragIds[i];
               return (
                 <SortableSongItem key={dragId} id={dragId} songTitle={song?.title}>
-                  <span className="w-5 text-center text-xs text-text-faint">{i + 1}</span>
+                  <span className="w-5 text-center text-xs tabular-nums text-text-faint">
+                    {i + 1}
+                  </span>
                   <SongRowContent song={song} statusIndicator="warning" />
                   <div className="flex shrink-0 gap-1">
                     <button
                       type="button"
                       onClick={() => moveSong(i, -1)}
                       disabled={i === 0}
+                      aria-label={t("a11y.moveUp")}
                       className="px-1 text-text-faint hover:text-text disabled:opacity-30"
                     >
                       ▲
@@ -120,6 +130,7 @@ export function SetEditor({
                       type="button"
                       onClick={() => moveSong(i, 1)}
                       disabled={i === set.songIds.length - 1}
+                      aria-label={t("a11y.moveDown")}
                       className="px-1 text-text-faint hover:text-text disabled:opacity-30"
                     >
                       ▼
@@ -127,6 +138,7 @@ export function SetEditor({
                     <button
                       type="button"
                       onClick={() => removeSong(i)}
+                      aria-label={t("a11y.remove")}
                       className="px-1 text-text-faint hover:text-danger"
                     >
                       ✕
@@ -139,13 +151,15 @@ export function SetEditor({
         </SortableContext>
       )}
 
-      {showPicker ? (
-        <SongPicker excludeIds={set.songIds} onPick={addSong} contextSongs={songs} />
-      ) : (
-        <button type="button" onClick={() => setShowPicker(true)} className="link-accent text-sm">
-          {t("setlist.addSong")}
-        </button>
-      )}
+      <div className="px-4 py-2">
+        {showPicker ? (
+          <SongPicker excludeIds={set.songIds} onPick={addSong} contextSongs={songs} />
+        ) : (
+          <button type="button" onClick={() => setShowPicker(true)} className="link-accent text-sm">
+            {t("setlist.addSong")}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

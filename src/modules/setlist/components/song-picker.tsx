@@ -115,7 +115,7 @@ export function SongPicker({ excludeIds, onPick, contextSongs }: SongPickerProps
           {songs && songs.length === 0 ? t("setlist.noCatalogSongs") : t("setlist.noMatchingSongs")}
         </p>
       ) : (
-        <ul className="flex max-h-48 flex-col gap-1 overflow-y-auto">
+        <ul className="flex max-h-48 flex-col gap-1 overflow-x-hidden overflow-y-auto">
           {search ? (
             filtered.map((item) => (
               <SongRow key={item.song.id} item={item} notation={notation} onPick={onPick} />
@@ -166,8 +166,8 @@ function SongRow({
         className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm transition-colors hover:bg-bg-hover"
       >
         <SongStatusDot status={song.status} />
-        <span className="flex-1 truncate">{song.title}</span>
-        {song.artist && <span className="shrink-0 text-text-faint">{song.artist}</span>}
+        <span className="min-w-24 flex-1 truncate">{song.title}</span>
+        {song.artist && <span className="min-w-0 truncate text-text-faint">{song.artist}</span>}
         {song.key && (
           <span className="shrink-0 text-chord text-xs">({formatKey(song.key, notation)})</span>
         )}

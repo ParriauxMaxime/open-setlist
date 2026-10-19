@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
+import { Card, CardRow } from "../../design-system/components/card";
 import { ConfirmModal } from "../../design-system/components/confirm-modal";
 import { EditorHeader } from "../../design-system/components/editor-header";
 import { Field, Input } from "../../design-system/components/form";
@@ -106,8 +107,8 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
   );
 
   const addSet = useCallback(() => {
-    append({ name: `Set ${fields.length + 1}`, songIds: [] });
-  }, [append, fields.length]);
+    append({ name: `${t("setlist.set")} ${fields.length + 1}`, songIds: [] });
+  }, [append, fields.length, t]);
 
   const onSubmit = async (values: SetlistFormValues) => {
     const now = Date.now();
@@ -240,16 +241,6 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
                   >
                     {t("setlist.resetChanges")}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setConfirmDelete(true);
-                      setMenuOpen(false);
-                    }}
-                    className="block w-full px-4 py-2 text-left text-sm text-danger hover:bg-bg-hover"
-                  >
-                    {t("common.delete")}
-                  </button>
                 </div>
               )}
             </div>
@@ -258,8 +249,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
       />
 
       <form id="setlist-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        {/* Metadata */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 rounded-lg border border-border bg-bg-surface p-4 sm:grid-cols-4">
           <div className="col-span-2 sm:col-span-1">
             <Field label={t("setlist.nameLabel")} error={errors.name?.message}>
               <Input {...register("name")} />
@@ -300,9 +290,9 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
 
             {/* Sets area */}
             <div className="flex min-w-0 flex-1 flex-col gap-3">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-sm font-semibold">
                 {t("setlist.setsHeading")}{" "}
-                <span className="text-sm font-normal text-text-faint">
+                <span className="text-xs font-normal text-text-faint">
                   {t("setlist.songCount", { count: totalSongs })}
                   {totalDuration > 0 && <> &middot; {formatDuration(totalDuration)}</>}
                   {unknownCount > 0 && (
@@ -348,6 +338,20 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
           </DragOverlay>
         </DndContext>
       </form>
+
+      <div className="mt-10 max-w-2xl">
+        <Card title={t("settings.danger.heading")} danger>
+          <CardRow label={t("setlist.deleteTitle")} description={t("setlist.deleteDesc")}>
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="btn btn-danger btn-sm"
+            >
+              {t("common.delete")}
+            </button>
+          </CardRow>
+        </Card>
+      </div>
 
       {confirmDelete && (
         <ConfirmModal

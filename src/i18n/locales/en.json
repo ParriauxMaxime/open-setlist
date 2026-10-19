@@ -129,6 +129,8 @@
     "deleteSetlistConfirm": "Delete setlist?",
     "deleteConfirmTitle": "Delete setlist?",
     "deleteConfirmMessage": "This action cannot be undone.",
+    "deleteTitle": "Delete this setlist",
+    "deleteDesc": "Removes it from this profile, and from the band at the next sync.",
     "resetChanges": "Reset changes",
     "removeSet": "Remove set",
     "noSongsInSet": "No songs in this set.",
@@ -836,7 +838,11 @@
     "moreOptions": "More options",
     "previousSong": "Previous song",
     "nextSong": "Next song",
-    "close": "Close"
+    "close": "Close",
+    "dragToReorder": "Drag to reorder",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Remove"
   },
   "midi": {
     "heading": "Stage: MIDI",
