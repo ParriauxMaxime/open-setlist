@@ -34,7 +34,7 @@ export function SongCatalogPanel({ usedSongIds }: SongCatalogPanelProps) {
   const { setNodeRef, isOver } = useDroppable({ id: "catalog" });
 
   return (
-    <div ref={setNodeRef} className="hidden lg:block lg:w-1/2 lg:shrink-0">
+    <div ref={setNodeRef} className="hidden lg:block lg:w-2/5 lg:shrink-0">
       <div
         className={`sticky top-4 rounded-lg border bg-bg-surface transition-colors ${isOver ? "border-accent" : "border-border"}`}
       >

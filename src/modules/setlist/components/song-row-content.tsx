@@ -30,33 +30,35 @@ export function SongRowContent({ song, statusIndicator }: SongRowContentProps) {
     .filter(Boolean)
     .join(" · ");
 
-  // On a phone the title gets the whole line: the artist joins the details below it
+  // In a narrow row the title gets the whole line: the artist joins the details below it
   const secondLine = [song.artist, details].filter(Boolean).join(" · ");
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-sm md:flex-row md:items-baseline md:gap-2">
-      <div className="flex min-w-0 items-baseline gap-2">
-        {statusIndicator === "dot" && (
-          <span className="self-center">
-            <SongStatusDot status={song.status} />
+    <div className="@container min-w-0 flex-1">
+      <div className="flex flex-col gap-0.5 text-sm @lg:flex-row @lg:items-baseline @lg:gap-2">
+        <div className="flex min-w-0 items-baseline gap-2">
+          {statusIndicator === "dot" && (
+            <span className="shrink-0 self-center">
+              <SongStatusDot status={song.status} />
+            </span>
+          )}
+          <span className="min-w-0 truncate">{song.title}</span>
+          {song.artist && (
+            <span className="hidden min-w-0 shrink-[100] truncate text-xs text-text-faint @lg:inline">
+              {song.artist}
+            </span>
+          )}
+          {statusIndicator === "warning" && <NotReadyBadge status={song.status} />}
+        </div>
+        {secondLine && (
+          <span className="truncate text-xs text-text-faint @lg:hidden">{secondLine}</span>
+        )}
+        {details && (
+          <span className="hidden shrink-0 text-xs text-text-faint @lg:ml-auto @lg:inline">
+            {details}
           </span>
         )}
-        <span className="truncate">{song.title}</span>
-        {song.artist && (
-          <span className="hidden min-w-0 truncate text-xs text-text-faint md:inline">
-            {song.artist}
-          </span>
-        )}
-        {statusIndicator === "warning" && <NotReadyBadge status={song.status} />}
       </div>
-      {secondLine && (
-        <span className="truncate text-xs text-text-faint md:hidden">{secondLine}</span>
-      )}
-      {details && (
-        <span className="hidden shrink-0 text-xs text-text-faint md:ml-auto md:inline">
-          {details}
-        </span>
-      )}
     </div>
   );
 }
