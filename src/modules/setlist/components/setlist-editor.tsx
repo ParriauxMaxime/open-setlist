@@ -3,10 +3,9 @@ import { useDb } from "@db/provider";
 import { closestCorners, DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { formatDuration } from "@domain/format";
-import { createId } from "@domain/id";
 import { useActiveProfileId } from "@domain/profiles";
 import { type SetlistFormValues, setlistFormSchema } from "@domain/schemas/setlist";
-import { isoDay } from "@domain/setlist-order";
+import { setlistDuration } from "@domain/setlist-duration";
 import { countNotReadySongs } from "@domain/song-status";
 import { addTombstone } from "@domain/sync/tombstones";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +20,7 @@ import { ConfirmModal } from "../../design-system/components/confirm-modal";
 import { EditorHeader } from "../../design-system/components/editor-header";
 import { Field, Input } from "../../design-system/components/form";
 import { useUnsavedGuard } from "../../shared/hooks/use-unsaved-guard";
+import { useDuplicateSetlist } from "../hooks/use-duplicate-setlist";
 import { buildSetDragId, buildSongDragIds, useSetlistDnd } from "../hooks/use-setlist-dnd";
 import { DragOverlayContent } from "./drag-overlay-content";
 import type { RemovedSong } from "./set-editor";
@@ -157,21 +157,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
     if (!isSubmitting) handleSubmit(onSubmit)();
   });
 
-  const duplicateSetlist = async () => {
-    if (!existing) return;
-    const id = createId();
-    const now = Date.now();
-    await db.setlists.put({
-      ...existing,
-      id,
-      name: t("setlist.copyName", { name: existing.name }),
-      date: isoDay(new Date()),
-      sets: existing.sets.map((s) => ({ ...s, songIds: [...s.songIds] })),
-      createdAt: now,
-      updatedAt: now,
-    });
-    Router.push("SetlistEdit", { setlistId: id });
-  };
+  const duplicateSetlist = useDuplicateSetlist();
 
   const deleteSetlist = useCallback(async () => {
     addTombstone(profileId, "setlist", setlistId);
@@ -200,22 +186,10 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
     [uniqueSongIds, db],
   );
 
-  const { totalDuration, unknownCount } = useMemo(() => {
-    if (!songs) return { totalDuration: 0, unknownCount: 0 };
-    const defined = songs.filter((s): s is NonNullable<typeof s> => s != null);
-    const songMap = new Map(defined.map((s) => [s.id, s]));
-    let total = 0;
-    let unknown = 0;
-    for (const id of usedSongIds) {
-      const song = songMap.get(id);
-      if (song?.duration) {
-        total += song.duration;
-      } else {
-        unknown++;
-      }
-    }
-    return { totalDuration: total, unknownCount: unknown };
-  }, [songs, usedSongIds]);
+  const { total: totalDuration, unknownCount } = useMemo(
+    () => (songs ? setlistDuration(usedSongIds, songs) : { total: 0, unknownCount: 0 }),
+    [songs, usedSongIds],
+  );
 
   const notReadyCount = useMemo(() => countNotReadySongs(sets, songs ?? []), [sets, songs]);
 
@@ -307,7 +281,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
                     title={isDirty ? t("setlist.duplicateSaveFirst") : undefined}
                     onClick={() => {
                       setMenuOpen(false);
-                      duplicateSetlist();
+                      if (existing) duplicateSetlist(existing);
                     }}
                     className="block w-full px-4 py-2 text-left text-sm text-text hover:bg-bg-hover disabled:opacity-50"
                   >

@@ -1,6 +1,8 @@
-import type { Setlist } from "@db";
+import type { Setlist, Song } from "@db";
 import { useDb } from "@db/provider";
+import { formatDuration } from "@domain/format";
 import { createId } from "@domain/id";
+import { setlistDuration } from "@domain/setlist-duration";
 import { formatGigDate, isoDay, sortSetlistsForPlaying } from "@domain/setlist-order";
 import { Link } from "@swan-io/chicane";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
@@ -9,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
 import { DataTable } from "../design-system/components/data-table";
 import { SetlistEditor } from "./components/setlist-editor";
+import { useDuplicateSetlist } from "./hooks/use-duplicate-setlist";
 
 interface SetlistPageProps {
   setlistId?: string;
@@ -23,8 +26,8 @@ export function SetlistPage({ setlistId }: SetlistPageProps) {
 
 const col = createColumnHelper<Setlist>();
 
-function songCount(setlist: Setlist): number {
-  return setlist.sets.reduce((n, s) => n + s.songIds.length, 0);
+function songIds(setlist: Setlist): string[] {
+  return setlist.sets.flatMap((s) => s.songIds);
 }
 
 function SetlistListPage() {
@@ -35,8 +38,25 @@ function SetlistListPage() {
     async () => sortSetlistsForPlaying(await db.setlists.toArray(), today),
     [db, today],
   );
+  const songs = useLiveQuery(() => db.songs.toArray(), [db]);
+  const duplicateSetlist = useDuplicateSetlist();
   const gigDate = (date: string | undefined) =>
     date ? formatGigDate(date, i18n.language, today) : undefined;
+
+  /** "30 songs · 2 sets · 102:30", the sets only when more than one. */
+  const contents = (setlist: Setlist, catalog: Song[]) => {
+    const ids = songIds(setlist);
+    const { total, unknownCount } = setlistDuration(ids, catalog);
+    const summary = [
+      t("setlist.songCount", { count: ids.length }),
+      setlist.sets.length > 1 ? t("setlist.setCount", { count: setlist.sets.length }) : null,
+      total > 0 ? formatDuration(total) : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    const hint = unknownCount > 0 ? t("setlist.unknownDuration", { count: unknownCount }) : "";
+    return { summary, hint };
+  };
 
   const columns: ColumnDef<Setlist, unknown>[] = [
     col.accessor("name", {
@@ -46,7 +66,7 @@ function SetlistListPage() {
         const details = [
           gigDate(setlist.date),
           setlist.venue,
-          t("setlist.songCount", { count: songCount(setlist) }),
+          contents(setlist, songs ?? []).summary,
         ].filter(Boolean);
         return (
           <div>
@@ -59,6 +79,7 @@ function SetlistListPage() {
     col.accessor("date", {
       header: t("setlist.colDate"),
       size: 150,
+      sortDescFirst: true,
       cell: (info) => <span className="text-text-muted">{gigDate(info.getValue()) ?? "—"}</span>,
       meta: { className: "hidden md:table-cell" },
     }) as ColumnDef<Setlist, unknown>,
@@ -69,23 +90,44 @@ function SetlistListPage() {
     }) as ColumnDef<Setlist, unknown>,
     col.accessor("sets", {
       header: t("setlist.colSongs"),
-      size: 90,
       enableSorting: false,
-      cell: (info) => <span className="text-text-faint">{songCount(info.row.original)}</span>,
+      cell: (info) => {
+        const { summary, hint } = contents(info.row.original, songs ?? []);
+        return (
+          <span className="whitespace-nowrap text-text-faint" title={hint || undefined}>
+            {summary}
+          </span>
+        );
+      },
       meta: { className: "hidden md:table-cell" },
     }) as ColumnDef<Setlist, unknown>,
     col.display({
-      id: "play",
-      size: 110,
-      cell: (info) =>
-        songCount(info.row.original) > 0 && (
-          <Link
-            to={Router.Perform({ setlistId: info.row.original.id })}
-            className="btn btn-primary whitespace-nowrap"
-          >
-            ▶ {t("setlist.perform")}
-          </Link>
-        ),
+      id: "actions",
+      size: 160,
+      cell: (info) => {
+        const setlist = info.row.original;
+        return (
+          <div className="flex items-center justify-end gap-1">
+            <button
+              type="button"
+              onClick={() => duplicateSetlist(setlist)}
+              aria-label={t("setlist.duplicateNamed", { name: setlist.name })}
+              title={t("setlist.duplicateNamed", { name: setlist.name })}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-lg text-text-muted hover:bg-bg-hover hover:text-text"
+            >
+              ⧉
+            </button>
+            {songIds(setlist).length > 0 && (
+              <Link
+                to={Router.Perform({ setlistId: setlist.id })}
+                className="btn btn-primary whitespace-nowrap"
+              >
+                ▶ {t("setlist.perform")}
+              </Link>
+            )}
+          </div>
+        );
+      },
       meta: { disableRowLink: true, className: "text-right" },
     }) as ColumnDef<Setlist, unknown>,
   ];
