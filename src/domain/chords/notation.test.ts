@@ -1,4 +1,11 @@
-import { formatChord, formatKey, formatPitch, NOTATION_LIST, type Notation } from "./notation";
+import {
+  formatChord,
+  formatKey,
+  formatKeyChoice,
+  formatPitch,
+  NOTATION_LIST,
+  type Notation,
+} from "./notation";
 
 /** [english, solfege, german] for the 12 pitch classes, plus the other common spellings. */
 const ROOTS: [string, string, string][] = [
@@ -141,6 +148,18 @@ describe("formatKey", () => {
 
   it.each(["", "Hello", "?"])("leaves unparseable key %p unchanged", (key) => {
     expect(formatKey(key, "solfege")).toBe(key);
+  });
+});
+
+describe("formatKeyChoice", () => {
+  it("shows the letter next to a renamed key", () => {
+    expect(formatKeyChoice("Dm", "solfege")).toBe("Rém (Dm)");
+    expect(formatKeyChoice("B", "german")).toBe("H (B)");
+  });
+
+  it("shows the letter alone when nothing is renamed", () => {
+    expect(formatKeyChoice("Dm", "english")).toBe("Dm");
+    expect(formatKeyChoice("C#m", "german")).toBe("C#m");
   });
 });
 

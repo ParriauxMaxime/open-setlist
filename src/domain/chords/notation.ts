@@ -65,6 +65,12 @@ export function formatKey(key: string, notation: Notation): string {
   return formatChord(normalizeKey(key) ?? key, notation);
 }
 
+/** A key in a key picker: "Rém (Dm)" when the notation renames it, "Dm" otherwise. */
+export function formatKeyChoice(key: string, notation: Notation): string {
+  const formatted = formatKey(key, notation);
+  return formatted === key ? key : `${formatted} (${key})`;
+}
+
 /** An instrument's pitch the way players name it, with a flat sign: "B♭", "Si♭", "Fa". */
 export function formatPitch(pitch: string, notation: Notation): string {
   return formatChord(pitch, notation).replace(/b$/, "♭");

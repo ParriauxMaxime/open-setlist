@@ -1,5 +1,5 @@
 import { parse } from "@domain/chordpro/parser";
-import { formatKey } from "@domain/chords/notation";
+import { formatKeyChoice } from "@domain/chords/notation";
 import { MAJOR_KEYS, MINOR_KEYS } from "@domain/music";
 import { SCROLL_SPEED_MAX, SCROLL_SPEED_MIN } from "@domain/perform-stage";
 import type { SongDisplayPrefs } from "@domain/preferences";
@@ -107,14 +107,14 @@ export function MetadataPanel({
               <optgroup label={t("editor.majorGroup")}>
                 {MAJOR_KEYS.map((k) => (
                   <option key={k} value={k}>
-                    {formatKey(k, notation)}
+                    {formatKeyChoice(k, notation)}
                   </option>
                 ))}
               </optgroup>
               <optgroup label={t("editor.minorGroup")}>
                 {MINOR_KEYS.map((k) => (
                   <option key={k} value={k}>
-                    {formatKey(k, notation)}
+                    {formatKeyChoice(k, notation)}
                   </option>
                 ))}
               </optgroup>
