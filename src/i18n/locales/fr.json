@@ -31,7 +31,13 @@
     "search": "Rechercher...",
     "custom": "Personnalisé",
     "confirm": "Confirmer",
-    "sortBy": "Trier par"
+    "sortBy": "Trier par",
+    "unsaved": {
+      "title": "Quitter sans enregistrer ?",
+      "message": "Vos modifications seront perdues.",
+      "leave": "Quitter",
+      "stay": "Rester"
+    }
   },
   "catalog": {
     "title": "Chansons",

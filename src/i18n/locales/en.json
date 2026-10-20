@@ -31,7 +31,13 @@
     "search": "Search...",
     "custom": "Custom",
     "confirm": "Confirm",
-    "sortBy": "Sort by"
+    "sortBy": "Sort by",
+    "unsaved": {
+      "title": "Leave without saving?",
+      "message": "Your changes will be lost.",
+      "leave": "Leave",
+      "stay": "Stay"
+    }
   },
   "catalog": {
     "title": "Songs",

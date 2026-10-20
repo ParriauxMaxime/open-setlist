@@ -21,6 +21,7 @@ import { Router } from "../../router";
 import { Disclosure } from "../design-system/components/card";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { EditorHeader } from "../design-system/components/editor-header";
+import { useUnsavedGuard } from "../shared/hooks/use-unsaved-guard";
 import { AttachmentsPanel } from "./components/attachments-panel";
 import { ChordProEditor } from "./components/chordpro-editor";
 import { ChordProHelp } from "./components/chordpro-help";
@@ -240,6 +241,10 @@ export function EditSongPage({ songId }: EditSongPageProps) {
     await db.songs.delete(songId);
     Router.replace("Catalog");
   }, [songId, profileId, db, existing]);
+
+  const unsavedModal = useUnsavedGuard(isDirty, () => {
+    if (!isSubmitting) handleSubmit(onSubmit)();
+  });
 
   const onLookupSelect = useCallback(
     (values: Partial<SongFormValues>) => {
@@ -486,6 +491,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
           onCancel={() => setConfirmDelete(false)}
         />
       )}
+      {unsavedModal}
     </div>
   );
 }

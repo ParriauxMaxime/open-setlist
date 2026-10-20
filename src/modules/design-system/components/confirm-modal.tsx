@@ -5,6 +5,7 @@ interface ConfirmModalProps {
   title: string;
   message: string;
   confirmLabel: string;
+  cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
   variant?: "danger" | "default";
@@ -14,6 +15,7 @@ export function ConfirmModal({
   title,
   message,
   confirmLabel,
+  cancelLabel = "Cancel",
   onConfirm,
   onCancel,
   variant = "default",
@@ -45,7 +47,7 @@ export function ConfirmModal({
             {confirmLabel}
           </button>
           <button type="button" onClick={onCancel} className="btn btn-ghost flex-1">
-            Cancel
+            {cancelLabel}
           </button>
         </div>
       </div>

@@ -18,6 +18,7 @@ import { Card, CardRow } from "../../design-system/components/card";
 import { ConfirmModal } from "../../design-system/components/confirm-modal";
 import { EditorHeader } from "../../design-system/components/editor-header";
 import { Field, Input } from "../../design-system/components/form";
+import { useUnsavedGuard } from "../../shared/hooks/use-unsaved-guard";
 import { buildSetDragId, buildSongDragIds, useSetlistDnd } from "../hooks/use-setlist-dnd";
 import { DragOverlayContent } from "./drag-overlay-content";
 import { SongCatalogPanel } from "./song-catalog-panel";
@@ -123,6 +124,10 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
       updatedAt: now,
     });
   };
+
+  const unsavedModal = useUnsavedGuard(isDirty, () => {
+    if (!isSubmitting) handleSubmit(onSubmit)();
+  });
 
   const deleteSetlist = useCallback(async () => {
     addTombstone(profileId, "setlist", setlistId);
@@ -363,6 +368,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
           onCancel={() => setConfirmDelete(false)}
         />
       )}
+      {unsavedModal}
     </div>
   );
 }
