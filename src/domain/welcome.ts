@@ -15,7 +15,7 @@ import { type AppPreferences, appPreferencesSchema } from "./preferences";
 import { type Profile, useProfiles } from "./profiles";
 
 /** Bump with each What's new list: returning users see the card once per version. */
-export const WHATS_NEW_VERSION = "2026-10";
+export const WHATS_NEW_VERSION = "2026-10-20";
 
 export const WELCOME = {
   firstRun: "first-run",
@@ -116,14 +116,11 @@ export interface WhatsNewItem {
 }
 
 export const WHATS_NEW_ITEMS: readonly WhatsNewItem[] = [
-  { id: "myPart", target: WHATS_NEW_TARGET.perform },
-  { id: "myNotes", target: WHATS_NEW_TARGET.perform },
-  { id: "tempo", target: WHATS_NEW_TARGET.perform },
-  { id: "notation", target: WHATS_NEW_TARGET.settings },
-  { id: "print", target: WHATS_NEW_TARGET.print },
-  { id: "readiness" },
-  { id: "setlistHelper", target: WHATS_NEW_TARGET.import },
-  { id: "pasteChart", target: WHATS_NEW_TARGET.newSong },
+  { id: "stageFirst", target: WHATS_NEW_TARGET.perform },
+  { id: "setlistsAtAGlance" },
+  { id: "noLostEdits" },
+  { id: "tidyCatalog" },
+  { id: "bulkEdit" },
 ];
 
 /** Setlist the "Try it" links open: the last edited, else the earliest gig (demo order). */

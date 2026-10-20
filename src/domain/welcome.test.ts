@@ -1,3 +1,5 @@
+import en from "../i18n/locales/en.json";
+import fr from "../i18n/locales/fr.json";
 import { DEFAULT_PREFERENCES } from "./preferences";
 import {
   applyWelcomeChoices,
@@ -136,8 +138,18 @@ describe("pickTrySetlist", () => {
 });
 
 describe("WHATS_NEW_ITEMS", () => {
-  it("lists eight features with unique ids", () => {
-    expect(WHATS_NEW_ITEMS).toHaveLength(8);
-    expect(new Set(WHATS_NEW_ITEMS.map((i) => i.id)).size).toBe(8);
+  it("lists five features at most, with unique ids", () => {
+    expect(WHATS_NEW_ITEMS.length).toBeLessThanOrEqual(5);
+    expect(new Set(WHATS_NEW_ITEMS.map((i) => i.id)).size).toBe(WHATS_NEW_ITEMS.length);
+  });
+
+  it("has an English and a French line for each feature", () => {
+    for (const locale of [en, fr]) {
+      const items: Record<string, { title: string; desc: string }> = locale.welcome.whatsNew.items;
+      for (const { id } of WHATS_NEW_ITEMS) {
+        expect(items[id]?.title).toBeTruthy();
+        expect(items[id]?.desc).toBeTruthy();
+      }
+    }
   });
 });
