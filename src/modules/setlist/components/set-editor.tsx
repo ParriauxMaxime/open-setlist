@@ -19,7 +19,20 @@ interface SetEditorProps {
   onRemove: () => void;
   canRemove: boolean;
   dragHandle?: SetDragHandleProps;
+  /** Last song removed from this set, while it can still be put back. */
+  removed?: RemovedSong;
+  onSongRemoved: (removed: RemovedSong) => void;
+  onUndoRemove: () => void;
 }
+
+export interface RemovedSong {
+  songId: string;
+  index: number;
+  title: string;
+}
+
+const ROW_BUTTON =
+  "flex size-10 items-center justify-center rounded-md text-text-faint hover:bg-bg-hover hover:text-text disabled:opacity-30";
 
 export function SetEditor({
   set,
@@ -29,6 +42,9 @@ export function SetEditor({
   onRemove,
   canRemove,
   dragHandle,
+  removed,
+  onSongRemoved,
+  onUndoRemove,
 }: SetEditorProps) {
   const { t } = useTranslation();
   const [showPicker, setShowPicker] = useState(false);
@@ -54,9 +70,12 @@ export function SetEditor({
   };
 
   const removeSong = (index: number) => {
+    const songId = set.songIds[index];
+    const title = songs?.find((s) => s?.id === songId)?.title ?? t("common.unknown");
     const next = [...set.songIds];
     next.splice(index, 1);
     onUpdate({ ...set, songIds: next });
+    onSongRemoved({ songId, index, title });
   };
 
   const moveSong = (index: number, direction: -1 | 1) => {
@@ -78,7 +97,7 @@ export function SetEditor({
             <button
               type="button"
               aria-label={t("a11y.dragToReorder")}
-              className="cursor-grab touch-none text-lg text-text-faint hover:text-text active:cursor-grabbing"
+              className="-ml-2 flex size-10 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-lg text-text-faint hover:bg-bg-hover hover:text-text active:cursor-grabbing"
               {...dragHandle.dragAttributes}
               {...dragHandle.dragListeners}
             >
@@ -116,13 +135,13 @@ export function SetEditor({
                     {i + 1}
                   </span>
                   <SongRowContent song={song} statusIndicator="warning" />
-                  <div className="flex shrink-0 gap-1">
+                  <div className="flex shrink-0">
                     <button
                       type="button"
                       onClick={() => moveSong(i, -1)}
                       disabled={i === 0}
                       aria-label={t("a11y.moveUp")}
-                      className="px-1 text-text-faint hover:text-text disabled:opacity-30"
+                      className={ROW_BUTTON}
                     >
                       ▲
                     </button>
@@ -131,7 +150,7 @@ export function SetEditor({
                       onClick={() => moveSong(i, 1)}
                       disabled={i === set.songIds.length - 1}
                       aria-label={t("a11y.moveDown")}
-                      className="px-1 text-text-faint hover:text-text disabled:opacity-30"
+                      className={ROW_BUTTON}
                     >
                       ▼
                     </button>
@@ -139,7 +158,7 @@ export function SetEditor({
                       type="button"
                       onClick={() => removeSong(i)}
                       aria-label={t("a11y.remove")}
-                      className="px-1 text-text-faint hover:text-danger"
+                      className={`${ROW_BUTTON} hover:text-danger`}
                     >
                       ✕
                     </button>
@@ -149,6 +168,21 @@ export function SetEditor({
             })}
           </ol>
         </SortableContext>
+      )}
+
+      {removed && (
+        <output className="flex items-center gap-3 px-4 py-1 text-sm text-text-muted">
+          <span className="min-w-0 truncate">
+            {t("setlist.removedSong", { title: removed.title })}
+          </span>
+          <button
+            type="button"
+            onClick={onUndoRemove}
+            className="link-accent flex min-h-10 shrink-0 items-center px-2"
+          >
+            {t("setlist.undo")}
+          </button>
+        </output>
       )}
 
       <div className="px-4 py-2">

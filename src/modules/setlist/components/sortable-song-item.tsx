@@ -26,12 +26,12 @@ export function SortableSongItem({ id, songTitle, children }: SortableSongItemPr
     <li
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 bg-bg-surface px-3 py-2 hover:bg-bg-hover"
+      className="flex items-center gap-1 bg-bg-surface py-1 pr-1 pl-0.5 hover:bg-bg-hover"
     >
       <button
         type="button"
         aria-label={t("a11y.dragToReorder")}
-        className="cursor-grab touch-none px-0.5 text-text-faint hover:text-text active:cursor-grabbing"
+        className="flex size-10 shrink-0 cursor-grab touch-none items-center justify-center text-text-faint hover:text-text active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >

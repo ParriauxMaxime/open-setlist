@@ -21,12 +21,15 @@ import { Field, Input } from "../../design-system/components/form";
 import { useUnsavedGuard } from "../../shared/hooks/use-unsaved-guard";
 import { buildSetDragId, buildSongDragIds, useSetlistDnd } from "../hooks/use-setlist-dnd";
 import { DragOverlayContent } from "./drag-overlay-content";
+import type { RemovedSong } from "./set-editor";
 import { SongCatalogPanel } from "./song-catalog-panel";
 import { SortableSet } from "./sortable-set";
 
 interface SetlistEditorProps {
   setlistId: string;
 }
+
+const UNDO_MS = 6000;
 
 const defaultValues: SetlistFormValues = {
   name: "",
@@ -53,6 +56,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
     handleSubmit,
     reset,
     watch,
+    getValues,
     formState: { errors, isSubmitting, isDirty },
     control,
   } = useForm<SetlistFormValues>({
@@ -109,6 +113,25 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
     },
     [updateField],
   );
+
+  // Kept here: a set's editor remounts on every change to the set
+  const [removed, setRemoved] = useState<(RemovedSong & { setIndex: number }) | null>(null);
+
+  useEffect(() => {
+    if (!removed) return;
+    const timer = setTimeout(() => setRemoved(null), UNDO_MS);
+    return () => clearTimeout(timer);
+  }, [removed]);
+
+  const undoRemove = () => {
+    if (!removed) return;
+    const set = getValues(`sets.${removed.setIndex}`);
+    if (!set) return;
+    const songIds = [...set.songIds];
+    songIds.splice(Math.min(removed.index, songIds.length), 0, removed.songId);
+    updateSet(removed.setIndex, { ...set, songIds });
+    setRemoved(null);
+  };
 
   const addSet = useCallback(() => {
     append({ name: `${t("setlist.set")} ${fields.length + 1}`, songIds: [] });
@@ -340,8 +363,14 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
                     setIndex={i}
                     songDragIds={songDragIdsBySet[i]}
                     onUpdate={(updated) => updateSet(i, updated)}
-                    onRemove={() => remove(i)}
+                    onRemove={() => {
+                      remove(i);
+                      setRemoved(null);
+                    }}
                     canRemove={fields.length > 1}
+                    removed={removed?.setIndex === i ? removed : undefined}
+                    onSongRemoved={(song) => setRemoved({ ...song, setIndex: i })}
+                    onUndoRemove={undoRemove}
                   />
                 ))}
               </SortableContext>

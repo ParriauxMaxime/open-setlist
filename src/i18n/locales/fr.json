@@ -159,6 +159,8 @@
     "deleteDesc": "La retire de ce profil, et du groupe à la prochaine synchronisation.",
     "resetChanges": "Réinitialiser",
     "removeSet": "Retirer le set",
+    "removedSong": "{{title}} retirée du set",
+    "undo": "Annuler",
     "noSongsInSet": "Aucune chanson dans ce set.",
     "addSong": "+ Ajouter une chanson",
     "searchSongsToAdd": "Chercher des chansons...",

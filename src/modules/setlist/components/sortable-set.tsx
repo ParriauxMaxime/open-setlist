@@ -3,7 +3,7 @@ import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { SetEditor } from "./set-editor";
+import { type RemovedSong, SetEditor } from "./set-editor";
 
 export interface SetDragHandleProps {
   dragAttributes: DraggableAttributes;
@@ -19,6 +19,9 @@ interface SortableSetProps {
   onUpdate: (set: SetlistSet) => void;
   onRemove: () => void;
   canRemove: boolean;
+  removed?: RemovedSong;
+  onSongRemoved: (removed: RemovedSong) => void;
+  onUndoRemove: () => void;
 }
 
 export function SortableSet({
@@ -30,6 +33,9 @@ export function SortableSet({
   onUpdate,
   onRemove,
   canRemove,
+  removed,
+  onSongRemoved,
+  onUndoRemove,
 }: SortableSetProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
@@ -51,6 +57,9 @@ export function SortableSet({
         onUpdate={onUpdate}
         onRemove={onRemove}
         canRemove={canRemove}
+        removed={removed}
+        onSongRemoved={onSongRemoved}
+        onUndoRemove={onUndoRemove}
         dragHandle={{ dragAttributes: attributes, dragListeners: listeners }}
       />
     </div>

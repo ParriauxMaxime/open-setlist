@@ -159,6 +159,8 @@
     "deleteDesc": "Removes it from this profile, and from the band at the next sync.",
     "resetChanges": "Reset changes",
     "removeSet": "Remove set",
+    "removedSong": "Removed {{title}}",
+    "undo": "Undo",
     "noSongsInSet": "No songs in this set.",
     "addSong": "+ Add song",
     "searchSongsToAdd": "Search songs to add...",
