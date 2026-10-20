@@ -176,7 +176,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
     [sets],
   );
 
-  // All song IDs currently in any set (for catalog panel filtering)
+  // All song IDs currently in any set, a song played twice listed twice
   const usedSongIds = useMemo(() => sets.flatMap((s) => s.songIds), [sets]);
 
   // Load songs to compute total duration
@@ -332,7 +332,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
         >
           <div className="flex gap-4">
             {/* Desktop catalog panel */}
-            <SongCatalogPanel usedSongIds={usedSongIds} />
+            <SongCatalogPanel sets={sets} />
 
             {/* Sets area */}
             <div className="flex min-w-0 flex-1 flex-col gap-3">

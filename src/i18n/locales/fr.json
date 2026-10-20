@@ -176,6 +176,7 @@
     "searchSongs": "Chercher des chansons...",
     "noCatalogSongsShort": "Aucune chanson dans le catalogue.",
     "noAvailableSongs": "Aucune chanson disponible.",
+    "inSet": "dans {{name}}",
     "set": "Set",
     "song": "Chanson",
     "expectedDuration": "Durée prévue (min)",

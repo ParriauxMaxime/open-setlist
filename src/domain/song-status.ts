@@ -73,6 +73,9 @@ export const ACTIVE_STATUS_FILTER = "active";
 
 export const SONG_STATUS_FILTER_LIST = [ACTIVE_STATUS_FILTER, ...SONG_STATUS_LIST] as const;
 
+/** Status chips of the setlist editor's song catalog; the empty value shows every song. */
+export const SET_PICKER_STATUS_FILTER_LIST = [SongStatus.Ready, SongStatus.Rehearsing, ""] as const;
+
 /** `filter` is a status, ACTIVE_STATUS_FILTER, or empty for every song. */
 export function matchesStatusFilter(
   status: SongStatus | undefined,
