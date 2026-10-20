@@ -174,8 +174,8 @@ export function PerformHeader({
                 >
                   −
                 </button>
-                <span
-                  className={`min-w-[2ch] text-center text-sm font-medium tabular-nums ${
+                <output
+                  className={`flex min-w-[2ch] flex-col items-center text-sm font-medium tabular-nums leading-tight ${
                     scrollSpeedDerived ? "text-text-faint" : "text-text-muted"
                   }`}
                   title={
@@ -183,9 +183,18 @@ export function PerformHeader({
                       ? t("performStage.scrollSpeedAuto")
                       : t("performStage.scrollSpeedLabel")
                   }
+                  aria-label={t(
+                    scrollSpeedDerived
+                      ? "performStage.scrollSpeedValueAuto"
+                      : "performStage.scrollSpeedValue",
+                    { speed: scrollSpeed === null ? "–" : Math.round(scrollSpeed) },
+                  )}
                 >
                   {scrollSpeed === null ? "–" : Math.round(scrollSpeed)}
-                </span>
+                  <span aria-hidden="true" className="hidden text-xs font-normal md:block">
+                    {t("performStage.scrollShort")}
+                  </span>
+                </output>
                 <button
                   type="button"
                   onClick={() => onScrollSpeed(1)}
