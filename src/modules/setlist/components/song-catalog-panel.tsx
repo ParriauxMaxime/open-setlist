@@ -2,6 +2,7 @@ import type { SetlistSet, Song } from "@db";
 import { useDb } from "@db/provider";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import {
+  ACTIVE_STATUS_FILTER,
   matchesStatusFilter,
   SET_PICKER_STATUS_FILTER_LIST,
   songStatusLabelKey,
@@ -23,7 +24,7 @@ export function SongCatalogPanel({ sets }: SongCatalogPanelProps) {
   const { t } = useTranslation();
   const db = useDb();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(ACTIVE_STATUS_FILTER);
   const songs = useLiveQuery(() => db.songs.orderBy("title").toArray(), [db]);
 
   // First set each song is in, by name
@@ -37,15 +38,21 @@ export function SongCatalogPanel({ sets }: SongCatalogPanelProps) {
     return names;
   }, [sets, t]);
 
+  // Songs still to place first, then the placed ones, each alphabetical
   const shown = useMemo(() => {
     if (!songs) return [];
     const q = search.toLowerCase();
-    return songs.filter(
-      (s) =>
-        matchesStatusFilter(s.status, statusFilter) &&
-        (!q || s.title.toLowerCase().includes(q) || s.artist?.toLowerCase().includes(q)),
-    );
-  }, [songs, search, statusFilter]);
+    return songs
+      .filter(
+        (s) =>
+          matchesStatusFilter(s.status, statusFilter) &&
+          (!q || s.title.toLowerCase().includes(q) || s.artist?.toLowerCase().includes(q)),
+      )
+      .sort(
+        (a, b) =>
+          Number(setOf.has(a.id)) - Number(setOf.has(b.id)) || a.title.localeCompare(b.title),
+      );
+  }, [songs, search, statusFilter, setOf]);
 
   const { setNodeRef, isOver } = useDroppable({ id: "catalog" });
 
@@ -70,7 +77,11 @@ export function SongCatalogPanel({ sets }: SongCatalogPanelProps) {
                 selected={statusFilter === status}
                 onClick={() => setStatusFilter(status)}
               >
-                {status ? t(songStatusLabelKey(status)) : t("common.all")}
+                {status === ACTIVE_STATUS_FILTER
+                  ? t("songStatus.filterActive")
+                  : status
+                    ? t(songStatusLabelKey(status))
+                    : t("common.all")}
               </Choice>
             ))}
           </div>

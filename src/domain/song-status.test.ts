@@ -12,6 +12,7 @@ import {
   matchesStatusFilter,
   parseSongStatus,
   resolveSongStatus,
+  SET_PICKER_STATUS_FILTER_LIST,
   SONG_STATUS_FILTER_LIST,
   SONG_STATUS_LIST,
   SongStatus,
@@ -100,6 +101,7 @@ describe("matchesStatusFilter", () => {
 
   it("offers the active filter first", () => {
     expect(SONG_STATUS_FILTER_LIST).toEqual([ACTIVE_STATUS_FILTER, ...SONG_STATUS_LIST]);
+    expect(SET_PICKER_STATUS_FILTER_LIST[0]).toBe(ACTIVE_STATUS_FILTER);
   });
 });
 
