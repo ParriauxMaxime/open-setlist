@@ -49,7 +49,7 @@ export function StageMidiSettings() {
   const [check, setCheck] = useState<Check>({ type: "idle" });
   const [testCode, setTestCode] = useState("");
   const overWifi = settings.transport === MIDI_TRANSPORT.wifi;
-  const defaultTestCode = encoding.encoding === MIDI_ENCODING.ccPair ? "11A" : "1";
+  const overCc = encoding.encoding === MIDI_ENCODING.controlChange;
 
   const describe = (err: unknown): string => {
     const kind = err instanceof CompanionError ? err.kind : COMPANION_ERROR.unreachable;
@@ -87,11 +87,16 @@ export function StageMidiSettings() {
     }
   };
 
-  const sendTest = (only?: number) => {
-    const parsed = parsePatchCode(testCode || defaultTestCode);
-    if (!parsed) return setCheck({ type: "error", message: t("midi.errors.badCode") });
-    const messages = patchMessages(parsed, encoding);
-    send(only === undefined ? messages : messages.slice(only, only + 1));
+  const sendTest = () => {
+    const parsed = parsePatchCode(testCode || "1");
+    const messages = parsed && patchMessages(parsed, encoding);
+    if (!messages) {
+      return setCheck({
+        type: "error",
+        message: t(overCc ? "midi.errors.badCc" : "midi.errors.badCode"),
+      });
+    }
+    send(messages);
   };
 
   const checkMessage = (
@@ -205,23 +210,13 @@ export function StageMidiSettings() {
             <Input
               value={testCode}
               onChange={(e) => setTestCode(e.target.value)}
-              placeholder={defaultTestCode}
+              placeholder="1"
               aria-label={t("midi.test.code")}
               className="max-w-28"
             />
-            <button type="button" onClick={() => sendTest()} className="btn btn-outline">
+            <button type="button" onClick={sendTest} className="btn btn-outline">
               {t("midi.test.send")}
             </button>
-            {encoding.encoding === MIDI_ENCODING.ccPair && (
-              <>
-                <button type="button" onClick={() => sendTest(0)} className="btn btn-ghost">
-                  {t("midi.test.bankOnly", { cc: encoding.ccBank })}
-                </button>
-                <button type="button" onClick={() => sendTest(1)} className="btn btn-ghost">
-                  {t("midi.test.slotOnly", { cc: encoding.ccSlot })}
-                </button>
-              </>
-            )}
           </div>
           {!overWifi && checkMessage}
         </CardRow>
@@ -253,31 +248,18 @@ export function StageMidiSettings() {
             ))}
           </Select>
         </CardRow>
-        {encoding.encoding === MIDI_ENCODING.ccPair ? (
-          <>
-            <CardRow label={t("midi.advanced.ccBank")}>
-              <Input
-                type="number"
-                min={0}
-                max={127}
-                value={settings.ccBank}
-                onChange={(e) => saveMidiSettings({ ccBank: Number(e.target.value) })}
-                aria-label={t("midi.advanced.ccBank")}
-                className="w-24"
-              />
-            </CardRow>
-            <CardRow label={t("midi.advanced.ccSlot")}>
-              <Input
-                type="number"
-                min={0}
-                max={127}
-                value={settings.ccSlot}
-                onChange={(e) => saveMidiSettings({ ccSlot: Number(e.target.value) })}
-                aria-label={t("midi.advanced.ccSlot")}
-                className="w-24"
-              />
-            </CardRow>
-          </>
+        {overCc ? (
+          <CardRow label={t("midi.advanced.cc")} description={t("midi.advanced.ccHint")}>
+            <Input
+              type="number"
+              min={0}
+              max={127}
+              value={settings.cc}
+              onChange={(e) => saveMidiSettings({ cc: Number(e.target.value) })}
+              aria-label={t("midi.advanced.cc")}
+              className="w-24"
+            />
+          </CardRow>
         ) : (
           <>
             <CardRow

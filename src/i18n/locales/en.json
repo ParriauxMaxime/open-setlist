@@ -899,11 +899,9 @@
     },
     "test": {
       "label": "Try it",
-      "desc": "Sends a sound code now. In Ableton, use the two “only” buttons to map each control one at a time.",
+      "desc": "Sends a sound code now. In Ableton's MIDI Map mode, click the chain selector then Send to map it.",
       "code": "Sound code",
       "send": "Send",
-      "bankOnly": "Letter only (CC {{cc}})",
-      "slotOnly": "Digits only (CC {{cc}})",
       "busy": "Sending…",
       "sent_one": "{{count}} MIDI message sent.",
       "sent_other": "{{count}} MIDI messages sent."
@@ -913,11 +911,11 @@
       "channel": "Channel (1 to 16)",
       "encoding": "Message type",
       "encodings": {
-        "cc-pair": "Two Control Changes (Ableton)",
+        "cc": "Control Change (Ableton)",
         "program": "Program Change (hardware)"
       },
-      "ccBank": "CC for the letter",
-      "ccSlot": "CC for the digits",
+      "cc": "Controller (CC)",
+      "ccHint": "Its value is the song's number, 0 to 127. Pick an undefined one, 20 to 31: other gear ignores them.",
       "bankSelectCc": "CC for the letter (Bank Select)",
       "bankSelectCcHint": "Sent before the Program Change when the code has a letter. 0 for most gear, 32 for some.",
       "programFromOne": "My gear numbers its presets from 1"
@@ -925,6 +923,7 @@
     "errors": {
       "badAddress": "This is not an address. Example: 192.168.1.20",
       "badCode": "This is not a sound code. Examples: 17A, or 12.",
+      "badCc": "Over a Control Change, a sound is a number from 0 to 127.",
       "unreachable": "No answer. Check that the companion program is running, that both devices are on the same Wi-Fi, and that Chrome may reach the local network.",
       "noMidiOutput": "The companion program runs but has no MIDI output. Look at its window on the computer.",
       "rejected": "The companion program refused the message.",
@@ -956,7 +955,7 @@
       "add": "Add an instrument…",
       "code": "Sound code for {{part}}",
       "remove": "Remove {{part}}",
-      "hint": "The preset each instrument switches to for this song: a number, or a code like 17A."
+      "hint": "The preset each instrument switches to for this song: a number, 0 to 127 for the keyboard into Ableton."
     }
   },
   "attachments": {

@@ -317,8 +317,8 @@ describe("MIDI settings", () => {
     saveMidiSettings({ enabled: true, role: "keys", companion: BASE });
     expect(loadMidiSettings()).toMatchObject({ enabled: true, role: "keys", companion: BASE });
     saveMidiSettings({ channel: 99 });
-    saveMidiSettings({ ccSlot: Number.NaN });
-    expect(loadMidiSettings()).toMatchObject({ enabled: true, ccSlot: 20 });
+    saveMidiSettings({ cc: Number.NaN });
+    expect(loadMidiSettings()).toMatchObject({ enabled: true, cc: 20 });
     expect(loadMidiSettings().channel).toBeUndefined();
   });
 
@@ -327,17 +327,27 @@ describe("MIDI settings", () => {
     expect(loadMidiSettings()).toEqual(DEFAULT_MIDI_SETTINGS);
   });
 
+  it("keeps the rest of the settings when the stored message type no longer exists", () => {
+    localStorage.setItem(
+      "open-setlist-midi",
+      JSON.stringify({ enabled: true, role: "keys", channel: 16, encoding: "cc-pair", ccSlot: 20 }),
+    );
+    const settings = loadMidiSettings();
+    expect(settings).toMatchObject({ enabled: true, channel: 16, cc: 20 });
+    expect(patchEncoding(settings).encoding).toBe(MIDI_ENCODING.controlChange);
+  });
+
   it("derives channel and message type from the role unless set", () => {
     expect(patchEncoding({ ...DEFAULT_MIDI_SETTINGS, role: "keys" })).toMatchObject({
       channel: 1,
-      encoding: MIDI_ENCODING.ccPair,
+      encoding: MIDI_ENCODING.controlChange,
     });
     expect(patchEncoding({ ...DEFAULT_MIDI_SETTINGS, role: "drums" })).toMatchObject({
       channel: 10,
       encoding: MIDI_ENCODING.program,
     });
     expect(
-      patchEncoding({ ...DEFAULT_MIDI_SETTINGS, role: "drums", channel: 4, encoding: "cc-pair" }),
-    ).toMatchObject({ channel: 4, encoding: MIDI_ENCODING.ccPair });
+      patchEncoding({ ...DEFAULT_MIDI_SETTINGS, role: "drums", channel: 4, encoding: "cc" }),
+    ).toMatchObject({ channel: 4, encoding: MIDI_ENCODING.controlChange });
   });
 });

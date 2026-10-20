@@ -1,8 +1,10 @@
-import { extractPatchCode, parsePatchCode } from "@domain/midi/patch";
+import { extractPatchCode, MIDI_ENCODING, parsePatchCode, patchMessages } from "@domain/midi/patch";
+import { DEFAULT_MIDI_SETTINGS, patchEncoding } from "@domain/midi/settings";
 import { PART, PART_VALUES } from "@domain/parts";
 import { useTranslation } from "react-i18next";
 import { Field, Input, Select } from "../../design-system/components/form";
 import { partLabel } from "../../performance/components/my-part-menu";
+import { useMidiSettings } from "../../shared/hooks/use-midi-settings";
 
 interface PatchesFieldProps {
   patches: Record<string, string>;
@@ -18,6 +20,20 @@ export function PatchesField({ patches, setupLine, onChange }: PatchesFieldProps
   const used = Object.keys(patches);
   const free = PART_VALUES.filter((part) => !used.includes(part));
 
+  const settings = useMidiSettings();
+
+  const encodingOf = (part: string) =>
+    patchEncoding(part === settings.role ? settings : { ...DEFAULT_MIDI_SETTINGS, role: part });
+  const error = (part: string): string | undefined => {
+    const parsed = parsePatchCode(patches[part]);
+    const encoding = encodingOf(part);
+    if (patches[part].trim() === "" || (parsed && patchMessages(parsed, encoding))) return;
+    return encoding.encoding === MIDI_ENCODING.controlChange
+      ? "midi.errors.badCc"
+      : "midi.errors.badCode";
+  };
+  const firstError = used.map(error).find(Boolean);
+
   const set = (part: string, code: string) => onChange({ ...patches, [part]: code });
   const remove = (part: string) => {
     const next = { ...patches };
@@ -26,7 +42,7 @@ export function PatchesField({ patches, setupLine, onChange }: PatchesFieldProps
   };
 
   return (
-    <Field label={t("midi.patches.label")}>
+    <Field label={t("midi.patches.label")} error={firstError}>
       <div className="flex flex-col gap-1.5">
         {chartCode && (
           <p className="text-sm text-text-muted">
@@ -44,7 +60,7 @@ export function PatchesField({ patches, setupLine, onChange }: PatchesFieldProps
               onChange={(e) => set(part, e.target.value)}
               placeholder="12"
               aria-label={t("midi.patches.code", { part: partLabel(part, t, false) })}
-              aria-invalid={patches[part] !== "" && !parsePatchCode(patches[part])}
+              aria-invalid={Boolean(error(part))}
               className="max-w-24"
             />
             <button

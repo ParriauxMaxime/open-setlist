@@ -47,9 +47,12 @@ const midiSettingsSchema = z.object({
   follow: z.enum(FOLLOW_MODE_VALUES as [FollowMode, ...FollowMode[]]).default(FOLLOW_MODE.off),
   // Unset: the role's default
   channel: z.number().int().min(1).max(16).optional(),
-  encoding: z.enum(MIDI_ENCODING_VALUES as [string, ...string[]]).optional(),
-  ccBank: z.number().int().min(0).max(127).default(21),
-  ccSlot: z.number().int().min(0).max(127).default(20),
+  // A message type dropped since it was saved falls back to the role's default
+  encoding: z
+    .enum(MIDI_ENCODING_VALUES as [string, ...string[]])
+    .optional()
+    .catch(undefined),
+  cc: z.number().int().min(0).max(127).default(20),
   bankSelectCc: z.number().int().min(0).max(127).default(0),
   programFromOne: z.boolean().default(true),
 });
@@ -73,8 +76,7 @@ export function patchEncoding(settings: MidiSettings): PatchEncoding {
     channel: settings.channel ?? defaultMidiChannel(role),
     encoding:
       MIDI_ENCODING_VALUES.find((e) => e === settings.encoding) ?? defaultMidiEncoding(role),
-    ccBank: settings.ccBank,
-    ccSlot: settings.ccSlot,
+    cc: settings.cc,
     bankSelectCc: settings.bankSelectCc,
     programFromOne: settings.programFromOne,
   };

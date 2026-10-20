@@ -12,8 +12,8 @@ import type { Song } from "@db/song";
 import { PART } from "../parts";
 
 export const MIDI_ENCODING = {
-  /** Two Control Changes: one for the letter, one for the digits. For Ableton, which maps CC. */
-  ccPair: "cc-pair",
+  /** One Control Change whose value is the song's number, 0 to 127. For Ableton, which maps CC. */
+  controlChange: "cc",
   /** Program Change, after a Bank Select when the code has a letter. For hardware. */
   program: "program",
 } as const;
@@ -66,9 +66,8 @@ export interface PatchEncoding {
   /** 1 to 16. */
   channel: number;
   encoding: MidiEncoding;
-  /** Controller numbers of the `cc-pair` encoding. */
-  ccBank: number;
-  ccSlot: number;
+  /** Controller of the `cc` encoding: an undefined one (20 to 31) clashes with no gear. */
+  cc: number;
   /** Controller of the Bank Select before a Program Change: 0 (MSB) for most gear, some want 32 (LSB). */
   bankSelectCc: number;
   /** The gear numbers its presets from 1 (most do): preset 1 is Program Change 0. */
@@ -96,10 +95,11 @@ export function defaultMidiChannel(role: string): number {
 
 /** Ableton listens to CC, hardware to Program Change. */
 export function defaultMidiEncoding(role: string): MidiEncoding {
-  return role === PART.keys ? MIDI_ENCODING.ccPair : MIDI_ENCODING.program;
+  return role === PART.keys ? MIDI_ENCODING.controlChange : MIDI_ENCODING.program;
 }
 
-export function patchMessages(code: PatchCode, settings: PatchEncoding): number[][] {
+/** null when the code does not fit: over CC, only a number from 0 to 127. */
+export function patchMessages(code: PatchCode, settings: PatchEncoding): number[][] | null {
   const channel = Math.max(1, Math.min(16, settings.channel)) - 1;
   const cc = (controller: number, value: number) => [
     CONTROL_CHANGE | channel,
@@ -108,10 +108,8 @@ export function patchMessages(code: PatchCode, settings: PatchEncoding): number[
   ];
   const program = (value: number) => [PROGRAM_CHANGE | channel, clamp7(value)];
 
-  if (settings.encoding === MIDI_ENCODING.ccPair) {
-    return code.kind === "grid"
-      ? [cc(settings.ccBank, code.bank), cc(settings.ccSlot, code.slot)]
-      : [cc(settings.ccSlot, code.value)];
+  if (settings.encoding === MIDI_ENCODING.controlChange) {
+    return code.kind === "number" && code.value <= 127 ? [cc(settings.cc, code.value)] : null;
   }
   if (code.kind === "grid") return [cc(settings.bankSelectCc, code.bank), program(code.slot)];
   return [program(settings.programFromOne ? code.value - 1 : code.value)];

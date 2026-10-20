@@ -899,11 +899,9 @@
     },
     "test": {
       "label": "Essayer",
-      "desc": "Envoie un code de son tout de suite. Dans Ableton, servez-vous des deux boutons « seulement » pour assigner chaque contrôle l'un après l'autre.",
+      "desc": "Envoie un code de son tout de suite. En mode MIDI Map d'Ableton, cliquez le sélecteur de chaîne puis Envoyer pour l'assigner.",
       "code": "Code de son",
       "send": "Envoyer",
-      "bankOnly": "Seulement la lettre (CC {{cc}})",
-      "slotOnly": "Seulement les chiffres (CC {{cc}})",
       "busy": "Envoi…",
       "sent_one": "{{count}} message MIDI envoyé.",
       "sent_other": "{{count}} messages MIDI envoyés."
@@ -913,11 +911,11 @@
       "channel": "Canal (1 à 16)",
       "encoding": "Type de message",
       "encodings": {
-        "cc-pair": "Deux Control Change (Ableton)",
+        "cc": "Control Change (Ableton)",
         "program": "Program Change (matériel)"
       },
-      "ccBank": "CC de la lettre",
-      "ccSlot": "CC des chiffres",
+      "cc": "Contrôleur (CC)",
+      "ccHint": "Sa valeur est le numéro du morceau, de 0 à 127. Prenez un CC non défini, de 20 à 31 : les autres appareils l'ignorent.",
       "bankSelectCc": "CC pour la lettre (Bank Select)",
       "bankSelectCcHint": "Envoyé avant le Program Change quand le code a une lettre. 0 pour la plupart des appareils, 32 pour certains.",
       "programFromOne": "Mon matériel numérote ses presets à partir de 1"
@@ -925,6 +923,7 @@
     "errors": {
       "badAddress": "Ce n'est pas une adresse. Exemple : 192.168.1.20",
       "badCode": "Ce n'est pas un code de son. Exemples : 17A, ou 12.",
+      "badCc": "En Control Change, un son est un numéro de 0 à 127.",
       "unreachable": "Pas de réponse. Vérifiez que le programme compagnon tourne, que les deux appareils sont sur le même Wi-Fi, et que Chrome a le droit de joindre le réseau local.",
       "noMidiOutput": "Le programme compagnon tourne mais n'a pas de sortie MIDI. Regardez sa fenêtre sur l'ordinateur.",
       "rejected": "Le programme compagnon a refusé le message.",
@@ -956,7 +955,7 @@
       "add": "Ajouter un instrument…",
       "code": "Code de son pour {{part}}",
       "remove": "Retirer {{part}}",
-      "hint": "Le preset sur lequel chaque instrument passe pour ce morceau : un numéro, ou un code comme 17A."
+      "hint": "Le preset sur lequel chaque instrument passe pour ce morceau : un numéro, de 0 à 127 pour le clavier vers Ableton."
     }
   },
   "attachments": {

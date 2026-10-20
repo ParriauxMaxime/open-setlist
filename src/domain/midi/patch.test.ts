@@ -12,15 +12,14 @@ import {
 
 const ABLETON: PatchEncoding = {
   channel: 1,
-  encoding: MIDI_ENCODING.ccPair,
-  ccBank: 21,
-  ccSlot: 20,
+  encoding: MIDI_ENCODING.controlChange,
+  cc: 20,
   bankSelectCc: 0,
   programFromOne: true,
 };
 const HARDWARE: PatchEncoding = { ...ABLETON, channel: 10, encoding: MIDI_ENCODING.program };
 
-function messages(code: string, encoding: PatchEncoding): number[][] {
+function messages(code: string, encoding: PatchEncoding): number[][] | null {
   const parsed = parsePatchCode(code);
   if (!parsed) throw new Error(`Not a patch code: ${code}`);
   return patchMessages(parsed, encoding);
@@ -75,20 +74,19 @@ describe("songPatch", () => {
 });
 
 describe("patchMessages", () => {
-  it("sends the letter then the digits as two Control Changes for Ableton", () => {
-    expect(messages("17A", ABLETON)).toEqual([
-      [0xb0, 21, 0],
-      [0xb0, 20, 6],
-    ]);
-    expect(messages("88D", { ...ABLETON, channel: 3, ccBank: 30, ccSlot: 31 })).toEqual([
-      [0xb2, 30, 3],
-      [0xb2, 31, 63],
-    ]);
+  it("sends the song's number to Ableton as one Control Change, CC 20 by default", () => {
+    expect(messages("0", ABLETON)).toEqual([[0xb0, 20, 0]]);
+    expect(messages("111", { ...ABLETON, channel: 16 })).toEqual([[0xbf, 20, 111]]);
+    expect(messages("127", ABLETON)).toEqual([[0xb0, 20, 127]]);
   });
 
-  it("sends a plain number as one Control Change", () => {
-    expect(messages("12", ABLETON)).toEqual([[0xb0, 20, 12]]);
-    expect(messages("128", ABLETON)).toEqual([[0xb0, 20, 127]]);
+  it("sends on the controller of the settings", () => {
+    expect(messages("12", { ...ABLETON, channel: 3, cc: 31 })).toEqual([[0xb2, 31, 12]]);
+  });
+
+  it("sends nothing over CC that one controller cannot carry", () => {
+    expect(messages("128", ABLETON)).toBeNull();
+    expect(messages("17A", ABLETON)).toBeNull();
   });
 
   it("sends a Program Change to hardware, counted from 1 like the gear's display", () => {
@@ -127,7 +125,7 @@ describe("role defaults", () => {
   });
 
   it("talks CC to Ableton for the keyboard, Program Change to the rest", () => {
-    expect(defaultMidiEncoding("keys")).toBe(MIDI_ENCODING.ccPair);
+    expect(defaultMidiEncoding("keys")).toBe(MIDI_ENCODING.controlChange);
     expect(defaultMidiEncoding("drums")).toBe(MIDI_ENCODING.program);
   });
 });
