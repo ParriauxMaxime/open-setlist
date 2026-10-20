@@ -13,6 +13,7 @@ import {
   songStatusLabelKey,
   songStatusRank,
 } from "@domain/song-status";
+import { groupSpellings, sameText } from "@domain/text";
 import { markWhatsNewSeen, useWelcome, WELCOME } from "@domain/welcome";
 import { Link } from "@swan-io/chicane";
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
@@ -33,19 +34,19 @@ const col = createColumnHelper<Song>();
 const initialFilters = [{ id: "status", value: ACTIVE_STATUS_FILTER }];
 
 function uniqueTags(data: Song[]): string[] {
-  const set = new Set<string>();
-  for (const s of data) {
-    for (const t of s.tags) set.add(t);
-  }
-  return [...set].sort();
+  return groupSpellings(data.flatMap((s) => s.tags));
 }
 
 function uniqueArtists(data: Song[]): string[] {
-  const set = new Set<string>();
-  for (const s of data) {
-    if (s.artist) set.add(s.artist);
-  }
-  return [...set].sort();
+  return groupSpellings(data.flatMap((s) => (s.artist ? [s.artist] : [])));
+}
+
+/** Keys used in the catalog, in the order of the key list. */
+function usedKeys(data: Song[]): string[] {
+  const used = new Set(data.flatMap((s) => (s.key ? [s.key] : [])));
+  const known = MUSICAL_KEY_LIST.filter((key) => used.has(key));
+  const others = [...used].filter((key) => !MUSICAL_KEY_LIST.includes(key)).sort();
+  return [...known, ...others];
 }
 
 export function CatalogPage() {
@@ -115,6 +116,8 @@ export function CatalogPage() {
     col.accessor("artist", {
       header: t("catalog.colArtist"),
       cell: (info) => <span className="text-text-muted">{info.getValue() ?? "—"}</span>,
+      filterFn: (row, _columnId, filterValue) =>
+        !filterValue || sameText(row.original.artist ?? "", filterValue as string),
       meta: {
         filterType: "select",
         filterOptions: uniqueArtists,
@@ -129,9 +132,10 @@ export function CatalogPage() {
         const v = info.getValue();
         return v ? <span className="text-chord">{formatKey(v, notation)}</span> : null;
       },
+      filterFn: (row, _columnId, filterValue) => !filterValue || row.original.key === filterValue,
       meta: {
         filterType: "select",
-        filterOptions: [...MUSICAL_KEY_LIST],
+        filterOptions: usedKeys,
         filterOptionLabel: (key) => formatKey(key, notation),
         hideFilterOnMobile: true,
         className: "hidden md:table-cell",
@@ -152,7 +156,7 @@ export function CatalogPage() {
       enableSorting: false,
       filterFn: (row, _columnId, filterValue) => {
         if (!filterValue) return true;
-        return row.original.tags.includes(filterValue as string);
+        return row.original.tags.some((tag) => sameText(tag, filterValue as string));
       },
       cell: (info) => {
         const tags = info.getValue();
