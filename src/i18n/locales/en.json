@@ -519,6 +519,17 @@
     "points": "{{earned}}/{{total}} pts",
     "weight_one": "{{count}} pt",
     "weight_other": "{{count}} pts",
+    "spelling": {
+      "title": "Spelling variants",
+      "count_one": "{{count}} name written several ways",
+      "count_other": "{{count}} names written several ways",
+      "none": "Each artist and tag has one spelling",
+      "field": {
+        "artist": "Artist",
+        "tag": "Tag"
+      },
+      "unify": "Unify as {{spelling}}"
+    },
     "categories": {
       "metadata": "Metadata",
       "structure": "Structure",

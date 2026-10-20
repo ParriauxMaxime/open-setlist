@@ -7,11 +7,15 @@ export function sameText(a: string, b: string): boolean {
   return foldText(a) === foldText(b);
 }
 
-/**
- * One value per spelling group ("INDOCHINE", "Indochine"), in its most common spelling
- * (the first one met on a tie), sorted.
- */
-export function groupSpellings(values: Iterable<string>): string[] {
+export interface SpellingGroup {
+  /** The most common spelling, the first one met on a tie. */
+  preferred: string;
+  /** Every spelling met, most common first. */
+  spellings: { spelling: string; count: number }[];
+}
+
+/** Values grouped by spelling ("INDOCHINE", "Indochine"), sorted by preferred spelling. */
+export function spellingGroups(values: Iterable<string>): SpellingGroup[] {
   const groups = new Map<string, Map<string, number>>();
   for (const value of values) {
     const folded = foldText(value);
@@ -21,16 +25,16 @@ export function groupSpellings(values: Iterable<string>): string[] {
     groups.set(folded, spellings);
   }
   return [...groups.values()]
-    .map((spellings) => {
-      let best = "";
-      let bestCount = 0;
-      for (const [spelling, count] of spellings) {
-        if (count > bestCount) {
-          best = spelling;
-          bestCount = count;
-        }
-      }
-      return best;
+    .map((counts) => {
+      const spellings = [...counts]
+        .map(([spelling, count]) => ({ spelling, count }))
+        .sort((a, b) => b.count - a.count);
+      return { preferred: spellings[0]?.spelling ?? "", spellings };
     })
-    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+    .sort((a, b) => a.preferred.localeCompare(b.preferred, undefined, { sensitivity: "base" }));
+}
+
+/** One value per spelling group, in its most common spelling, sorted. */
+export function groupSpellings(values: Iterable<string>): string[] {
+  return spellingGroups(values).map((group) => group.preferred);
 }

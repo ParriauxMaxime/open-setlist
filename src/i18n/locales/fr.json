@@ -519,6 +519,17 @@
     "points": "{{earned}}/{{total}} pts",
     "weight_one": "{{count}} pt",
     "weight_other": "{{count}} pts",
+    "spelling": {
+      "title": "Variantes d’orthographe",
+      "count_one": "{{count}} nom écrit de plusieurs façons",
+      "count_other": "{{count}} noms écrits de plusieurs façons",
+      "none": "Chaque artiste et chaque tag s’écrit d’une seule façon",
+      "field": {
+        "artist": "Artiste",
+        "tag": "Tag"
+      },
+      "unify": "Tout écrire {{spelling}}"
+    },
     "categories": {
       "metadata": "Métadonnées",
       "structure": "Structure",

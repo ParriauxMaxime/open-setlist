@@ -6,6 +6,8 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge, Card } from "../design-system/components/card";
 import { PageHeader } from "../design-system/components/page-header";
+import { CheckLine } from "./components/check-line";
+import { SpellingCheck } from "./components/spelling-check";
 
 interface ScoredSong {
   song: Song;
@@ -39,17 +41,12 @@ function FlagGroup({ category, flags }: { category: string; flags: QualityFlag[]
       }
     >
       {flags.map((flag) => (
-        <div key={flag.id} className="flex items-center gap-2 px-4 py-2 text-sm">
-          <span className={flag.passed ? "text-success" : "text-danger"}>
-            {flag.passed ? "+" : "-"}
-          </span>
-          <span className={flag.passed ? "text-text" : "text-text-muted"}>
-            {t(`quality.flags.${flag.id}`)}
-          </span>
-          <span className="ml-auto shrink-0 text-xs text-text-faint">
-            {t("quality.weight", { count: flag.weight })}
-          </span>
-        </div>
+        <CheckLine
+          key={flag.id}
+          passed={flag.passed}
+          label={t(`quality.flags.${flag.id}`)}
+          aside={t("quality.weight", { count: flag.weight })}
+        />
       ))}
     </Card>
   );
@@ -90,6 +87,7 @@ export function QualityPage() {
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="min-w-0 flex-1">
+          {songs.length > 0 && <SpellingCheck songs={songs} />}
           <Card>
             {scored.map(({ song, report }) => (
               <button
