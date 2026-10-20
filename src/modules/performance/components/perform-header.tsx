@@ -108,7 +108,7 @@ export function PerformHeader({
   return (
     <div className="perform-header" data-visible={visible}>
       <div className="perform-header-inner">
-        <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4">
           {/* Sidebar toggle */}
           <button
             type="button"
@@ -164,46 +164,15 @@ export function PerformHeader({
 
           {/* Auto-scroll: start/pause + speed */}
           <div className="flex shrink-0 items-center gap-0.5">
+            {/* Phones keep the speed in the ⋮ menu, the bar is full */}
             {showScrollSpeed && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => onScrollSpeed(-1)}
-                  className="perform-btn"
-                  aria-label={t("performStage.scrollSlower")}
-                >
-                  −
-                </button>
-                <output
-                  className={`flex min-w-[2ch] flex-col items-center text-sm font-medium tabular-nums leading-tight ${
-                    scrollSpeedDerived ? "text-text-faint" : "text-text-muted"
-                  }`}
-                  title={
-                    scrollSpeedDerived
-                      ? t("performStage.scrollSpeedAuto")
-                      : t("performStage.scrollSpeedLabel")
-                  }
-                  aria-label={t(
-                    scrollSpeedDerived
-                      ? "performStage.scrollSpeedValueAuto"
-                      : "performStage.scrollSpeedValue",
-                    { speed: scrollSpeed === null ? "–" : Math.round(scrollSpeed) },
-                  )}
-                >
-                  {scrollSpeed === null ? "–" : Math.round(scrollSpeed)}
-                  <span aria-hidden="true" className="hidden text-xs font-normal md:block">
-                    {t("performStage.scrollShort")}
-                  </span>
-                </output>
-                <button
-                  type="button"
-                  onClick={() => onScrollSpeed(1)}
-                  className="perform-btn"
-                  aria-label={t("performStage.scrollFaster")}
-                >
-                  +
-                </button>
-              </>
+              <div className="hidden items-center gap-0.5 sm:flex">
+                <ScrollSpeedControl
+                  speed={scrollSpeed}
+                  derived={scrollSpeedDerived}
+                  onChange={onScrollSpeed}
+                />
+              </div>
             )}
             <button
               type="button"
@@ -255,6 +224,20 @@ export function PerformHeader({
               </button>
               {menuOpen && (
                 <div className="absolute right-0 top-full z-50 mt-1 max-h-[80dvh] min-w-40 overflow-y-auto rounded-md border border-border bg-bg-surface py-1 shadow-lg">
+                  {showScrollSpeed && (
+                    <div className="flex items-center justify-between gap-3 border-b border-border py-1 pr-2 pl-4 sm:hidden">
+                      <span className="text-base text-text">
+                        {t("performStage.scrollSpeedLabel")}
+                      </span>
+                      <div className="flex items-center gap-0.5">
+                        <ScrollSpeedControl
+                          speed={scrollSpeed}
+                          derived={scrollSpeedDerived}
+                          onChange={onScrollSpeed}
+                        />
+                      </div>
+                    </div>
+                  )}
                   {/* What a musician reaches for during a song comes first */}
                   <div className="border-b border-border pb-1">
                     <button
@@ -346,5 +329,54 @@ export function PerformHeader({
         </div>
       </div>
     </div>
+  );
+}
+
+interface ScrollSpeedControlProps {
+  speed: number | null;
+  /** True when the speed is derived from duration rather than stored on the song. */
+  derived: boolean;
+  onChange: (delta: number) => void;
+}
+
+/** Auto-scroll speed − n +, in the bar on wider screens, in the ⋮ menu on phones. */
+function ScrollSpeedControl({ speed, derived, onChange }: ScrollSpeedControlProps) {
+  const { t } = useTranslation();
+  const shown = speed === null ? "–" : Math.round(speed);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => onChange(-1)}
+        className="perform-btn"
+        aria-label={t("performStage.scrollSlower")}
+      >
+        −
+      </button>
+      <output
+        className={`flex min-w-[2ch] flex-col items-center text-sm font-medium tabular-nums leading-tight ${
+          derived ? "text-text-faint" : "text-text-muted"
+        }`}
+        title={derived ? t("performStage.scrollSpeedAuto") : t("performStage.scrollSpeedLabel")}
+        aria-label={t(
+          derived ? "performStage.scrollSpeedValueAuto" : "performStage.scrollSpeedValue",
+          { speed: shown },
+        )}
+      >
+        {shown}
+        <span aria-hidden="true" className="hidden text-xs font-normal md:block">
+          {t("performStage.scrollShort")}
+        </span>
+      </output>
+      <button
+        type="button"
+        onClick={() => onChange(1)}
+        className="perform-btn"
+        aria-label={t("performStage.scrollFaster")}
+      >
+        +
+      </button>
+    </>
   );
 }

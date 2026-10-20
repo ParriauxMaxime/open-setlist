@@ -4,7 +4,9 @@ import type { FollowLeader } from "../hooks/use-follow-leader";
 import { STAGE_MIDI_STATE, type StageMidi } from "../hooks/use-stage-midi";
 import { choiceClass } from "./my-part-menu";
 
-const CHIP = "shrink-0 rounded-md border px-2 py-1 text-sm font-medium tabular-nums";
+// The button is a full-height tap target, the chip inside it stays small
+const CHIP_TARGET = "flex h-11 shrink-0 items-center";
+const CHIP = "rounded-md border px-2 py-1 text-sm font-medium tabular-nums";
 
 const MIDI_CHIP_TONE: Record<string, string> = {
   [STAGE_MIDI_STATE.sent]: "border-accent text-accent",
@@ -28,9 +30,9 @@ export function MidiChip({ midi }: { midi: StageMidi }) {
       onClick={midi.retry}
       aria-label={label}
       title={label}
-      className={`${CHIP} ${MIDI_CHIP_TONE[midi.state]}`}
+      className={CHIP_TARGET}
     >
-      MIDI {midi.code ?? "–"}
+      <span className={`${CHIP} ${MIDI_CHIP_TONE[midi.state]}`}>MIDI {midi.code ?? "–"}</span>
     </button>
   );
 }
@@ -75,9 +77,13 @@ export function FollowChip({ follow, onClick }: { follow: FollowLeader; onClick:
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`${CHIP} ${follow.connected ? "border-accent text-accent" : "border-border text-text-faint"}`}
+      className={CHIP_TARGET}
     >
-      {name}
+      <span
+        className={`${CHIP} ${follow.connected ? "border-accent text-accent" : "border-border text-text-faint"}`}
+      >
+        {name}
+      </span>
     </button>
   );
 }
