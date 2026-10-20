@@ -49,7 +49,16 @@
     "colArtist": "Artiste",
     "colKey": "Tonalité",
     "colBpm": "BPM",
-    "colTags": "Tags"
+    "colTags": "Tags",
+    "select": "Sélectionner",
+    "selectSong": "Sélectionner {{title}}",
+    "selectAllShown": "Sélectionner toutes les chansons affichées",
+    "selectedCount_one": "{{count}} sélectionnée",
+    "selectedCount_other": "{{count}} sélectionnées",
+    "setStatus": "Changer le statut",
+    "addTag": "Ajouter un tag",
+    "newTag": "Nouveau tag…",
+    "newTagPlaceholder": "Nom du tag"
   },
   "editor": {
     "newSong": "Nouvelle chanson",

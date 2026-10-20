@@ -27,7 +27,9 @@ import { SongStatusDot } from "../shared/components/song-status-dot";
 import { WhatsNewCard } from "../shared/components/whats-new-card";
 import { useMyNotes } from "../shared/hooks/use-my-notes";
 import { useNotation } from "../shared/hooks/use-notation";
+import { BulkEditBar } from "./components/bulk-edit-bar";
 import { ChartFileImport } from "./components/chart-file-import";
+import { useSongUpdates } from "./hooks/use-song-updates";
 
 const col = createColumnHelper<Song>();
 
@@ -57,8 +59,64 @@ export function CatalogPage() {
   const myNotes = useMyNotes(useActiveProfileId());
   const [importStatus, setImportStatus] = useState<{ ok: boolean; message: string } | null>(null);
   const welcome = useWelcome();
+  const { setStatus, addTag } = useSongUpdates();
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
+
+  const toggleSelected = (ids: readonly string[], on: boolean) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const id of ids) {
+        if (on) next.add(id);
+        else next.delete(id);
+      }
+      return next;
+    });
+
+  const stopSelecting = () => {
+    setSelecting(false);
+    setSelected(new Set());
+  };
+
+  const applyToSelected = async (update: (ids: readonly string[]) => Promise<void>) => {
+    await update([...selected]);
+    setSelected(new Set());
+  };
+
+  const selectColumn = col.display({
+    id: "select",
+    size: 44,
+    header: ({ table }) => {
+      const ids = table.getRowModel().rows.map((row) => row.original.id);
+      return (
+        <input
+          type="checkbox"
+          checked={ids.length > 0 && ids.every((id) => selected.has(id))}
+          onChange={(e) => toggleSelected(ids, e.target.checked)}
+          aria-label={t("catalog.selectAllShown")}
+          className="h-4 w-4 rounded accent-[var(--color-accent)]"
+        />
+      );
+    },
+    cell: (info) => {
+      const song = info.row.original;
+      return (
+        <label className="flex h-11 w-11 cursor-pointer items-center justify-center">
+          <input
+            type="checkbox"
+            checked={selected.has(song.id)}
+            onChange={(e) => toggleSelected([song.id], e.target.checked)}
+            aria-label={t("catalog.selectSong", { title: song.title })}
+            className="h-4 w-4 rounded accent-[var(--color-accent)]"
+          />
+        </label>
+      );
+    },
+    meta: { disableRowLink: true, className: "!px-1 !py-0" },
+  }) as ColumnDef<Song, unknown>;
 
   const columns: ColumnDef<Song, unknown>[] = [
+    ...(selecting ? [selectColumn] : []),
     col.accessor("title", {
       header: t("catalog.colTitle"),
       cell: (info) => {
@@ -210,6 +268,11 @@ export function CatalogPage() {
           )}
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
+          {songs && songs.length > 0 && !selecting && (
+            <button type="button" onClick={() => setSelecting(true)} className="btn btn-ghost">
+              {t("catalog.select")}
+            </button>
+          )}
           <ChartFileImport
             onSuccess={(message) => setImportStatus({ ok: true, message })}
             onError={(message) => setImportStatus({ ok: false, message })}
@@ -230,13 +293,23 @@ export function CatalogPage() {
         <WhatsNewCard onDismiss={markWhatsNewSeen} className="mb-4" />
       )}
 
+      {selecting && (
+        <BulkEditBar
+          count={selected.size}
+          tags={uniqueTags(songs ?? [])}
+          onSetStatus={(status) => applyToSelected((ids) => setStatus(ids, status))}
+          onAddTag={(tag) => applyToSelected((ids) => addTag(ids, tag))}
+          onCancel={stopSelecting}
+        />
+      )}
+
       {songs === undefined ? (
         <p className="text-text-muted">{t("common.loading")}</p>
       ) : (
         <DataTable
           columns={columns}
           data={songs}
-          getRowHref={(song) => Router.PerformSong({ songId: song.id })}
+          getRowHref={selecting ? undefined : (song) => Router.PerformSong({ songId: song.id })}
           globalSearchFields={["title", "artist", "tags"]}
           searchPlaceholder={t("catalog.searchPlaceholder")}
           emptyMessage={t("catalog.empty")}
@@ -250,7 +323,7 @@ export function CatalogPage() {
 /** Status dot, its name as tooltip; a transparent native select on top gives a quick status menu. */
 function StatusCell({ song }: { song: Song }) {
   const { t } = useTranslation();
-  const db = useDb();
+  const { setStatus } = useSongUpdates();
 
   return (
     <span className="relative inline-flex min-h-6 min-w-6 items-center justify-center rounded-sm focus-within:outline-2 focus-within:outline-border-focus">
@@ -259,7 +332,7 @@ function StatusCell({ song }: { song: Song }) {
         value={resolveSongStatus(song.status)}
         onChange={(e) => {
           const status = parseSongStatus(e.target.value);
-          if (status) db.songs.update(song.id, { status, updatedAt: Date.now() });
+          if (status) setStatus([song.id], status);
         }}
         aria-label={t("songStatus.change")}
         className="absolute inset-0 cursor-pointer opacity-0"

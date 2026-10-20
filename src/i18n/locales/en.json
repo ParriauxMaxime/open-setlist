@@ -49,7 +49,16 @@
     "colArtist": "Artist",
     "colKey": "Key",
     "colBpm": "BPM",
-    "colTags": "Tags"
+    "colTags": "Tags",
+    "select": "Select",
+    "selectSong": "Select {{title}}",
+    "selectAllShown": "Select all songs shown",
+    "selectedCount_one": "{{count}} selected",
+    "selectedCount_other": "{{count}} selected",
+    "setStatus": "Set status",
+    "addTag": "Add tag",
+    "newTag": "New tag…",
+    "newTagPlaceholder": "Tag name"
   },
   "editor": {
     "newSong": "New Song",
