@@ -182,16 +182,16 @@ export function CatalogPage() {
       },
     }) as ColumnDef<Song, unknown>,
     col.display({
-      id: "play",
+      id: "edit",
       size: 56,
       cell: (info) => (
         <Link
-          to={Router.PerformSong({ songId: info.row.original.id })}
-          aria-label={t("catalog.openSong", { title: info.row.original.title })}
-          title={t("catalog.openSong", { title: info.row.original.title })}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-md text-lg text-accent hover:bg-accent-muted"
+          to={Router.SongEdit({ songId: info.row.original.id })}
+          aria-label={t("catalog.editSong", { title: info.row.original.title })}
+          title={t("catalog.editSong", { title: info.row.original.title })}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-md text-lg text-text-muted hover:bg-bg-hover hover:text-text"
         >
-          ▶
+          ✎
         </Link>
       ),
       meta: { disableRowLink: true, className: "!px-1 !py-0 text-right" },
@@ -236,7 +236,7 @@ export function CatalogPage() {
         <DataTable
           columns={columns}
           data={songs}
-          getRowHref={(song) => Router.SongEdit({ songId: song.id })}
+          getRowHref={(song) => Router.PerformSong({ songId: song.id })}
           globalSearchFields={["title", "artist", "tags"]}
           searchPlaceholder={t("catalog.searchPlaceholder")}
           emptyMessage={t("catalog.empty")}

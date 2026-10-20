@@ -42,7 +42,7 @@
   "catalog": {
     "title": "Chansons",
     "addSong": "+ Ajouter",
-    "openSong": "Ouvrir {{title}}",
+    "editSong": "Modifier {{title}}",
     "searchPlaceholder": "Rechercher par titre ou artiste...",
     "empty": "Aucune chanson. Ajoutez votre première chanson.",
     "colTitle": "Titre",
