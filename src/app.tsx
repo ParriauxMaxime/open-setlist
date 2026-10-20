@@ -106,11 +106,12 @@ function AdminRoutes({
     case "SongNew":
       return <EditSongPage />;
     case "SongEdit":
-      return <EditSongPage songId={route.params.songId} />;
+      // Keyed: the editor keeps the song's id in state, another song needs a fresh one
+      return <EditSongPage key={route.params.songId} songId={route.params.songId} />;
     case "Setlists":
       return <SetlistPage />;
     case "SetlistEdit":
-      return <SetlistPage setlistId={route.params.setlistId} />;
+      return <SetlistPage key={route.params.setlistId} setlistId={route.params.setlistId} />;
     case "TechSheet":
       return <TechSheetPage setlistId={route.params.setlistId} />;
     case "Chords":
