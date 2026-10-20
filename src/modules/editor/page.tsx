@@ -358,8 +358,6 @@ export function EditSongPage({ songId }: EditSongPageProps) {
             </button>
           </div>
         )}
-        {/* Private, device-only note: kept outside the song form so it is never saved/synced */}
-        {!isNew && <MyNotePanel profileId={profileId} songId={songDbId} />}
         <AttachmentsPanel
           attachments={watch("attachments") ?? []}
           onChange={(attachments) => setValue("attachments", attachments, { shouldDirty: true })}
@@ -472,6 +470,13 @@ export function EditSongPage({ songId }: EditSongPageProps) {
           </div>
         </div>
       </form>
+
+      {/* Private, device-only note: kept outside the song form so it is never saved/synced */}
+      {!isNew && (
+        <div className="mt-4 shrink-0">
+          <MyNotePanel profileId={profileId} songId={songDbId} />
+        </div>
+      )}
 
       {!isNew && (
         <div className="mt-8 lg:hidden">

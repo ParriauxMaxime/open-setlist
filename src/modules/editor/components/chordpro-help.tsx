@@ -1,11 +1,15 @@
 import { useTranslation } from "react-i18next";
 import { Disclosure } from "../../design-system/components/card";
+import { useStoredFlag } from "../../shared/hooks/use-stored-flag";
+
+const OPEN_KEY = "open-setlist-chordpro-help-open";
 
 export function ChordProHelp() {
   const { t } = useTranslation();
+  const [open, setOpen] = useStoredFlag(OPEN_KEY);
 
   return (
-    <Disclosure summary={t("editor.chordproHelp")}>
+    <Disclosure summary={t("editor.chordproHelp")} defaultOpen={open} onOpenChange={setOpen}>
       <div className="text-sm text-text-muted">
         <Section title={t("editor.help.metadata")}>
           <Code>{`{title: Song Name}`}</Code>

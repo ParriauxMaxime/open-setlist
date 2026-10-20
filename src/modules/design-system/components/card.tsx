@@ -120,6 +120,7 @@ interface DisclosureProps {
   /** `note`: the yellow of personal notes. */
   tone?: "default" | "note";
   className?: string;
+  onOpenChange?: (open: boolean) => void;
   children: ReactNode;
 }
 
@@ -129,6 +130,7 @@ export function Disclosure({
   defaultOpen,
   tone = "default",
   className = "",
+  onOpenChange,
   children,
 }: DisclosureProps) {
   const border = tone === "note" ? "border-note-border" : "border-border";
@@ -136,6 +138,7 @@ export function Disclosure({
   return (
     <details
       open={defaultOpen || undefined}
+      onToggle={onOpenChange ? (e) => onOpenChange(e.currentTarget.open) : undefined}
       className={`accordion group rounded-lg border ${border} ${background} ${className}`}
     >
       <summary className="flex cursor-pointer select-none items-center gap-2 px-4 py-3 text-sm font-medium">
