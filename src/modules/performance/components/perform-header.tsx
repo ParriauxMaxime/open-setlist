@@ -41,6 +41,8 @@ interface PerformHeaderProps {
   myPart: MyPart;
   hasMyNote: boolean;
   onEditMyNote: () => void;
+  /** Leaving for the song's editor, whose Save comes back here. */
+  onEditSong: () => void;
   midi: StageMidi;
   follow: FollowLeader;
   onShowHelp: () => void;
@@ -75,6 +77,7 @@ export function PerformHeader({
   myPart,
   hasMyNote,
   onEditMyNote,
+  onEditSong,
   midi,
   follow,
   onShowHelp,
@@ -293,6 +296,7 @@ export function PerformHeader({
                   {song && (
                     <Link
                       to={Router.SongEdit({ songId: song.id })}
+                      onClick={onEditSong}
                       className="block w-full px-4 py-3 text-left text-base text-text hover:bg-bg-hover"
                     >
                       {t("perform.editSong")}

@@ -24,6 +24,12 @@ function pushSentinel() {
   window.history.pushState(sentinelState(), "", window.location.href);
 }
 
+/** Opens `href` from a guarded page, taking the sentinel's place to keep one entry for the page. */
+export function navigateFromGuardedPage(href: string) {
+  if (isSentinelState(window.history.state)) replaceUnsafe(href);
+  else pushUnsafe(href);
+}
+
 /**
  * While `dirty`, closing the tab warns, and an in-app link or the browser Back button
  * asks before leaving. Cmd/Ctrl+S calls `onSave` when dirty. Returns the confirm modal to render.
@@ -94,9 +100,7 @@ export function useUnsavedGuard(dirty: boolean, onSave: () => void): ReactNode {
   const leave = (target: PendingLeave) => {
     setPending(null);
     if ("href" in target) {
-      // Taking the sentinel's place keeps a single entry for this page in history
-      if (isSentinelState(window.history.state)) replaceUnsafe(target.href);
-      else pushUnsafe(target.href);
+      navigateFromGuardedPage(target.href);
       return;
     }
     leavingRef.current = true;

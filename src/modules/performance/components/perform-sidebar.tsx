@@ -8,11 +8,23 @@ const PERFORM_RETURN_KEY = "open-setlist-perform-return";
 
 export interface PerformReturn {
   setlistId?: string;
+  /** The song left for its editor, whose Save comes back here. */
   songId?: string;
+  /** Position in the setlist to come back to. */
+  index?: number;
 }
 
 export function setPerformReturn(ret: PerformReturn) {
   sessionStorage.setItem(PERFORM_RETURN_KEY, JSON.stringify(ret));
+}
+
+/** The stage view to go back to, at the same song of the setlist. */
+export function performReturnHref(ret: PerformReturn): string | null {
+  if (ret.setlistId) {
+    const href = Router.Perform({ setlistId: ret.setlistId });
+    return ret.index ? `${href}?start=${ret.index}` : href;
+  }
+  return ret.songId ? Router.PerformSong({ songId: ret.songId }) : null;
 }
 
 export function getPerformReturn(): PerformReturn | null {
@@ -34,13 +46,15 @@ interface PerformSidebarProps {
   onClose: () => void;
   setlistId?: string;
   songId?: string;
+  /** Position of the current song in the setlist. */
+  index: number;
 }
 
-export function PerformSidebar({ open, onClose, setlistId, songId }: PerformSidebarProps) {
+export function PerformSidebar({ open, onClose, setlistId, songId, index }: PerformSidebarProps) {
   const { t } = useTranslation();
 
   const storeReturn = () => {
-    if (setlistId) setPerformReturn({ setlistId });
+    if (setlistId) setPerformReturn({ setlistId, index });
     else if (songId) setPerformReturn({ songId });
   };
 

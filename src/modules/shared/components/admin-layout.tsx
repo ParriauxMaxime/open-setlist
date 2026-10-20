@@ -2,7 +2,7 @@ import { Link } from "@swan-io/chicane";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
-import { getPerformReturn } from "../../performance/components/perform-sidebar";
+import { getPerformReturn, performReturnHref } from "../../performance/components/perform-sidebar";
 import { GettingStartedBanner } from "./getting-started-banner";
 import { NavLink } from "./nav-link";
 import { ProfileSwitcher } from "./profile-switcher";
@@ -62,11 +62,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     }
   });
 
-  const returnHref = performReturn?.setlistId
-    ? Router.Perform({ setlistId: performReturn.setlistId })
-    : performReturn?.songId
-      ? Router.PerformSong({ songId: performReturn.songId })
-      : null;
+  const returnHref = performReturn && performReturnHref(performReturn);
 
   const returnLabel = performReturn?.setlistId
     ? t("perform.backToSet")

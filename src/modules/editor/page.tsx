@@ -21,7 +21,8 @@ import { Router } from "../../router";
 import { Disclosure } from "../design-system/components/card";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { EditorHeader } from "../design-system/components/editor-header";
-import { useUnsavedGuard } from "../shared/hooks/use-unsaved-guard";
+import { getPerformReturn, performReturnHref } from "../performance/components/perform-sidebar";
+import { navigateFromGuardedPage, useUnsavedGuard } from "../shared/hooks/use-unsaved-guard";
 import { AttachmentsPanel } from "./components/attachments-panel";
 import { ChordProEditor } from "./components/chordpro-editor";
 import { ChordProHelp } from "./components/chordpro-help";
@@ -232,7 +233,12 @@ export function EditSongPage({ songId }: EditSongPageProps) {
     );
     if (isNew) {
       Router.replace("SongEdit", { songId: toSave.id });
+      return;
     }
+    // Opened from the stage view: Save goes back to the same song there
+    const performReturn = getPerformReturn();
+    const returnHref = performReturn?.songId === songDbId ? performReturnHref(performReturn) : null;
+    if (returnHref) navigateFromGuardedPage(returnHref);
   };
 
   const deleteSong = useCallback(async () => {

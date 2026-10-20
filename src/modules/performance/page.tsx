@@ -25,7 +25,7 @@ import { MyNoteEditor } from "./components/my-note-editor";
 import { PerformFooter } from "./components/perform-footer";
 import { PerformHeader } from "./components/perform-header";
 import { PerformHints } from "./components/perform-hints";
-import { clearPerformReturn, PerformSidebar } from "./components/perform-sidebar";
+import { clearPerformReturn, PerformSidebar, setPerformReturn } from "./components/perform-sidebar";
 import { SetInterstitial } from "./components/set-interstitial";
 import { SongStrip } from "./components/song-strip";
 import { TempoOverlay } from "./components/tempo-overlay";
@@ -146,6 +146,14 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
 
   // Clear return marker — we're back in perform mode
   clearPerformReturn();
+
+  const storeEditReturn = () => {
+    const id = nav.currentSong?.id;
+    if (!id) return;
+    setPerformReturn(
+      setlistId ? { setlistId, songId: id, index: nav.currentIndex } : { songId: id },
+    );
+  };
 
   const loaded = nav.loaded && !nav.notFound;
 
@@ -290,6 +298,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         onClose={() => setSidebarOpen(false)}
         setlistId={setlistId}
         songId={songId}
+        index={nav.currentIndex}
       />
       <PerformHeader
         visible={chromeVisible}
@@ -317,6 +326,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         myPart={myPart}
         hasMyNote={!!(nav.currentSong && myNotes[nav.currentSong.id])}
         onEditMyNote={() => setNoteEditing(nav.currentSong ?? null)}
+        onEditSong={storeEditReturn}
         midi={midi}
         follow={follow}
         onShowHelp={() => setHelpOpen(true)}
