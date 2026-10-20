@@ -13,14 +13,24 @@ A device sends only the code of its own instrument (Settings → Stage: MIDI →
 
 | Instrument | Default channel | Default message |
 |---|---|---|
-| Keys | 1 | Two Control Changes: CC 21 = letter (0 to 3), CC 20 = digits (0 to 63). A plain number goes out as CC 20 alone. |
+| Keys | 1 | One Control Change: CC 20 = the song's number, 0 to 127 |
 | Guitar, bass, vocals | 2, 3, 4 | Program Change (preset 1 = program 0), preceded by Bank Select (CC 0) when the code has a letter |
 | Drums | 10 | same |
 | Others | 5 | same |
 
-Channel, message type and CC numbers can be changed per device (MIDI details).
+Channel, message type and controller numbers can be changed per device (MIDI details).
 
-Two Control Changes for the keyboard because Ableton Live maps notes and CC but not Program Change, and one CC cannot carry 256 values. In Live: one Instrument Rack whose chain selector is driven by CC 20 (a chain per digits pair), nested in a rack whose chain selector is driven by CC 21 (a chain per letter). The "Try it" buttons in the settings send each CC alone, which is what Live's MIDI Map mode needs.
+A song whose keyboard number is `111`, on channel 16, sends exactly `[0xBF, 20, 111]`. Over Control Change only a number from 0 to 127 is sent: a lettered code or `128` sends nothing, and the song editor flags it.
+
+One Control Change for the keyboard because Ableton Live maps notes and CC but not Program Change, and a Live mapping listens to one controller only. CC 20 is one of the undefined controllers (20 to 31): Bank Select (CC 0 and 32) could clash with other gear on the chain. 256 sounds would need two controllers and logic in Live; the band does not need more than 128 for now.
+
+### In Ableton Live
+
+1. Preferences → Link, Tempo & MIDI → MIDI Ports. On the input `Open Setlist` (on Windows, the loopMIDI port), turn **Remote** on. On the keyboard's own input, turn **Remote** off, keep **Track** on: Live maps the last message it receives on any Remote input, and the keyboard's pitch wheel would win.
+2. One Instrument Rack on the keyboard track, one chain per sound. Show the chain list and its **Chain** zone editor; give each chain a zone of one value: the sound's number (chain for song number 111: zone 111 to 111).
+3. Press **MIDI** (Cmd+M / Ctrl+M) for MIDI Map mode and click the rack's chain selector (or a Macro mapped to it, range 0 to 127).
+4. In Open Setlist, Settings → Stage: MIDI → Try it: type a number and press **Send**. Live's status bar must read `MIDI Ch1 #20` (or the device's channel), not `Pitch Bend`. Leave MIDI Map mode.
+5. In MIDI Map mode, the mapping list on the left shows each mapping: delete any `Pitch Bend` one made by mistake.
 
 Layers inside a sound (strings on top of the piano) are not Open Setlist's job: the synth sends those to Ableton itself.
 
@@ -60,5 +70,5 @@ The QR code opens `…/settings?companion=<address>`: the app stores the address
 - Chrome on Android asking for and honouring the local network permission.
 - The Bluetooth transport end to end: no tablet has connected to the companion yet.
 - The companion program at run time on Windows (never started on a real one) and on Linux with a real ALSA sequencer and BlueZ.
-- Ableton Live receiving the two Control Changes and switching chains, and echoing them on the `Open Setlist` output. The echo path itself is verified on macOS by `cargo test --test loopback -- --ignored`.
+- Ableton Live mapping CC 20 to a chain selector and switching chains, and echoing it on the `Open Setlist` output. On 2026-10-19 Live reported a pitch bend instead; the companion writes exactly the Control Change it receives (`cargo test --test loopback -- --ignored`, macOS), so the pitch bend most likely came from another Remote input, such as the keyboard's wheel. The Ableton steps above are not tried on Live yet.
 - Whether the drum pad and the pedalboard accept Program Change, and on which channel.
