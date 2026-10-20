@@ -1,6 +1,6 @@
 import type { Setlist, Song } from "@db";
 import { useDb } from "@db/provider";
-import { formatDuration } from "@domain/format";
+import { formatLongDuration } from "@domain/format";
 import { createId } from "@domain/id";
 import { setlistDuration } from "@domain/setlist-duration";
 import { formatGigDate, isoDay, sortSetlistsForPlaying } from "@domain/setlist-order";
@@ -43,14 +43,14 @@ function SetlistListPage() {
   const gigDate = (date: string | undefined) =>
     date ? formatGigDate(date, i18n.language, today) : undefined;
 
-  /** "30 songs · 2 sets · 102:30", the sets only when more than one. */
+  /** "30 songs · 2 sets · 1h42", the sets only when more than one. */
   const contents = (setlist: Setlist, catalog: Song[]) => {
     const ids = songIds(setlist);
     const { total, unknownCount } = setlistDuration(ids, catalog);
     const summary = [
       t("setlist.songCount", { count: ids.length }),
       setlist.sets.length > 1 ? t("setlist.setCount", { count: setlist.sets.length }) : null,
-      total > 0 ? formatDuration(total) : null,
+      total > 0 ? formatLongDuration(total) : null,
     ]
       .filter(Boolean)
       .join(" · ");

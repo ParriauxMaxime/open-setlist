@@ -1,4 +1,4 @@
-import { formatDuration } from "@domain/format";
+import { formatLongDuration } from "@domain/format";
 import { useTranslation } from "react-i18next";
 
 interface DurationLabelProps {
@@ -8,11 +8,11 @@ interface DurationLabelProps {
   total?: boolean;
 }
 
-/** "42:30" or "Total 42:30", plus how many songs have no duration. */
+/** "42:30" or "Total 1h42", plus how many songs have no duration. */
 export function DurationLabel({ duration, unknownCount, total }: DurationLabelProps) {
   const { t } = useTranslation();
   if (duration === 0 && unknownCount === 0) return null;
-  const formatted = formatDuration(duration);
+  const formatted = formatLongDuration(duration);
 
   return (
     <span className="whitespace-nowrap">

@@ -2,7 +2,7 @@ import type { SetlistSet } from "@db";
 import { useDb } from "@db/provider";
 import { closestCorners, DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { formatDuration } from "@domain/format";
+import { formatLongDuration } from "@domain/format";
 import { useActiveProfileId } from "@domain/profiles";
 import { type SetlistFormValues, setlistFormSchema } from "@domain/schemas/setlist";
 import { setlistDuration } from "@domain/setlist-duration";
@@ -340,11 +340,11 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
                 {t("setlist.setsHeading")}{" "}
                 <span className="text-xs font-normal text-text-faint">
                   {t("setlist.songCount", { count: totalSongs })}
-                  {totalDuration > 0 && <> &middot; {formatDuration(totalDuration)}</>}
+                  {totalDuration > 0 && <> &middot; {formatLongDuration(totalDuration)}</>}
                   {unknownCount > 0 && (
                     <> ({t("setlist.unknownDuration", { count: unknownCount })})</>
                   )}
-                  {expectedDuration && <> / {formatDuration(expectedDuration)}</>}
+                  {expectedDuration && <> / {formatLongDuration(expectedDuration)}</>}
                   {notReadyCount > 0 && (
                     <>
                       {" "}

@@ -1,4 +1,18 @@
-import { formatDuration, parseDuration } from "./format";
+import { formatDuration, formatLongDuration, parseDuration } from "./format";
+
+describe("formatLongDuration", () => {
+  it("keeps minutes and seconds under an hour", () => {
+    expect(formatLongDuration(210)).toBe("3:30");
+    expect(formatLongDuration(3599)).toBe("59:59");
+  });
+
+  it("reads hours and minutes from an hour on", () => {
+    expect(formatLongDuration(3600)).toBe("1h00");
+    expect(formatLongDuration(6120)).toBe("1h42");
+    expect(formatLongDuration(6150)).toBe("1h43");
+    expect(formatLongDuration(7170)).toBe("2h00");
+  });
+});
 
 describe("parseDuration", () => {
   it("reads minutes and seconds", () => {

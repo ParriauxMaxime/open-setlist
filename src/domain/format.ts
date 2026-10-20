@@ -4,6 +4,13 @@ export function formatDuration(seconds: number): string {
   return `${m}:${s}`;
 }
 
+/** A total length: "42:30" under an hour, "1h42" from an hour on, rounded to the minute. */
+export function formatLongDuration(seconds: number): string {
+  if (seconds < 3600) return formatDuration(seconds);
+  const minutes = Math.round(seconds / 60);
+  return `${Math.floor(minutes / 60)}h${String(minutes % 60).padStart(2, "0")}`;
+}
+
 /** Compact age of a timestamp, e.g. "12 min", "3h", "2d". */
 export function formatTimeAgo(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
