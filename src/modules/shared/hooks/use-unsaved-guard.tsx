@@ -1,7 +1,10 @@
-import { pushUnsafe } from "@swan-io/chicane";
+import { isSentinelState, sentinelState } from "@domain/history-sentinel";
+import { pushUnsafe, replaceUnsafe } from "@swan-io/chicane";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ConfirmModal } from "../../design-system/components/confirm-modal";
+
+type PendingLeave = { href: string } | { back: true };
 
 /** The in-app URL a plain left click on a link would open, if any. */
 function internalHref(event: MouseEvent): string | null {
@@ -16,15 +19,23 @@ function internalHref(event: MouseEvent): string | null {
   return href === window.location.pathname + window.location.search ? null : href;
 }
 
+// Same URL as the current entry, so the router sees no location change
+function pushSentinel() {
+  window.history.pushState(sentinelState(), "", window.location.href);
+}
+
 /**
- * While `dirty`, closing the tab warns and an in-app link asks before leaving.
- * Cmd/Ctrl+S calls `onSave` when dirty. Returns the confirm modal to render.
+ * While `dirty`, closing the tab warns, and an in-app link or the browser Back button
+ * asks before leaving. Cmd/Ctrl+S calls `onSave` when dirty. Returns the confirm modal to render.
  */
 export function useUnsavedGuard(dirty: boolean, onSave: () => void): ReactNode {
   const { t } = useTranslation();
-  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [pending, setPending] = useState<PendingLeave | null>(null);
   const dirtyRef = useRef(dirty);
   const saveRef = useRef(onSave);
+  // Sentinel pops we caused ourselves, which must not ask
+  const unwindingRef = useRef(0);
+  const leavingRef = useRef(false);
 
   useEffect(() => {
     dirtyRef.current = dirty;
@@ -37,30 +48,67 @@ export function useUnsavedGuard(dirty: boolean, onSave: () => void): ReactNode {
       e.preventDefault();
       if (dirtyRef.current) saveRef.current();
     };
+    const onPopState = (e: PopStateEvent) => {
+      if (unwindingRef.current > 0) {
+        unwindingRef.current -= 1;
+        if (dirtyRef.current) pushSentinel();
+        return;
+      }
+      if (leavingRef.current || !dirtyRef.current || isSentinelState(e.state)) return;
+      setPending({ back: true });
+    };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("popstate", onPopState);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("popstate", onPopState);
+    };
   }, []);
 
   useEffect(() => {
     if (!dirty) return;
-    const onBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
+    if (unwindingRef.current === 0 && !isSentinelState(window.history.state)) pushSentinel();
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!leavingRef.current) e.preventDefault();
+    };
     // Capture phase on the document runs before the router's own link handler
     const onClick = (e: MouseEvent) => {
       const href = internalHref(e);
       if (!href) return;
       e.preventDefault();
       e.stopPropagation();
-      setPendingHref(href);
+      setPending({ href });
     };
     window.addEventListener("beforeunload", onBeforeUnload);
     document.addEventListener("click", onClick, true);
     return () => {
       window.removeEventListener("beforeunload", onBeforeUnload);
       document.removeEventListener("click", onClick, true);
+      if (isSentinelState(window.history.state)) {
+        unwindingRef.current += 1;
+        window.history.back();
+      }
     };
   }, [dirty]);
 
-  if (!pendingHref) return null;
+  const leave = (target: PendingLeave) => {
+    setPending(null);
+    if ("href" in target) {
+      // Taking the sentinel's place keeps a single entry for this page in history
+      if (isSentinelState(window.history.state)) replaceUnsafe(target.href);
+      else pushUnsafe(target.href);
+      return;
+    }
+    leavingRef.current = true;
+    window.history.back();
+  };
+
+  const stay = (target: PendingLeave) => {
+    setPending(null);
+    if ("back" in target) pushSentinel();
+  };
+
+  if (!pending) return null;
   return (
     <ConfirmModal
       title={t("common.unsaved.title")}
@@ -68,11 +116,8 @@ export function useUnsavedGuard(dirty: boolean, onSave: () => void): ReactNode {
       confirmLabel={t("common.unsaved.leave")}
       cancelLabel={t("common.unsaved.stay")}
       variant="danger"
-      onConfirm={() => {
-        setPendingHref(null);
-        pushUnsafe(pendingHref);
-      }}
-      onCancel={() => setPendingHref(null)}
+      onConfirm={() => leave(pending)}
+      onCancel={() => stay(pending)}
     />
   );
 }
