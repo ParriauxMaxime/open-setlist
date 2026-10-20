@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Badge, Card } from "../design-system/components/card";
 import { PageHeader } from "../design-system/components/page-header";
 import { CheckLine } from "./components/check-line";
+import { LeftoversCheck } from "./components/leftovers-check";
 import { SpellingCheck } from "./components/spelling-check";
 
 interface ScoredSong {
@@ -87,7 +88,12 @@ export function QualityPage() {
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="min-w-0 flex-1">
-          {songs.length > 0 && <SpellingCheck songs={songs} />}
+          {songs.length > 0 && (
+            <>
+              <SpellingCheck songs={songs} />
+              <LeftoversCheck songs={songs} />
+            </>
+          )}
           <Card>
             {scored.map(({ song, report }) => (
               <button

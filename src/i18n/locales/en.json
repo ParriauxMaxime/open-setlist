@@ -530,6 +530,16 @@
       },
       "unify": "Unify as {{spelling}}"
     },
+    "leftovers": {
+      "title": "Setlist Helper leftovers",
+      "description": "Directives Setlist Helper adds after the song when the song already stores their value, and the trailing spaces of its CSV export. Comments, sections and highlights stay.",
+      "count_one": "{{count}} chart to tidy",
+      "count_other": "{{count}} charts to tidy",
+      "more_one": "and {{count}} more",
+      "more_other": "and {{count}} more",
+      "none": "No Setlist Helper leftovers",
+      "cleanAll": "Clean all"
+    },
     "categories": {
       "metadata": "Metadata",
       "structure": "Structure",

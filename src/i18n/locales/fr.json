@@ -530,6 +530,16 @@
       },
       "unify": "Tout écrire {{spelling}}"
     },
+    "leftovers": {
+      "title": "Restes de Setlist Helper",
+      "description": "Les directives que Setlist Helper ajoute après la chanson quand la chanson a déjà leur valeur, et les espaces en fin de ligne de son export CSV. Commentaires, sections et surlignages restent.",
+      "count_one": "{{count}} grille à nettoyer",
+      "count_other": "{{count}} grilles à nettoyer",
+      "more_one": "et {{count}} autre",
+      "more_other": "et {{count}} autres",
+      "none": "Aucun reste de Setlist Helper",
+      "cleanAll": "Tout nettoyer"
+    },
     "categories": {
       "metadata": "Métadonnées",
       "structure": "Structure",
