@@ -5,6 +5,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { EmptyState } from "../../design-system/components/empty-state";
 import { buildSetDragId } from "../hooks/use-setlist-dnd";
 import { SongPicker } from "./song-picker";
 import { SongRowContent } from "./song-row-content";
@@ -122,7 +123,15 @@ export function SetEditor({
       </div>
 
       {set.songIds.length === 0 ? (
-        <p className="px-4 py-3 text-sm text-text-faint">{t("setlist.noSongsInSet")}</p>
+        <EmptyState
+          className="px-4 py-3"
+          message={
+            <>
+              <span className="lg:hidden">{t("setlist.noSongsInSet")}</span>
+              <span className="hidden lg:inline">{t("setlist.noSongsInSetDrag")}</span>
+            </>
+          }
+        />
       ) : (
         <SortableContext items={songDragIds} strategy={verticalListSortingStrategy}>
           <ol className="divide-y divide-border">

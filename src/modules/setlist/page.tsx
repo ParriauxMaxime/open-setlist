@@ -162,6 +162,11 @@ function SetlistListPage() {
           data={setlists}
           getRowHref={(sl) => Router.SetlistEdit({ setlistId: sl.id })}
           emptyMessage={t("setlist.empty")}
+          emptyAction={
+            <button type="button" onClick={createSetlist} className="btn btn-outline btn-sm">
+              {t("setlist.newSetlist")}
+            </button>
+          }
         />
       )}
     </div>

@@ -11,8 +11,9 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { EmptyState } from "./empty-state";
 
 // Extend column meta to describe filter UI
 declare module "@tanstack/react-table" {
@@ -32,6 +33,8 @@ interface DataTableProps<T> {
   data: T[];
   getRowHref?: (row: T) => string;
   emptyMessage?: string;
+  /** Next step offered when there is no data at all. */
+  emptyAction?: ReactNode;
   globalSearchFields?: (keyof T & string)[];
   searchPlaceholder?: string;
   initialColumnFilters?: ColumnFiltersState;
@@ -43,6 +46,7 @@ export function DataTable<T>({
   data,
   getRowHref,
   emptyMessage,
+  emptyAction,
   globalSearchFields,
   searchPlaceholder,
   initialColumnFilters,
@@ -90,7 +94,13 @@ export function DataTable<T>({
   };
 
   if (data.length === 0) {
-    return <p className="text-text-muted">{emptyMessage ?? t("common.noData")}</p>;
+    return (
+      <EmptyState
+        message={emptyMessage ?? t("common.noData")}
+        action={emptyAction}
+        className="rounded-lg border border-border bg-bg-surface px-4 py-6"
+      />
+    );
   }
 
   return (
@@ -171,11 +181,19 @@ export function DataTable<T>({
           <tbody className="divide-y divide-border/60">
             {rowCount === 0 && (
               <tr>
-                <td colSpan={columns.length} className="px-3 py-6 text-text-muted">
-                  <span className="mr-3">{t("common.noResults")}</span>
-                  <button type="button" onClick={showEverything} className="btn btn-outline btn-sm">
-                    {t("common.clearFilters")}
-                  </button>
+                <td colSpan={columns.length} className="px-3 py-6">
+                  <EmptyState
+                    message={t("common.noResults")}
+                    action={
+                      <button
+                        type="button"
+                        onClick={showEverything}
+                        className="btn btn-outline btn-sm"
+                      >
+                        {t("common.clearFilters")}
+                      </button>
+                    }
+                  />
                 </td>
               </tr>
             )}

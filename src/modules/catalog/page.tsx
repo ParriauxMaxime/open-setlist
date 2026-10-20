@@ -313,6 +313,11 @@ export function CatalogPage() {
           globalSearchFields={["title", "artist", "tags"]}
           searchPlaceholder={t("catalog.searchPlaceholder")}
           emptyMessage={t("catalog.empty")}
+          emptyAction={
+            <Link to={Router.SongNew()} className="btn btn-outline btn-sm">
+              {t("catalog.addSong")}
+            </Link>
+          }
           initialColumnFilters={initialFilters}
         />
       )}

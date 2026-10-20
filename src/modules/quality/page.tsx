@@ -1,10 +1,15 @@
 import { useDb } from "@db/provider";
 import type { Song } from "@db/song";
+import { findSpellingIssues } from "@domain/catalog-checks";
+import { needsCleanup } from "@domain/chordpro/cleanup";
 import { analyzeSong, type QualityFlag, type QualityReport } from "@domain/quality";
+import { Link } from "@swan-io/chicane";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Router } from "../../router";
 import { Badge, Card } from "../design-system/components/card";
+import { EmptyState } from "../design-system/components/empty-state";
 import { PageHeader } from "../design-system/components/page-header";
 import { CheckLine } from "./components/check-line";
 import { LeftoversCheck } from "./components/leftovers-check";
@@ -74,6 +79,15 @@ export function QualityPage() {
 
   const selected = scored.find((s) => s.song.id === selectedId);
 
+  const allGood = useMemo(
+    () =>
+      scored.length > 0 &&
+      scored.every((s) => s.report.score === 100) &&
+      findSpellingIssues(songs).length === 0 &&
+      !songs.some(needsCleanup),
+    [scored, songs],
+  );
+
   return (
     <div className="p-page">
       <PageHeader
@@ -88,6 +102,12 @@ export function QualityPage() {
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="min-w-0 flex-1">
+          {allGood && (
+            <EmptyState
+              message={t("quality.allGood")}
+              className="mb-4 rounded-lg border border-border bg-bg-surface px-4 py-3"
+            />
+          )}
           {songs.length > 0 && (
             <>
               <SpellingCheck songs={songs} />
@@ -117,7 +137,15 @@ export function QualityPage() {
             ))}
 
             {scored.length === 0 && (
-              <p className="px-4 py-8 text-center text-sm text-text-muted">{t("quality.empty")}</p>
+              <EmptyState
+                message={t("quality.empty")}
+                action={
+                  <Link to={Router.SongNew()} className="btn btn-outline btn-sm">
+                    {t("catalog.addSong")}
+                  </Link>
+                }
+                className="justify-center px-4 py-8"
+              />
             )}
           </Card>
         </div>
