@@ -3,8 +3,10 @@ import { useDb } from "@db/provider";
 import { closestCorners, DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { formatDuration } from "@domain/format";
+import { createId } from "@domain/id";
 import { useActiveProfileId } from "@domain/profiles";
 import { type SetlistFormValues, setlistFormSchema } from "@domain/schemas/setlist";
+import { isoDay } from "@domain/setlist-order";
 import { countNotReadySongs } from "@domain/song-status";
 import { addTombstone } from "@domain/sync/tombstones";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -155,6 +157,22 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
     if (!isSubmitting) handleSubmit(onSubmit)();
   });
 
+  const duplicateSetlist = async () => {
+    if (!existing) return;
+    const id = createId();
+    const now = Date.now();
+    await db.setlists.put({
+      ...existing,
+      id,
+      name: t("setlist.copyName", { name: existing.name }),
+      date: isoDay(new Date()),
+      sets: existing.sets.map((s) => ({ ...s, songIds: [...s.songIds] })),
+      createdAt: now,
+      updatedAt: now,
+    });
+    Router.push("SetlistEdit", { setlistId: id });
+  };
+
   const deleteSetlist = useCallback(async () => {
     addTombstone(profileId, "setlist", setlistId);
     await db.setlists.delete(setlistId);
@@ -282,6 +300,18 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
                     className="block w-full px-4 py-2 text-left text-sm text-text hover:bg-bg-hover disabled:opacity-50"
                   >
                     {t("setlist.resetChanges")}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isDirty}
+                    title={isDirty ? t("setlist.duplicateSaveFirst") : undefined}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      duplicateSetlist();
+                    }}
+                    className="block w-full px-4 py-2 text-left text-sm text-text hover:bg-bg-hover disabled:opacity-50"
+                  >
+                    {t("setlist.duplicate")}
                   </button>
                 </div>
               )}
