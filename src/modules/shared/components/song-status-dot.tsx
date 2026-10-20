@@ -12,11 +12,9 @@ interface SongStatusDotProps {
   status: SongStatus | undefined;
   /** Show the status name next to the dot (otherwise it is only a tooltip). */
   withLabel?: boolean;
-  /** Hide the label below the md breakpoint. */
-  labelHiddenOnMobile?: boolean;
 }
 
-export function SongStatusDot({ status, withLabel, labelHiddenOnMobile }: SongStatusDotProps) {
+export function SongStatusDot({ status, withLabel }: SongStatusDotProps) {
   const { t } = useTranslation();
   const resolved = resolveSongStatus(status);
   const label = t(songStatusLabelKey(resolved));
@@ -29,7 +27,7 @@ export function SongStatusDot({ status, withLabel, labelHiddenOnMobile }: SongSt
   return (
     <span className="inline-flex items-center gap-1.5" title={label}>
       <span aria-hidden="true" className={dot} />
-      <span className={labelHiddenOnMobile ? "sr-only md:not-sr-only" : undefined}>{label}</span>
+      <span>{label}</span>
     </span>
   );
 }

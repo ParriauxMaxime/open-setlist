@@ -239,14 +239,14 @@ export function CatalogPage() {
   );
 }
 
-/** Status dot + label; a transparent native select on top gives a quick status menu. */
+/** Status dot, its name as tooltip; a transparent native select on top gives a quick status menu. */
 function StatusCell({ song }: { song: Song }) {
   const { t } = useTranslation();
   const db = useDb();
 
   return (
-    <span className="relative inline-flex min-h-6 min-w-6 items-center rounded-sm text-text-muted focus-within:outline-2 focus-within:outline-border-focus">
-      <SongStatusDot status={song.status} withLabel labelHiddenOnMobile />
+    <span className="relative inline-flex min-h-6 min-w-6 items-center justify-center rounded-sm focus-within:outline-2 focus-within:outline-border-focus">
+      <SongStatusDot status={song.status} />
       <select
         value={resolveSongStatus(song.status)}
         onChange={(e) => {
