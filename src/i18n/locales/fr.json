@@ -173,8 +173,9 @@
     "set": "Set",
     "song": "Chanson",
     "expectedDuration": "Durée prévue (min)",
-    "unknownDuration_one": "{{count}} sans durée",
-    "unknownDuration_other": "{{count}} sans durée",
+    "unknownDuration_one": "{{count}} chanson sans durée",
+    "unknownDuration_other": "{{count}} chansons sans durée",
+    "noLength": "Pas de durée",
     "suggested": "Suggestions",
     "allSongs": "Toutes les chansons"
   },

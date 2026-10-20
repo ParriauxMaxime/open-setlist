@@ -130,7 +130,11 @@ export function CatalogPage() {
       size: 80,
       cell: (info) => {
         const v = info.getValue();
-        return v ? <span className="text-chord">{formatKey(v, notation)}</span> : null;
+        return v ? (
+          <span className="text-chord">{formatKey(v, notation)}</span>
+        ) : (
+          <span className="text-text-faint">—</span>
+        );
       },
       filterFn: (row, _columnId, filterValue) => !filterValue || row.original.key === filterValue,
       meta: {
@@ -147,7 +151,7 @@ export function CatalogPage() {
       enableColumnFilter: false,
       cell: (info) => {
         const v = info.getValue();
-        return v != null ? <span className="text-text-faint">{v}</span> : null;
+        return <span className="text-text-faint">{v ?? "—"}</span>;
       },
       meta: { className: "hidden md:table-cell" },
     }) as ColumnDef<Song, unknown>,

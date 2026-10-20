@@ -134,7 +134,7 @@ export function SetEditor({
                   <span className="w-5 text-center text-xs tabular-nums text-text-faint">
                     {i + 1}
                   </span>
-                  <SongRowContent song={song} statusIndicator="warning" />
+                  <SongRowContent song={song} statusIndicator="warning" markMissingLength />
                   <div className="flex shrink-0">
                     <button
                       type="button"

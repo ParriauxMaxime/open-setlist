@@ -10,9 +10,11 @@ interface SongRowContentProps {
   song: Song | undefined;
   /** "dot" on every song (catalog panel), "warning" only on songs not ready (sets). */
   statusIndicator: "dot" | "warning";
+  /** Show "–:–" for a song without a length (sets, where lengths add up to the total). */
+  markMissingLength?: boolean;
 }
 
-export function SongRowContent({ song, statusIndicator }: SongRowContentProps) {
+export function SongRowContent({ song, statusIndicator, markMissingLength }: SongRowContentProps) {
   const { t } = useTranslation();
   const notation = useNotation();
 
@@ -22,10 +24,11 @@ export function SongRowContent({ song, statusIndicator }: SongRowContentProps) {
     );
   }
 
+  const missingLength = markMissingLength && !song.duration;
   const details = [
     song.key ? formatKey(song.key, notation) : null,
     song.bpm ? `${song.bpm} bpm` : null,
-    song.duration ? formatDuration(song.duration) : null,
+    song.duration ? formatDuration(song.duration) : missingLength ? "–:–" : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -51,10 +54,18 @@ export function SongRowContent({ song, statusIndicator }: SongRowContentProps) {
           {statusIndicator === "warning" && <NotReadyBadge status={song.status} />}
         </div>
         {secondLine && (
-          <span className="truncate text-xs text-text-faint @lg:hidden">{secondLine}</span>
+          <span
+            title={missingLength ? t("setlist.noLength") : undefined}
+            className="truncate text-xs text-text-faint @lg:hidden"
+          >
+            {secondLine}
+          </span>
         )}
         {details && (
-          <span className="hidden shrink-0 text-xs text-text-faint @lg:ml-auto @lg:inline">
+          <span
+            title={missingLength ? t("setlist.noLength") : undefined}
+            className="hidden shrink-0 text-xs text-text-faint @lg:ml-auto @lg:inline"
+          >
             {details}
           </span>
         )}
