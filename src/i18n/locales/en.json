@@ -541,6 +541,14 @@
       "none": "No Setlist Helper leftovers",
       "cleanAll": "Clean all"
     },
+    "rewrite": {
+      "title_one": "Rewrite {{count}} song?",
+      "title_other": "Rewrite {{count}} songs?",
+      "message": "The songs are marked as changed and the next sync shares the fix with the band.",
+      "confirm": "Rewrite",
+      "done_one": "Done, {{count}} song updated",
+      "done_other": "Done, {{count}} songs updated"
+    },
     "categories": {
       "metadata": "Metadata",
       "structure": "Structure",

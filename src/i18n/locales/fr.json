@@ -541,6 +541,14 @@
       "none": "Aucun reste de Setlist Helper",
       "cleanAll": "Tout nettoyer"
     },
+    "rewrite": {
+      "title_one": "Réécrire {{count}} chanson ?",
+      "title_other": "Réécrire {{count}} chansons ?",
+      "message": "Les chansons sont marquées comme modifiées et la prochaine synchro partage la correction avec le groupe.",
+      "confirm": "Réécrire",
+      "done_one": "C’est fait, {{count}} chanson mise à jour",
+      "done_other": "C’est fait, {{count}} chansons mises à jour"
+    },
     "categories": {
       "metadata": "Métadonnées",
       "structure": "Structure",
