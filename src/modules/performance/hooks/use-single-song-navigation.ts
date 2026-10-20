@@ -73,5 +73,6 @@ export function useSingleSongNavigation(songId: string) {
     isFirst,
     isLast,
     loaded: allSongs !== undefined,
+    notFound: allSongs !== undefined && !allSongs.some((s) => s.id === activeSongId),
   };
 }

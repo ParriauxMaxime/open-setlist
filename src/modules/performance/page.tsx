@@ -147,7 +147,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
   // Clear return marker — we're back in perform mode
   clearPerformReturn();
 
-  const loaded = setlistId ? !!setlistNav.setlist : singleNav.loaded;
+  const loaded = nav.loaded && !nav.notFound;
 
   const swipe = useSwipeStrip({
     currentIndex: nav.currentIndex,
@@ -240,6 +240,23 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
   );
 
   const themeAttr = forceDark ? "dark" : undefined;
+
+  if (nav.notFound) {
+    return (
+      <div
+        className="perform flex min-h-dvh flex-col items-center justify-center gap-4"
+        data-theme={themeAttr}
+      >
+        <p className="text-text-muted">{t(setlistId ? "setlist.notFound" : "editor.notFound")}</p>
+        <Link
+          to={setlistId ? Router.Setlists() : Router.Catalog()}
+          className="text-accent hover:text-accent-hover"
+        >
+          {t(setlistId ? "setlist.backToSetlists" : "editor.backToCatalog")}
+        </Link>
+      </div>
+    );
+  }
 
   if (!loaded) {
     return (

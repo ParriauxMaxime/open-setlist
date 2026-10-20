@@ -13,7 +13,10 @@ export interface FlatEntry {
 
 export function useSetlistNavigation(setlistId: string) {
   const db = useDb();
-  const setlist = useLiveQuery(() => db.setlists.get(setlistId), [setlistId, db]);
+  const setlist = useLiveQuery(
+    async () => (await db.setlists.get(setlistId)) ?? null,
+    [setlistId, db],
+  );
   const [currentIndex, setCurrentIndex] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const start = Number.parseInt(params.get("start") ?? "", 10);
@@ -77,5 +80,7 @@ export function useSetlistNavigation(setlistId: string) {
     nextSong,
     isFirst,
     isLast,
+    loaded: setlist !== undefined,
+    notFound: setlist === null,
   };
 }

@@ -40,7 +40,10 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
   const { t } = useTranslation();
   const db = useDb();
   const profileId = useActiveProfileId();
-  const existing = useLiveQuery(() => db.setlists.get(setlistId), [setlistId, db]);
+  const existing = useLiveQuery(
+    async () => (await db.setlists.get(setlistId)) ?? null,
+    [setlistId, db],
+  );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -183,6 +186,17 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
     updateSet,
     moveSet: move,
   });
+
+  if (existing === null) {
+    return (
+      <div className="flex flex-col items-center gap-4 p-page">
+        <p className="text-text-muted">{t("setlist.notFound")}</p>
+        <Link to={Router.Setlists()} className="link-accent">
+          {t("setlist.backToSetlists")}
+        </Link>
+      </div>
+    );
+  }
 
   if (!existing) {
     return (

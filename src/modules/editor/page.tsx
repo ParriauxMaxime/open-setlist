@@ -66,7 +66,10 @@ export function EditSongPage({ songId }: EditSongPageProps) {
   const { t } = useTranslation();
   const db = useDb();
   const profileId = useActiveProfileId();
-  const existing = useLiveQuery(() => (songId ? db.songs.get(songId) : undefined), [songId, db]);
+  const existing = useLiveQuery(
+    async () => (songId ? ((await db.songs.get(songId)) ?? null) : undefined),
+    [songId, db],
+  );
   const [songDbId] = useState(() => songId ?? createId());
   const [tagInput, setTagInput] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -253,6 +256,17 @@ export function EditSongPage({ songId }: EditSongPageProps) {
     },
     [reset],
   );
+
+  if (!isNew && existing === null) {
+    return (
+      <div className="flex flex-col items-center gap-4 p-page">
+        <p className="text-text-muted">{t("editor.notFound")}</p>
+        <Link to={Router.Catalog()} className="link-accent">
+          {t("editor.backToCatalog")}
+        </Link>
+      </div>
+    );
+  }
 
   // Wait for existing song to load before rendering the form
   if (!isNew && !existing) {
