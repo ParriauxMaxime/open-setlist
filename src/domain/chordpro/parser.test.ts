@@ -238,8 +238,8 @@ describe("Heuristic: multi-chord bracket expansion", () => {
 
   it("does NOT expand non-chord content like [x4]", () => {
     const segs = segments("[x4]");
-    // x4 is not a valid chord, so the bracket stays as-is
-    expect(segs[0].chord).toBe("x4");
+    // x4 is a repeat mark: kept as an annotation, not a chord
+    expect(segs[0].chord).toBe("*x4");
   });
 
   it("does NOT expand mixed content like [A maintenu x4]", () => {
@@ -571,6 +571,52 @@ describe("Chorus recall", () => {
   it("{chorus} closes an implicit section", () => {
     const s = sections(`${CHORUS}loose line\n{chorus}\nafter`);
     expect(s.map((sec) => sec.type)).toEqual(["chorus", "custom", "chorus", "custom"]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Directive sharing a line with content, repeat marks
+// ---------------------------------------------------------------------------
+
+describe("Directive after content on the same line", () => {
+  it("[x2] {eoc} keeps the repeat mark and closes the chorus", () => {
+    const s = sections("{soc}\n[G]la la\n[x2] {eoc}\nafter");
+    expect(s.map((sec) => sec.type)).toEqual(["chorus", "custom"]);
+    expect(segsOf(s[0].lines[1])).toEqual([{ chord: "*x2", text: "" }]);
+    expect(segsOf(s[1].lines[0])).toEqual([{ text: "after" }]);
+  });
+
+  it("{eoc} with a trailing space closes the chorus", () => {
+    const s = sections("{soc}\n[G]la la\n{eoc} \nafter");
+    expect(s.map((sec) => sec.type)).toEqual(["chorus", "custom"]);
+    expect(s[0].lines).toHaveLength(1);
+  });
+
+  it("lyrics before a directive are kept", () => {
+    const s = sections("{sov}\n[Am]last line {eov}\n{soc}\nchorus");
+    expect(s.map((sec) => sec.type)).toEqual(["verse", "chorus"]);
+    expect(segsOf(s[0].lines[0])).toEqual([{ chord: "Am", text: "last line" }]);
+  });
+
+  it("no directive syntax leaks into the lyric", () => {
+    const text = sections("{soc}\nla [x2] {eoc}")[0].lines.flatMap((l) =>
+      segsOf(l).map((seg) => seg.text),
+    );
+    expect(text.join("")).not.toContain("{");
+  });
+});
+
+describe("Repeat marks are annotations", () => {
+  it.each(["x3", "2x", "X4"])("[%s] becomes an annotation", (mark) => {
+    expect(segments(`la la [${mark}]`)).toEqual([
+      { text: "la la " },
+      { chord: `*${mark}`, text: "" },
+    ]);
+  });
+
+  it("chords and other bracket content are untouched", () => {
+    expect(segments("[Ax2]")[0].chord).toBe("Ax2");
+    expect(segments("[*N.C.]")[0].chord).toBe("*N.C.");
   });
 });
 

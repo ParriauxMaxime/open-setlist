@@ -1,10 +1,12 @@
-import type {
-  ChordProSong,
-  CommentLine,
-  LyricLine,
-  Section,
-  Segment,
-  SongLine,
+import {
+  annotationText,
+  type ChordProSong,
+  type CommentLine,
+  isAnnotation,
+  type LyricLine,
+  type Section,
+  type Segment,
+  type SongLine,
 } from "@domain/chordpro/parser";
 import { formatChord } from "@domain/chords/notation";
 import { transposeChord } from "@domain/chords/transpose";
@@ -25,7 +27,9 @@ export function PrintChart({ chart, transposition = 0 }: PrintChartProps) {
   const notation = useNotation();
   const songKey = chart.metadata.key;
   const chordLabel: ChordLabel = (c) =>
-    formatChord(transposition ? transposeChord(c, transposition, songKey) : c, notation);
+    isAnnotation(c)
+      ? annotationText(c)
+      : formatChord(transposition ? transposeChord(c, transposition, songKey) : c, notation);
   return (
     <div className="flex flex-col gap-[0.6em]">
       {chart.sections.map((section, i) => (

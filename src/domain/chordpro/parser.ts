@@ -71,6 +71,22 @@ export interface Segment {
 
 const DIRECTIVE_RE = /^\{(\w+)(?::\s*(.+))?\}$/;
 const CHORD_RE = /\[([^\]]+)\]/g;
+const TRAILING_DIRECTIVE_RE = /^(.*\S)\s*\{(\w+)(?::([^}]*))?\}$/;
+/** Repeat marks written as chords: `[x2]`, `[2x]`, `[X3]`. */
+const REPEAT_RE = /^(?:x\d+|\d+x)$/i;
+
+/** Bracket content shown as written, never transposed: `[*N.C.]`, `[*Coda]`. */
+export function isAnnotation(chord: string): boolean {
+  return chord.startsWith("*");
+}
+
+export function annotationText(chord: string): string {
+  return chord.slice(1);
+}
+
+function normalizeBracket(content: string): string {
+  return REPEAT_RE.test(content.trim()) ? `*${content.trim()}` : content;
+}
 
 /**
  * Matches a single chord token: root (A-G) + optional accidental (#/b)
@@ -181,6 +197,12 @@ const COMMENT_STYLES: Record<string, CommentStyle> = {
 
 const INLINE_COMMENT_RE = /\{(comment|c|comment_italic|ci|comment_box|cb|highlight):\s*([^}]*)\}/gi;
 const HIGHLIGHT_TOGGLE_RE = /\{(soh|eoh)\}/i;
+
+/** Directives that already read as part of a lyric line (comments, highlight toggles). */
+function isInlineDirective(name: string): boolean {
+  const lower = name.toLowerCase();
+  return lower in COMMENT_STYLES || lower === "soh" || lower === "eoh";
+}
 
 const CORE_TYPES = new Set(["verse", "chorus", "bridge"]);
 
@@ -366,92 +388,81 @@ export function parse(source: string): ChordProSong {
     chorus: lastChorus,
   });
 
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (line === "") {
-      if (currentSection) {
-        currentSection.lines.push({ kind: "lyric", segments: [{ text: "" }] });
+  const applyDirective = (name: string, value: string | undefined) => {
+    const lower = name.toLowerCase();
+
+    if (META_DIRECTIVES.has(lower)) {
+      const key =
+        lower === "t"
+          ? "title"
+          : lower === "st"
+            ? "subtitle"
+            : lower === "tempo"
+              ? "bpm"
+              : lower === "tech_notes"
+                ? "techNotes"
+                : lower;
+      metadata[key] = value ?? "";
+    } else if (COMMENT_STYLES[lower]) {
+      pushComment(makeComment(COMMENT_STYLES[lower], value));
+    } else if (lower === "soh" || lower === "eoh") {
+      highlightOn = lower === "soh";
+    } else if (lower === "define" || lower === "chord") {
+      const definition = value ? parseChordDefinition(value) : null;
+      if (definition) {
+        chordDefinitions.push(lower === "chord" ? { ...definition, inline: true } : definition);
       }
-      continue;
-    }
-
-    const directive = line.match(DIRECTIVE_RE);
-    if (directive) {
-      const [, name, value] = directive;
-      const lower = name.toLowerCase();
-
-      if (META_DIRECTIVES.has(lower)) {
-        const key =
-          lower === "t"
-            ? "title"
-            : lower === "st"
-              ? "subtitle"
-              : lower === "tempo"
-                ? "bpm"
-                : lower === "tech_notes"
-                  ? "techNotes"
-                  : lower;
-        metadata[key] = value ?? "";
-      } else if (COMMENT_STYLES[lower]) {
-        pushComment(makeComment(COMMENT_STYLES[lower], value));
-      } else if (lower === "soh" || lower === "eoh") {
-        highlightOn = lower === "soh";
-      } else if (lower === "define" || lower === "chord") {
-        const definition = value ? parseChordDefinition(value) : null;
-        if (definition) {
-          chordDefinitions.push(lower === "chord" ? { ...definition, inline: true } : definition);
-        }
-      } else if (lower === "chorus") {
-        const label = value?.trim() || undefined;
-        if (currentSection && !currentImplicit) {
-          currentSection.lines.push(recallLine(label));
-        } else {
-          openSection({
-            type: "chorus",
-            renderMode: "lyrics",
-            layer: "core",
-            lines: [recallLine(label)],
-          });
-          closeSection();
-        }
-      } else if (SECTION_START[lower]) {
-        const sectionType = SECTION_START[lower];
+    } else if (lower === "chorus") {
+      const label = value?.trim() || undefined;
+      if (currentSection && !currentImplicit) {
+        currentSection.lines.push(recallLine(label));
+      } else {
+        openSection({
+          type: "chorus",
+          renderMode: "lyrics",
+          layer: "core",
+          lines: [recallLine(label)],
+        });
+        closeSection();
+      }
+    } else if (SECTION_START[lower]) {
+      const sectionType = SECTION_START[lower];
+      const { label, instrument } = parseSectionArgs(value);
+      openSection({
+        type: sectionType,
+        label,
+        renderMode: getRenderMode(sectionType),
+        layer: getLayer(sectionType, instrument),
+        instrument,
+        lines: [],
+      });
+    } else if (SECTION_END.has(lower)) {
+      // An empty {soc}{eoc} pair means "chorus here" (Setlist Helper convention)
+      if (currentSection?.type === "chorus" && currentSection.lines.every(isBlank)) {
+        currentSection.lines = [recallLine(currentSection.label)];
+      }
+      closeSection();
+    } else {
+      // Check for custom environments: start_of_<name> / end_of_<name>
+      const customType = parseCustomStart(lower);
+      if (customType) {
         const { label, instrument } = parseSectionArgs(value);
         openSection({
-          type: sectionType,
+          type: customType,
           label,
-          renderMode: getRenderMode(sectionType),
-          layer: getLayer(sectionType, instrument),
+          renderMode: getRenderMode(customType),
+          layer: getLayer(customType, instrument),
           instrument,
           lines: [],
         });
-      } else if (SECTION_END.has(lower)) {
-        // An empty {soc}{eoc} pair means "chorus here" (Setlist Helper convention)
-        if (currentSection?.type === "chorus" && currentSection.lines.every(isBlank)) {
-          currentSection.lines = [recallLine(currentSection.label)];
-        }
+      } else if (isCustomEnd(lower)) {
         closeSection();
-      } else {
-        // Check for custom environments: start_of_<name> / end_of_<name>
-        const customType = parseCustomStart(lower);
-        if (customType) {
-          const { label, instrument } = parseSectionArgs(value);
-          openSection({
-            type: customType,
-            label,
-            renderMode: getRenderMode(customType),
-            layer: getLayer(customType, instrument),
-            instrument,
-            lines: [],
-          });
-        } else if (isCustomEnd(lower)) {
-          closeSection();
-        }
-        // Other directives ignored for now
       }
-      continue;
+      // Other directives ignored for now
     }
+  };
 
+  const pushContent = (raw: string, line: string) => {
     // Heuristic: bracket-based section labels like [Verse 1 :], [Intro 🎸:]
     const bracketSection = isBracketSection(line);
     if (bracketSection) {
@@ -463,7 +474,7 @@ export function parse(source: string): ChordProSong {
         layer: "core",
         lines: [],
       });
-      continue;
+      return;
     }
 
     // Keep leading whitespace in monospace (tab) sections so columns stay aligned
@@ -486,6 +497,33 @@ export function parse(source: string): ChordProSong {
       pushLine(lyric.line);
     }
     for (const comment of inlineComments) pushComment(comment);
+  };
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (line === "") {
+      if (currentSection) {
+        currentSection.lines.push({ kind: "lyric", segments: [{ text: "" }] });
+      }
+      continue;
+    }
+
+    const directive = line.match(DIRECTIVE_RE);
+    if (directive) {
+      applyDirective(directive[1], directive[2]);
+      continue;
+    }
+
+    // A directive closing a line of content, e.g. "[x2] {eoc}"
+    const trailing = raw.trimEnd().match(TRAILING_DIRECTIVE_RE);
+    if (trailing && !isInlineDirective(trailing[2])) {
+      const [, leading, name, value] = trailing;
+      pushContent(leading, leading.trim());
+      applyDirective(name, value?.trim() || undefined);
+      continue;
+    }
+
+    pushContent(raw, line);
   }
 
   // Close any unclosed section
@@ -509,7 +547,7 @@ function parseLine(raw: string): { segments: Segment[] } {
       }
     }
     // The chord attaches to the text after it
-    const chord = match[1];
+    const chord = normalizeBracket(match[1]);
     lastIndex = (match.index ?? 0) + match[0].length;
 
     // Look ahead for text until next chord or end

@@ -1,7 +1,9 @@
 import { hasChart } from "@domain/chordpro/has-chart";
 import {
+  annotationText,
   type ChorusRecallLine,
   type CommentLine,
+  isAnnotation,
   type LyricLine,
   parse,
   type Section,
@@ -58,6 +60,7 @@ export function ChordProView(props: ChordProViewProps) {
 function useChordDisplay(transposition = 0) {
   const { songKey, notation } = useContext(ChordDisplayContext);
   return (chord: string) => {
+    if (isAnnotation(chord)) return { played: chord, label: annotationText(chord) };
     const played = transposeChord(chord, transposition, songKey);
     return { played, label: formatChord(played, notation) };
   };
@@ -125,6 +128,10 @@ function ChordToken({
   className?: string;
 }) {
   const { played: displayChord, label } = useChordDisplay(transposition)(chord);
+  if (isAnnotation(chord)) {
+    const annotation = "text-perform-chord font-bold text-chord italic";
+    return <span className={className ? `${annotation} ${className}` : annotation}>{label}</span>;
+  }
   const base = `text-perform-chord font-bold text-chord${onChordTap ? " cursor-pointer" : ""}`;
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: role is conditionally "button" when interactive
