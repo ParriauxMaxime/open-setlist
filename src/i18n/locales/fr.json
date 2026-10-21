@@ -25,6 +25,7 @@
     "unknown": "Inconnu",
     "noResults": "Aucun résultat ne correspond à vos filtres.",
     "clearFilters": "Effacer les filtres",
+    "removeFilter": "Retirer le filtre {{filter}}",
     "noData": "Aucune donnée.",
     "all": "Tous",
     "filter": "Filtrer...",
@@ -43,6 +44,8 @@
     "title": "Chansons",
     "addSong": "+ Ajouter",
     "editSong": "Modifier {{title}}",
+    "filterByArtist": "N’afficher que {{artist}}",
+    "filterByTag": "N’afficher que les chansons avec le tag {{tag}}",
     "searchPlaceholder": "Rechercher par titre ou artiste...",
     "empty": "Aucune chanson. Ajoutez votre première chanson.",
     "colTitle": "Titre",
@@ -831,8 +834,8 @@
           "desc": "Outils \u2192 Qualit\u00e9 unifie les noms \u00e9crits de plusieurs fa\u00e7ons et nettoie les restes de Setlist Helper."
         },
         "bulkEdit": {
-          "title": "Plusieurs chansons \u00e0 la fois",
-          "desc": "S\u00e9lectionner, sur la page Chansons, change le statut ou ajoute un tag \u00e0 plusieurs chansons ensemble."
+          "title": "Raccourcis de la page Chansons",
+          "desc": "S\u00e9lectionner change le statut ou ajoute un tag \u00e0 plusieurs chansons ensemble. Touchez un artiste ou un tag pour filtrer dessus, / va \u00e0 la recherche."
         }
       }
     }

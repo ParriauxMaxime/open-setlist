@@ -25,6 +25,7 @@
     "unknown": "Unknown",
     "noResults": "No results match your filters.",
     "clearFilters": "Clear filters",
+    "removeFilter": "Remove the filter {{filter}}",
     "noData": "No data.",
     "all": "All",
     "filter": "Filter...",
@@ -43,6 +44,8 @@
     "title": "Songs",
     "addSong": "+ Add song",
     "editSong": "Edit {{title}}",
+    "filterByArtist": "Show only {{artist}}",
+    "filterByTag": "Show only the songs tagged {{tag}}",
     "searchPlaceholder": "Search by title or artist...",
     "empty": "No songs yet. Add your first song.",
     "colTitle": "Title",
@@ -831,8 +834,8 @@
           "desc": "Tools → Quality unifies names written several ways and cleans Setlist Helper leftovers."
         },
         "bulkEdit": {
-          "title": "Several songs at once",
-          "desc": "Select, on the Songs page, sets the status or adds a tag to many songs together."
+          "title": "Songs page shortcuts",
+          "desc": "Select sets the status or adds a tag to many songs together. Tap an artist or a tag to filter on it, / jumps to the search."
         }
       }
     }

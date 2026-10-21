@@ -173,14 +173,29 @@ export function CatalogPage() {
     }) as ColumnDef<Song, unknown>,
     col.accessor("artist", {
       header: t("catalog.colArtist"),
-      cell: (info) => <span className="text-text-muted">{info.getValue() ?? "—"}</span>,
+      cell: (info) => {
+        const artist = info.getValue();
+        if (!artist) return <span className="text-text-muted">—</span>;
+        return (
+          <button
+            type="button"
+            onClick={() => info.column.setFilterValue(artist)}
+            title={t("catalog.filterByArtist", { artist })}
+            className="block w-full px-3 py-3.5 text-left text-text-muted hover:text-accent md:py-2.5"
+          >
+            {artist}
+          </button>
+        );
+      },
       filterFn: (row, _columnId, filterValue) =>
         !filterValue || sameText(row.original.artist ?? "", filterValue as string),
       meta: {
         filterType: "select",
         filterOptions: uniqueArtists,
         hideFilterOnMobile: true,
-        className: "hidden md:table-cell",
+        quickFilter: true,
+        disableRowLink: (song) => Boolean(song.artist),
+        className: "hidden md:table-cell !p-0",
       },
     }) as ColumnDef<Song, unknown>,
     col.accessor("key", {
@@ -223,11 +238,17 @@ export function CatalogPage() {
       cell: (info) => {
         const tags = info.getValue();
         return tags.length > 0 ? (
-          <span className="flex flex-wrap gap-1">
+          <span className="flex flex-wrap gap-1 px-3 py-2.5">
             {tags.slice(0, 3).map((tag) => (
-              <Badge key={tag} tone="muted">
-                {tag}
-              </Badge>
+              <button
+                key={tag}
+                type="button"
+                onClick={() => info.column.setFilterValue(tag)}
+                title={t("catalog.filterByTag", { tag })}
+                className="rounded-sm hover:opacity-80"
+              >
+                <Badge tone="muted">{tag}</Badge>
+              </button>
             ))}
           </span>
         ) : null;
@@ -235,8 +256,10 @@ export function CatalogPage() {
       meta: {
         filterType: "select",
         filterOptions: uniqueTags,
-        className: "hidden lg:table-cell",
+        className: "hidden lg:table-cell !p-0",
         hideFilterOnMobile: true,
+        quickFilter: true,
+        disableRowLink: (song) => song.tags.length > 0,
       },
     }) as ColumnDef<Song, unknown>,
     col.display({
@@ -319,6 +342,7 @@ export function CatalogPage() {
             </Link>
           }
           initialColumnFilters={initialFilters}
+          searchShortcut
         />
       )}
     </div>

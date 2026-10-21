@@ -1,3 +1,4 @@
+import { isEditableTarget } from "@domain/perform-stage";
 import { fuzzyMatchAny } from "@domain/search";
 import { Link } from "@swan-io/chicane";
 import {
@@ -11,9 +12,11 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "./empty-state";
+
+const SEARCH_SHORTCUT_KEY = "/";
 
 // Extend column meta to describe filter UI
 declare module "@tanstack/react-table" {
@@ -24,8 +27,15 @@ declare module "@tanstack/react-table" {
     className?: string;
     hideFilterOnMobile?: boolean;
     /** Render the cell outside the row link (for cells with their own controls). */
-    disableRowLink?: boolean;
+    disableRowLink?: boolean | ((row: TData) => boolean);
+    /** Set from the cells: while set, a chip with × stands for the filter menu. */
+    quickFilter?: boolean;
   }
+}
+
+function cellLinkDisabled<T>(column: Column<T, unknown>, row: T): boolean {
+  const disable = column.columnDef.meta?.disableRowLink;
+  return typeof disable === "function" ? disable(row) : Boolean(disable);
 }
 
 interface DataTableProps<T> {
@@ -38,6 +48,8 @@ interface DataTableProps<T> {
   globalSearchFields?: (keyof T & string)[];
   searchPlaceholder?: string;
   initialColumnFilters?: ColumnFiltersState;
+  /** "/" anywhere on the page focuses the search box. */
+  searchShortcut?: boolean;
 }
 
 /** A searchable, sortable table in a card: the filters sit in a toolbar above it. */
@@ -50,8 +62,22 @@ export function DataTable<T>({
   globalSearchFields,
   searchPlaceholder,
   initialColumnFilters,
+  searchShortcut = false,
 }: DataTableProps<T>) {
   const { t } = useTranslation();
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!searchShortcut) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== SEARCH_SHORTCUT_KEY || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.defaultPrevented || isEditableTarget(e.target as HTMLElement | null)) return;
+      e.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [searchShortcut]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
@@ -109,22 +135,36 @@ export function DataTable<T>({
         <div className="flex flex-wrap items-center gap-2">
           {globalSearchFields && (
             <input
+              ref={searchRef}
               type="search"
               placeholder={searchPlaceholder ?? t("common.search")}
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape" && globalFilter) {
+                  e.preventDefault();
+                  setGlobalFilter("");
+                }
+              }}
               aria-label={searchPlaceholder ?? t("common.search")}
+              aria-keyshortcuts={searchShortcut ? SEARCH_SHORTCUT_KEY : undefined}
               className="field min-w-48 flex-1"
             />
           )}
-          {filterColumns.map((column) => (
-            <div
-              key={column.id}
-              className={column.columnDef.meta?.hideFilterOnMobile ? "hidden md:block" : undefined}
-            >
-              <ColumnFilter column={column} data={data} />
-            </div>
-          ))}
+          {filterColumns.map((column) =>
+            column.columnDef.meta?.quickFilter && column.getFilterValue() ? (
+              <FilterChip key={column.id} column={column} />
+            ) : (
+              <div
+                key={column.id}
+                className={
+                  column.columnDef.meta?.hideFilterOnMobile ? "hidden md:block" : undefined
+                }
+              >
+                <ColumnFilter column={column} data={data} />
+              </div>
+            ),
+          )}
           {filtering && (
             <button type="button" onClick={resetFilters} className="btn btn-ghost btn-sm">
               {t("common.clearFilters")}
@@ -208,7 +248,7 @@ export function DataTable<T>({
                   ].join(" ")}
                 >
                   {row.getVisibleCells().map((cell, ci) => {
-                    const cellHref = cell.column.columnDef.meta?.disableRowLink ? undefined : href;
+                    const cellHref = cellLinkDisabled(cell.column, row.original) ? undefined : href;
                     return (
                       <td
                         key={cell.id}
@@ -304,6 +344,27 @@ function SelectFilter<T>({ column, data }: { column: Column<T, unknown>; data: T
         </option>
       ))}
     </select>
+  );
+}
+
+/** A filter set from a cell, shown on every screen size, × removes it. */
+function FilterChip<T>({ column }: { column: Column<T, unknown> }) {
+  const { t } = useTranslation();
+  const value = String(column.getFilterValue());
+  const name = columnName(column);
+  const label = column.columnDef.meta?.filterOptionLabel?.(value) ?? value;
+  return (
+    <span className="inline-flex max-w-56 items-center gap-1 rounded-full border border-accent py-0.5 pl-3 pr-0.5 text-sm text-accent">
+      <span className="truncate">{name ? `${name}: ${label}` : label}</span>
+      <button
+        type="button"
+        onClick={() => column.setFilterValue(undefined)}
+        aria-label={t("common.removeFilter", { filter: label })}
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full hover:bg-accent-muted"
+      >
+        ×
+      </button>
+    </span>
   );
 }
 
