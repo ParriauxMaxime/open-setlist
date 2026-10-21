@@ -87,6 +87,7 @@
     "bpmLabel": "BPM",
     "durationLabel": "Durée",
     "durationInvalid": "Écrivez-la comme 3:45",
+    "songSection": "Morceau",
     "stageSection": "Sur scène",
     "filingSection": "Classement",
     "tagsLabel": "Tags",

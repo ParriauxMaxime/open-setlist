@@ -5,7 +5,7 @@ import { SCROLL_SPEED_MAX, SCROLL_SPEED_MIN } from "@domain/perform-stage";
 import type { SongDisplayPrefs } from "@domain/preferences";
 import type { SongFormValues } from "@domain/schemas/song";
 import { resolveSongStatus, SONG_STATUS_LIST } from "@domain/song-status";
-import { useId, useMemo } from "react";
+import { type ReactNode, useId, useMemo } from "react";
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Badge, Disclosure } from "../../design-system/components/card";
@@ -27,6 +27,8 @@ interface MetadataPanelProps {
   onRemoveTag: (tag: string) => void;
   isNew: boolean;
   songId?: string;
+  /** Narrow screens: every block folds, and opens when it holds something. */
+  stacked?: boolean;
   // Panel collapse (desktop drawer only)
   onTogglePanel?: () => void;
   // Display overrides
@@ -50,6 +52,7 @@ export function MetadataPanel({
   onAddTag,
   onRemoveTag,
   isNew,
+  stacked = false,
   onTogglePanel,
   overrides,
   overridesOpen,
@@ -64,6 +67,16 @@ export function MetadataPanel({
   const content = watch("content");
   const setupLine = useMemo(() => parse(content).setup, [content]);
   const links = watch("links");
+  const patches = watch("patches") ?? {};
+  const songCount = [
+    watch("title"),
+    watch("artist"),
+    watch("key"),
+    watch("bpm"),
+    watch("duration"),
+    watch("notes"),
+  ].filter(Boolean).length;
+  const soundCount = Object.values(patches).filter((code) => code.trim() !== "").length;
   const stageCount = [
     watch("transposition"),
     watch("scrollSpeed"),
@@ -90,7 +103,12 @@ export function MetadataPanel({
         </button>
       )}
 
-      <div className="flex flex-col gap-4 rounded-lg border border-border bg-bg-surface p-4">
+      <Section
+        stacked={stacked}
+        summary={t("editor.songSection")}
+        count={songCount}
+        open={isNew || songCount > 0}
+      >
         <Field label={t("editor.titleLabel")} error={errors.title?.message}>
           <Input {...register("title")} placeholder={t("editor.titlePlaceholder")} />
         </Field>
@@ -145,15 +163,21 @@ export function MetadataPanel({
             className="resize-y"
           />
         </Field>
-      </div>
+      </Section>
 
-      <div className="rounded-lg border border-border bg-bg-surface p-4">
+      <Section
+        stacked={stacked}
+        summary={t("midi.patches.label")}
+        count={soundCount}
+        open={soundCount > 0}
+      >
         <PatchesField
-          patches={watch("patches") ?? {}}
+          patches={patches}
           setupLine={setupLine}
-          onChange={(patches) => setValue("patches", patches, { shouldDirty: true })}
+          onChange={(next) => setValue("patches", next, { shouldDirty: true })}
+          bare={stacked}
         />
-      </div>
+      </Section>
 
       {/* What is set once, or rarely: folded away */}
       <Disclosure
@@ -163,6 +187,7 @@ export function MetadataPanel({
             {stageCount > 0 && <Badge tone="muted">{stageCount}</Badge>}
           </>
         }
+        defaultOpen={stacked && stageCount > 0}
       >
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
@@ -307,6 +332,7 @@ export function MetadataPanel({
             {filingCount > 0 && <Badge tone="muted">{filingCount}</Badge>}
           </>
         }
+        defaultOpen={stacked && filingCount > 0}
       >
         <div className="flex flex-col gap-4">
           <StatusControl
@@ -386,6 +412,38 @@ export function MetadataPanel({
         </div>
       </Disclosure>
     </div>
+  );
+}
+
+interface SectionProps {
+  stacked: boolean;
+  summary: string;
+  count: number;
+  open: boolean;
+  children: ReactNode;
+}
+
+/** A card in the side drawer; on narrow screens an accordion that opens when it holds something. */
+function Section({ stacked, summary, count, open, children }: SectionProps) {
+  if (!stacked) {
+    return (
+      <div className="flex flex-col gap-4 rounded-lg border border-border bg-bg-surface p-4">
+        {children}
+      </div>
+    );
+  }
+  return (
+    <Disclosure
+      summary={
+        <>
+          {summary}
+          {count > 0 && <Badge tone="muted">{count}</Badge>}
+        </>
+      }
+      defaultOpen={open}
+    >
+      <div className="flex flex-col gap-4">{children}</div>
+    </Disclosure>
   );
 }
 

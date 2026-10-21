@@ -12,10 +12,12 @@ interface PatchesFieldProps {
   /** The chart's setup line, where the band writes the keyboard's code. */
   setupLine: string | undefined;
   onChange: (patches: Record<string, string>) => void;
+  /** Without its own label: the surrounding accordion already names it. */
+  bare?: boolean;
 }
 
 /** One sound code per instrument, sent as MIDI when the song comes up on stage. */
-export function PatchesField({ patches, setupLine, onChange }: PatchesFieldProps) {
+export function PatchesField({ patches, setupLine, onChange, bare = false }: PatchesFieldProps) {
   const { t } = useTranslation();
   const chartCode = setupLine ? extractPatchCode(setupLine) : undefined;
   const used = Object.keys(patches);
@@ -44,8 +46,8 @@ export function PatchesField({ patches, setupLine, onChange }: PatchesFieldProps
     onChange(next);
   };
 
-  return (
-    <Field label={t("midi.patches.label")} error={firstError}>
+  const body = (
+    <>
       <div className="flex flex-col gap-1.5">
         {chartCode && (
           <p className="text-sm text-text-muted">
@@ -101,6 +103,24 @@ export function PatchesField({ patches, setupLine, onChange }: PatchesFieldProps
         )}
       </div>
       <p className="text-xs text-text-faint">{t("midi.patches.hint")}</p>
-    </Field>
+    </>
+  );
+
+  if (!bare) {
+    return (
+      <Field label={t("midi.patches.label")} error={firstError}>
+        {body}
+      </Field>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-1">
+      {body}
+      {firstError && (
+        <span role="alert" className="text-xs text-danger">
+          {t(firstError)}
+        </span>
+      )}
+    </div>
   );
 }

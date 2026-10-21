@@ -19,7 +19,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
-import { Disclosure } from "../design-system/components/card";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { EditorHeader } from "../design-system/components/editor-header";
 import { getPerformReturn, performReturnHref } from "../performance/components/perform-sidebar";
@@ -384,7 +383,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
       <form
         id="song-form"
         onSubmit={handleSubmit(onSubmit)}
-        className="grid flex-1 gap-4 transition-[grid-template-columns] duration-200 ease-in-out lg:min-h-0 lg:grid-cols-[1fr_var(--panel-w)]"
+        className="grid flex-1 content-start gap-4 transition-[grid-template-columns] duration-200 ease-in-out lg:min-h-0 lg:grid-cols-[1fr_var(--panel-w)] lg:content-stretch"
         style={{ "--panel-w": panelOpen ? "22rem" : "0fr" } as React.CSSProperties}
       >
         {/* Left: ChordPro editor (order-2 on mobile so metadata comes first) */}
@@ -429,10 +428,11 @@ export function EditSongPage({ songId }: EditSongPageProps) {
           <ChordProHelp />
         </div>
 
-        {/* Metadata — mobile: collapsible accordion | desktop: side drawer */}
+        {/* Metadata — mobile: one accordion per block | desktop: side drawer */}
         <div className="order-1 lg:order-none lg:min-h-0">
-          <Disclosure summary={t("editor.metadata")} defaultOpen={isNew} className="lg:hidden">
+          <div className="lg:hidden">
             <MetadataPanel
+              stacked
               register={register}
               errors={errors}
               watch={watch}
@@ -452,7 +452,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
               onClearOverrideKey={clearOverrideKey}
               onClearAllOverrides={clearAllOverrides}
             />
-          </Disclosure>
+          </div>
 
           {/* Desktop: collapsible drawer */}
           <div className="hidden lg:flex lg:h-full lg:flex-col">

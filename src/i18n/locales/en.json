@@ -87,6 +87,7 @@
     "bpmLabel": "BPM",
     "durationLabel": "Length",
     "durationInvalid": "Write it like 3:45",
+    "songSection": "Song",
     "stageSection": "On stage",
     "filingSection": "Filing",
     "tagsLabel": "Tags",
