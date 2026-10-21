@@ -1,6 +1,7 @@
 import {
   INSTRUMENT_PITCH,
   INSTRUMENT_PITCH_VALUES,
+  isCrewPart,
   isKnownPart,
   normalizePart,
   PART_VALUES,
@@ -76,6 +77,32 @@ describe("isKnownPart", () => {
     expect(isKnownPart("keys")).toBe(true);
     expect(isKnownPart("piano")).toBe(false);
     expect(isKnownPart("accordion")).toBe(false);
+  });
+});
+
+describe("isCrewPart", () => {
+  it.each([
+    "crew",
+    "Régie",
+    "regie",
+    "FOH",
+    "booth",
+    "son",
+    "Sound",
+    "Lumière",
+    "lights",
+    "tech",
+  ])("%s is the crew", (part) => {
+    expect(isCrewPart(part)).toBe(true);
+  });
+
+  it.each(["all", "guitar", "vocals", "accordion", ""])("%s is not the crew", (part) => {
+    expect(isCrewPart(part)).toBe(false);
+  });
+
+  it("is a known part in concert pitch", () => {
+    expect(isKnownPart("crew")).toBe(true);
+    expect(partPitch("régie")).toBe(INSTRUMENT_PITCH.concert);
   });
 });
 

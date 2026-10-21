@@ -302,7 +302,8 @@
       "baritone-sax": "Baritone sax",
       "horn": "Horn",
       "trombone": "Trombone",
-      "tuba": "Tuba"
+      "tuba": "Tuba",
+      "crew": "Crew (sound, light)"
     }
   },
   "performTempo": {

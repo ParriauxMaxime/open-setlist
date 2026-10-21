@@ -302,7 +302,8 @@
       "baritone-sax": "Sax baryton",
       "horn": "Cor",
       "trombone": "Trombone",
-      "tuba": "Tuba"
+      "tuba": "Tuba",
+      "crew": "Régie"
     }
   },
   "performTempo": {

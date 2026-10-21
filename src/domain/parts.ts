@@ -29,6 +29,8 @@ export const PART = {
   trombone: "trombone",
   tuba: "tuba",
   violin: "violin",
+  /** Sound and light engineers ("régie"): ▶ opens the crew view instead of the charts. */
+  crew: "crew",
 } as const;
 
 export type Part = (typeof PART)[keyof typeof PART];
@@ -57,6 +59,7 @@ export const PART_EMOJI: Record<Part, string> = {
   trombone: "🎺",
   tuba: "🎺",
   violin: "🎻",
+  crew: "🎛️",
 };
 
 // `for=` values stop at the first space: multi-word names are written with a dash
@@ -86,6 +89,20 @@ const PART_SYNONYMS: Record<Part, readonly string[]> = {
   trombone: ["trombones", "tbn", "trb"],
   tuba: ["tubas", "sousaphone", "soubassophone"],
   violin: ["violon", "fiddle", "🎻"],
+  crew: [
+    "régie",
+    "regie",
+    "foh",
+    "booth",
+    "son",
+    "sound",
+    "lumière",
+    "lumiere",
+    "light",
+    "lights",
+    "tech",
+    "🎛",
+  ],
 };
 
 const SYNONYM_TO_PART = new Map<string, Part>(
@@ -113,6 +130,11 @@ export function normalizePart(value: string): string {
 
 export function isKnownPart(value: string): value is Part {
   return (PART_VALUES as string[]).includes(value);
+}
+
+/** Sound or light engineer: "Régie", "FOH" and the like count too. */
+export function isCrewPart(part: string): boolean {
+  return normalizePart(part) === PART.crew;
 }
 
 /** De-duplicated parts: known ones first (in `PART` order), then the others alphabetically. */
@@ -167,6 +189,7 @@ const PART_PITCH: Record<Part, InstrumentPitch> = {
   trombone: "C",
   tuba: "C",
   violin: "C",
+  crew: "C",
 };
 
 /** Pitch of a part (synonyms accepted); unknown parts and "all" are in concert pitch. */

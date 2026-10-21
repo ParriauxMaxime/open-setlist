@@ -27,8 +27,15 @@ const NOTATION_SAMPLE: Record<Notation, string> = {
 /** Bm7 shows the difference: Sim7 in solfège, Hm7 in German. */
 const EXAMPLE_CHORDS = ["G", "Bm7", "C", "D7"];
 
-/** What most band members play; the other instruments are one tap further. */
-const COMMON_PARTS: Part[] = [PART.vocals, PART.guitar, PART.bass, PART.keys, PART.drums];
+/** What most band members play, and the sound and light crew; the rest is one tap further. */
+const COMMON_PARTS: Part[] = [
+  PART.vocals,
+  PART.guitar,
+  PART.bass,
+  PART.keys,
+  PART.drums,
+  PART.crew,
+];
 
 const LOCALES = [
   { value: "en", label: "English" },

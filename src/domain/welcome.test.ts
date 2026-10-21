@@ -1,6 +1,7 @@
 import en from "../i18n/locales/en.json";
 import fr from "../i18n/locales/fr.json";
-import { DEFAULT_PREFERENCES } from "./preferences";
+import { PART } from "./parts";
+import { DEFAULT_PREFERENCES, resolvePartView } from "./preferences";
 import {
   applyWelcomeChoices,
   chordInstrumentForPart,
@@ -95,6 +96,12 @@ describe("applyWelcomeChoices", () => {
   it("switches chord diagrams to the instrument played", () => {
     const prefs = applyWelcomeChoices(base, { part: "keys", notation: "german", locale: "en" });
     expect(prefs).toMatchObject({ partInstrument: "keys", favoriteInstrument: "piano" });
+  });
+
+  it("makes a crew member's device a crew device", () => {
+    const prefs = applyWelcomeChoices(base, { part: PART.crew, notation: "english", locale: "fr" });
+    expect(prefs.favoriteInstrument).toBe(base.favoriteInstrument);
+    expect(resolvePartView(prefs).instrument).toBe(PART.crew);
   });
 
   it("leaves My part alone when no instrument is picked", () => {
