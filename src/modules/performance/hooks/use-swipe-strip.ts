@@ -11,6 +11,13 @@ interface UseSwipeStripOptions {
   doubleTapScaleEnabled?: boolean;
 }
 
+const DEAD_ZONE = 8;
+const TAP_SLOP = 10;
+const DOUBLE_TAP_MS = 300;
+const COMMIT_RATIO = 0.25;
+const RUBBER_BAND = 0.2;
+
+/** Swipe (touch) or drag (mouse, pen) between songs; a tap toggles the chrome. */
 export function useSwipeStrip(options: UseSwipeStripOptions) {
   const {
     currentIndex,
@@ -26,12 +33,12 @@ export function useSwipeStrip(options: UseSwipeStripOptions) {
   const stripRef = useRef<HTMLDivElement>(null);
   const currentPanelRef = useRef<HTMLDivElement>(null);
   const animatingRef = useRef(false);
-  const lastTouchRef = useRef(0);
-  const touchState = useRef<{
+  const pointerState = useRef<{
     phase: "idle" | "pending" | "swiping" | "scrolling";
+    pointerId: number;
     startX: number;
     startY: number;
-  }>({ phase: "idle", startX: 0, startY: 0 });
+  }>({ phase: "idle", pointerId: -1, startX: 0, startY: 0 });
 
   // Keep mutable refs in sync for use inside imperative event handlers
   const currentIndexRef = useRef(currentIndex);
@@ -44,23 +51,18 @@ export function useSwipeStrip(options: UseSwipeStripOptions) {
   onDoubleTapScaleRef.current = onDoubleTapScale;
   const doubleTapScaleEnabledRef = useRef(doubleTapScaleEnabled);
   doubleTapScaleEnabledRef.current = doubleTapScaleEnabled;
-  const lastTapRef = useRef<{ time: number; zone: "left" | "right" | "other" } | null>(null);
+  const lastTapRef = useRef<{ time: number; zone: "left" | "right" } | null>(null);
   const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Animate strip to target, then commit index change
-  const commitSlide = useCallback(
-    (direction: "prev" | "next") => {
+  const slideTo = useCallback(
+    (direction: "prev" | "next", duration: string) => {
       const strip = stripRef.current;
       const container = containerRef.current;
-      if (!strip || !container || animatingRef.current) return;
-
-      const idx = currentIndexRef.current;
-      if (direction === "prev" && idx === 0) return;
-      if (direction === "next" && idx >= totalItemsRef.current - 1) return;
+      if (!strip || !container) return;
 
       animatingRef.current = true;
       const width = container.offsetWidth;
-      strip.style.transition = "transform 0.25s ease-out";
+      strip.style.transition = `transform ${duration} ease-out`;
       strip.style.transform = `translateX(${direction === "prev" ? width : -width}px)`;
 
       strip.addEventListener(
@@ -79,140 +81,145 @@ export function useSwipeStrip(options: UseSwipeStripOptions) {
     [setCurrentIndex],
   );
 
+  const commitSlide = useCallback(
+    (direction: "prev" | "next") => {
+      if (animatingRef.current) return;
+      const idx = currentIndexRef.current;
+      if (direction === "prev" && idx === 0) return;
+      if (direction === "next" && idx >= totalItemsRef.current - 1) return;
+      slideTo(direction, "0.25s");
+    },
+    [slideTo],
+  );
+
   const goPrev = useCallback(() => commitSlide("prev"), [commitSlide]);
   const goNext = useCallback(() => commitSlide("next"), [commitSlide]);
 
   // Keyboard / pedal navigation lives in usePerformKeys
 
-  // Imperative touch handlers on the container (passive: false for preventDefault)
   // biome-ignore lint/correctness/useExhaustiveDependencies: deps trigger re-attach when container DOM appears after loading
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    const onStart = (e: TouchEvent) => {
-      if (animatingRef.current) return;
-      lastTouchRef.current = Date.now();
-      const t = e.touches[0];
-      touchState.current = { phase: "pending", startX: t.clientX, startY: t.clientY };
+    const reset = () => {
+      pointerState.current = { phase: "idle", pointerId: -1, startX: 0, startY: 0 };
+    };
+
+    const snapBack = () => {
+      const strip = stripRef.current;
+      if (!strip) return;
+      strip.style.transition = "transform 0.2s ease-out";
+      strip.style.transform = "translateX(0)";
+    };
+
+    const handleTap = (e: PointerEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest("[data-chord-tap], button, a, input, textarea, select")) return;
+
+      if (!doubleTapScaleEnabledRef.current) {
+        onToggleChromeRef.current();
+        return;
+      }
+
+      const rect = el.getBoundingClientRect();
+      const zone = e.clientX < rect.left + rect.width / 2 ? "left" : "right";
+      const now = Date.now();
+      const prev = lastTapRef.current;
+      if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+      if (prev && now - prev.time < DOUBLE_TAP_MS && prev.zone === zone) {
+        onDoubleTapScaleRef.current?.(zone === "right" ? "up" : "down");
+        lastTapRef.current = null;
+        return;
+      }
+      lastTapRef.current = { time: now, zone };
+      tapTimerRef.current = setTimeout(() => {
+        onToggleChromeRef.current();
+        lastTapRef.current = null;
+      }, DOUBLE_TAP_MS);
+    };
+
+    const onDown = (e: PointerEvent) => {
+      if (!e.isPrimary || e.button !== 0 || animatingRef.current) return;
+      pointerState.current = {
+        phase: "pending",
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+      };
       if (stripRef.current) stripRef.current.style.transition = "none";
     };
 
-    const onMove = (e: TouchEvent) => {
-      const state = touchState.current;
+    const onMove = (e: PointerEvent) => {
+      const state = pointerState.current;
+      if (e.pointerId !== state.pointerId) return;
       if (state.phase === "idle" || state.phase === "scrolling") return;
 
-      const t = e.touches[0];
-      const dx = t.clientX - state.startX;
-      const dy = t.clientY - state.startY;
+      const dx = e.clientX - state.startX;
+      const dy = e.clientY - state.startY;
 
       if (state.phase === "pending") {
-        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+        if (Math.abs(dx) < DEAD_ZONE && Math.abs(dy) < DEAD_ZONE) return;
         if (Math.abs(dy) > Math.abs(dx)) {
           state.phase = "scrolling";
           return;
         }
         state.phase = "swiping";
+        // Captured only once swiping, so a plain click still reaches its button
+        el.setPointerCapture(e.pointerId);
       }
 
       e.preventDefault();
 
-      // Rubber band at edges
       const idx = currentIndexRef.current;
       let offset = dx;
-      if (dx > 0 && idx === 0) offset = dx * 0.2;
-      if (dx < 0 && idx >= totalItemsRef.current - 1) offset = dx * 0.2;
+      if (dx > 0 && idx === 0) offset = dx * RUBBER_BAND;
+      if (dx < 0 && idx >= totalItemsRef.current - 1) offset = dx * RUBBER_BAND;
 
       if (stripRef.current) {
         stripRef.current.style.transform = `translateX(${offset}px)`;
       }
     };
 
-    const onEnd = (e: TouchEvent) => {
-      const state = touchState.current;
-      const t = e.changedTouches[0];
-      const dx = t.clientX - state.startX;
-      const dy = t.clientY - state.startY;
+    const onUp = (e: PointerEvent) => {
+      const state = pointerState.current;
+      if (e.pointerId !== state.pointerId) return;
+      const dx = e.clientX - state.startX;
+      const dy = e.clientY - state.startY;
 
       if (state.phase === "swiping") {
-        const strip = stripRef.current;
-        if (!strip) return;
-
-        const width = el.offsetWidth;
-        const threshold = width * 0.25;
+        const threshold = el.offsetWidth * COMMIT_RATIO;
         const idx = currentIndexRef.current;
-
-        strip.style.transition = "transform 0.2s ease-out";
-
-        if (dx > threshold && idx > 0) {
-          // Commit prev
-          animatingRef.current = true;
-          strip.style.transform = `translateX(${width}px)`;
-          strip.addEventListener(
-            "transitionend",
-            () => {
-              strip.style.transition = "none";
-              strip.style.transform = "translateX(0)";
-              flushSync(() => setCurrentIndex((i) => i - 1));
-              animatingRef.current = false;
-            },
-            { once: true },
-          );
-        } else if (dx < -threshold && idx < totalItemsRef.current - 1) {
-          // Commit next
-          animatingRef.current = true;
-          strip.style.transform = `translateX(-${width}px)`;
-          strip.addEventListener(
-            "transitionend",
-            () => {
-              strip.style.transition = "none";
-              strip.style.transform = "translateX(0)";
-              flushSync(() => setCurrentIndex((i) => i + 1));
-              animatingRef.current = false;
-            },
-            { once: true },
-          );
-        } else {
-          // Snap back
-          strip.style.transform = "translateX(0)";
-        }
-      } else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
-        const target = e.target as HTMLElement;
-        if (!target.closest("[data-chord-tap], button")) {
-          const rect = el.getBoundingClientRect();
-          const zone: "left" | "right" = t.clientX < rect.left + rect.width / 2 ? "left" : "right";
-
-          if (doubleTapScaleEnabledRef.current) {
-            const now = Date.now();
-            const prev = lastTapRef.current;
-            if (prev && now - prev.time < 300 && prev.zone === zone) {
-              if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
-              onDoubleTapScaleRef.current?.(zone === "right" ? "up" : "down");
-              lastTapRef.current = null;
-            } else {
-              lastTapRef.current = { time: now, zone };
-              if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
-              tapTimerRef.current = setTimeout(() => {
-                onToggleChromeRef.current();
-                lastTapRef.current = null;
-              }, 300);
-            }
-          } else {
-            onToggleChromeRef.current();
-          }
-        }
+        if (dx > threshold && idx > 0) slideTo("prev", "0.2s");
+        else if (dx < -threshold && idx < totalItemsRef.current - 1) slideTo("next", "0.2s");
+        else snapBack();
+      } else if (state.phase === "pending" && Math.abs(dx) < TAP_SLOP && Math.abs(dy) < TAP_SLOP) {
+        handleTap(e);
       }
 
-      touchState.current = { phase: "idle", startX: 0, startY: 0 };
+      reset();
     };
 
-    el.addEventListener("touchstart", onStart, { passive: true });
-    el.addEventListener("touchmove", onMove, { passive: false });
-    el.addEventListener("touchend", onEnd, { passive: true });
+    // The browser took the gesture for a vertical scroll
+    const onCancel = (e: PointerEvent) => {
+      if (e.pointerId !== pointerState.current.pointerId) return;
+      if (pointerState.current.phase === "swiping") snapBack();
+      reset();
+    };
+
+    const onDragStart = (e: DragEvent) => e.preventDefault();
+
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onCancel);
+    el.addEventListener("dragstart", onDragStart);
     return () => {
-      el.removeEventListener("touchstart", onStart);
-      el.removeEventListener("touchmove", onMove);
-      el.removeEventListener("touchend", onEnd);
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", onUp);
+      el.removeEventListener("pointercancel", onCancel);
+      el.removeEventListener("dragstart", onDragStart);
       if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
     };
   }, [enabled]);
@@ -223,11 +230,5 @@ export function useSwipeStrip(options: UseSwipeStripOptions) {
     currentPanelRef.current?.scrollTo(0, 0);
   }, [currentIndex]);
 
-  // Desktop click — ignore if a touch just happened
-  const handleClick = useCallback(() => {
-    if (Date.now() - lastTouchRef.current < 400) return;
-    onToggleChromeRef.current();
-  }, []);
-
-  return { containerRef, stripRef, currentPanelRef, goPrev, goNext, handleClick };
+  return { containerRef, stripRef, currentPanelRef, goPrev, goNext };
 }

@@ -9,7 +9,6 @@ interface SongStripProps {
   containerRef: RefObject<HTMLDivElement | null>;
   stripRef: RefObject<HTMLDivElement | null>;
   currentPanelRef: RefObject<HTMLDivElement | null>;
-  onClick: () => void;
   prevSong: Song | undefined;
   currentSong: Song | undefined;
   nextSong: Song | undefined;
@@ -33,7 +32,6 @@ export function SongStrip({
   containerRef,
   stripRef,
   currentPanelRef,
-  onClick,
   prevSong,
   currentSong,
   nextSong,
@@ -67,14 +65,13 @@ export function SongStrip({
     );
   };
 
+  // pan-y: the browser scrolls vertically, useSwipeStrip handles horizontal drags and taps
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: swipe/tap handled imperatively
-    // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard handled by global keydown listener
-    <div ref={containerRef} className="min-h-0 flex-1 overflow-hidden" onClick={onClick}>
+    <div ref={containerRef} className="min-h-0 flex-1 touch-pan-y overflow-hidden">
       <div ref={stripRef} className="relative h-full">
         {/* Previous song panel */}
         <div
-          className="absolute inset-y-0 right-full w-full overflow-y-auto px-4 py-4"
+          className="absolute inset-y-0 right-full w-full touch-pan-y overflow-y-auto px-4 py-4"
           data-song-panel
           style={prevSongStyle}
         >
@@ -83,7 +80,7 @@ export function SongStrip({
         {/* Current song panel */}
         <div
           ref={currentPanelRef}
-          className="h-full overflow-y-auto px-4 py-4"
+          className="h-full touch-pan-y overflow-y-auto px-4 py-4"
           data-song-panel
           style={currentSongStyle}
         >
@@ -95,7 +92,7 @@ export function SongStrip({
         </div>
         {/* Next song panel */}
         <div
-          className="absolute inset-y-0 left-full w-full overflow-y-auto px-4 py-4"
+          className="absolute inset-y-0 left-full w-full touch-pan-y overflow-y-auto px-4 py-4"
           data-song-panel
           style={nextSongStyle}
         >

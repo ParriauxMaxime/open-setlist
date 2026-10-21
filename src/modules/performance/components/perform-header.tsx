@@ -17,8 +17,6 @@ import { TempoChip } from "./tempo-chip";
 interface PerformHeaderProps {
   visible: boolean;
   song: Song | undefined;
-  isFirst: boolean;
-  isLast: boolean;
   setlistId?: string;
   transposition: number;
   transposeOpen: boolean;
@@ -35,8 +33,6 @@ interface PerformHeaderProps {
   fullscreenSupported: boolean;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
-  onPrev: () => void;
-  onNext: () => void;
   onOpenSidebar: () => void;
   myPart: MyPart;
   hasMyNote: boolean;
@@ -54,8 +50,6 @@ interface PerformHeaderProps {
 export function PerformHeader({
   visible,
   song,
-  isFirst,
-  isLast,
   setlistId,
   transposition,
   transposeOpen,
@@ -71,8 +65,6 @@ export function PerformHeader({
   fullscreenSupported,
   isFullscreen,
   onToggleFullscreen,
-  onPrev,
-  onNext,
   onOpenSidebar,
   myPart,
   hasMyNote,
@@ -192,28 +184,7 @@ export function PerformHeader({
             </button>
           </div>
 
-          {/* Navigation + menu */}
           <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={onPrev}
-              disabled={isFirst}
-              className="perform-btn perform-nav"
-              aria-label={t("a11y.previousSong")}
-            >
-              ‹
-            </button>
-            <button
-              type="button"
-              onClick={onNext}
-              disabled={isLast}
-              className="perform-btn perform-nav"
-              aria-label={t("a11y.nextSong")}
-            >
-              ›
-            </button>
-
-            {/* 3-dot menu */}
             <div ref={menuRef} className="relative">
               <button
                 type="button"

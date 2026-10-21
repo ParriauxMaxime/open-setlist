@@ -217,7 +217,7 @@ body {
   border-top-color: transparent;
 }
 
-/* Large touch-friendly button for prev/next/menu */
+/* Large touch-friendly button for the stage bar */
 .perform-btn {
   display: inline-flex;
   align-items: center;
@@ -233,13 +233,6 @@ body {
     opacity 0.15s;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-}
-
-/* Phones swipe between songs; the arrows would squeeze the title out */
-@media (max-width: 639px) {
-  .perform-btn.perform-nav {
-    display: none;
-  }
 }
 
 .perform-btn:active {

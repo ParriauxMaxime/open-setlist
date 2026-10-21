@@ -243,9 +243,9 @@
     "editGroup": "Edit",
     "hints": {
       "tap": "Tap the screen: show or hide the buttons",
-      "swipe": "Swipe: next or previous song",
+      "swipe": "Swipe or drag sideways: next or previous song",
       "page": "Pedal, space or ↓: next page",
-      "doubleTap": "Double-tap the right edge to zoom in, the left edge to zoom out",
+      "doubleTap": "Double-tap or double-click the right edge to zoom in, the left edge to zoom out",
       "myPart": "⋮ → My part: only your instrument, or lyrics only",
       "more": "Everything else is in the ⋮ menu, under Gestures and shortcuts.",
       "dismiss": "Got it"
@@ -962,8 +962,6 @@
     "closeMenu": "Close menu",
     "navigationMenu": "Navigation menu",
     "moreOptions": "More options",
-    "previousSong": "Previous song",
-    "nextSong": "Next song",
     "close": "Close",
     "skipToContent": "Skip to main content",
     "dragToReorder": "Drag to reorder",

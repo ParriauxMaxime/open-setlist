@@ -243,9 +243,9 @@
     "editGroup": "Modifier",
     "hints": {
       "tap": "Touchez l'écran : affiche ou masque les boutons",
-      "swipe": "Glissez : morceau suivant ou précédent",
+      "swipe": "Glissez sur le côté, au doigt ou à la souris : morceau suivant ou précédent",
       "page": "Pédale, espace ou ↓ : page suivante",
-      "doubleTap": "Double-tap à droite pour zoomer, à gauche pour dézoomer",
+      "doubleTap": "Double-tap ou double-clic à droite pour zoomer, à gauche pour dézoomer",
       "myPart": "⋮ → Ma partie : votre instrument seul, ou les paroles seules",
       "more": "Tout le reste est dans le menu ⋮, sous Gestes et raccourcis.",
       "dismiss": "C'est parti"
@@ -962,8 +962,6 @@
     "closeMenu": "Fermer le menu",
     "navigationMenu": "Menu de navigation",
     "moreOptions": "Plus d'options",
-    "previousSong": "Chanson précédente",
-    "nextSong": "Chanson suivante",
     "close": "Fermer",
     "skipToContent": "Aller au contenu principal",
     "dragToReorder": "Glisser pour réordonner",

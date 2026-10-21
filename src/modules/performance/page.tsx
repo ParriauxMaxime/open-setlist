@@ -303,8 +303,6 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
       <PerformHeader
         visible={chromeVisible}
         song={nav.currentSong}
-        isFirst={nav.isFirst}
-        isLast={nav.isLast}
         setlistId={setlistId}
         transposition={nav.currentSong?.transposition ?? 0}
         transposeOpen={transposeOpen}
@@ -320,8 +318,6 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         fullscreenSupported={fullscreen.supported}
         isFullscreen={fullscreen.isFullscreen}
         onToggleFullscreen={fullscreen.toggle}
-        onPrev={swipe.goPrev}
-        onNext={swipe.goNext}
         onOpenSidebar={() => setSidebarOpen(true)}
         myPart={myPart}
         hasMyNote={!!(nav.currentSong && myNotes[nav.currentSong.id])}
@@ -348,7 +344,6 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         containerRef={swipe.containerRef}
         stripRef={swipe.stripRef}
         currentPanelRef={swipe.currentPanelRef}
-        onClick={swipe.handleClick}
         prevSong={nav.prevSong}
         currentSong={nav.currentSong}
         nextSong={nav.nextSong}
