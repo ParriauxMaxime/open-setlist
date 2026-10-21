@@ -15,7 +15,7 @@ import { type AppPreferences, appPreferencesSchema } from "./preferences";
 import { type Profile, useProfiles } from "./profiles";
 
 /** Bump with each What's new list: returning users see the card once per version. */
-export const WHATS_NEW_VERSION = "2026-10-20";
+export const WHATS_NEW_VERSION = "2026-10-21";
 
 export const WELCOME = {
   firstRun: "first-run",
@@ -116,11 +116,11 @@ export interface WhatsNewItem {
 }
 
 export const WHATS_NEW_ITEMS: readonly WhatsNewItem[] = [
+  { id: "crewView" },
+  { id: "phoneStage", target: WHATS_NEW_TARGET.perform },
   { id: "stageFirst", target: WHATS_NEW_TARGET.perform },
   { id: "setlistsAtAGlance" },
   { id: "songEditor", target: WHATS_NEW_TARGET.newSong },
-  { id: "tidyCatalog" },
-  { id: "bulkEdit" },
 ];
 
 /** Setlist the "Try it" links open: the last edited, else the earliest gig (demo order). */

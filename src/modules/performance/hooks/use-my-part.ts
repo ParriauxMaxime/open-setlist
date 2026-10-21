@@ -1,7 +1,7 @@
 import { useDb } from "@db/provider";
 import { parse } from "@domain/chordpro/parser";
 import { type PartView, songParts } from "@domain/chordpro/visibility";
-import { ALL_PARTS, normalizePart, sortParts } from "@domain/parts";
+import { ALL_PARTS, normalizePart, PART, sortParts } from "@domain/parts";
 import { loadPreferences, resolvePartView, savePartView } from "@domain/preferences";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -9,7 +9,10 @@ import type { FlatEntry } from "./use-setlist-navigation";
 
 export interface MyPart {
   view: PartView;
-  /** Parts to pick from (besides "all"): `for=` values of the songs + favourite instrument. */
+  /**
+   * Parts to pick from (besides "all"): `for=` values of the songs, favourite instrument, and
+   * Régie, so a crew member who skipped the first-run setup can still switch this device.
+   */
   choices: string[];
   update: (patch: Partial<PartView>) => void;
 }
@@ -29,7 +32,10 @@ export function useMyPart(flatSongs: FlatEntry[]): MyPart {
   }, [songIds, db]);
 
   const choices = useMemo(
-    () => sortParts([...(found ?? []), favorite, view.instrument].filter((p) => p !== ALL_PARTS)),
+    () =>
+      sortParts(
+        [...(found ?? []), favorite, view.instrument, PART.crew].filter((p) => p !== ALL_PARTS),
+      ),
     [found, favorite, view.instrument],
   );
 

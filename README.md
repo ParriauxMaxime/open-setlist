@@ -40,7 +40,8 @@ Every setlist app is closed-source, locked to a platform, or paywalled — and t
 - **Print / PDF** — big-font stage sheet for the floor, chart booklet as a paper backup
 
 **On stage**
-- **Performance mode** — swipe or pedal between songs, per-song zoom, chord diagrams on tap
+- **Performance mode** — swipe, drag or pedal between songs, per-song zoom, chord diagrams on tap
+- **Crew view** — sound and light engineers pick the Régie part: the running order with tech notes (per song, or per setlist for one gig), follows the band, counts down to the end
 - **Hands-free** — Bluetooth pedals (Page Up/Down, arrows, space), per-song auto-scroll, screen stays awake, fullscreen
 - **Tempo** — BPM pulse, click and count-in; next song's key, tempo and setup shown in the footer
 

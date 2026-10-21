@@ -873,6 +873,14 @@
       "tryIt": "Try it",
       "close": "Close What's new",
       "items": {
+        "crewView": {
+          "title": "A view for sound and light",
+          "desc": "Pick Crew as your part (on stage, ⋮ → My part): ▶ on a setlist then lists the songs with their tech notes, follows the band and counts down to the end. 🔧 in the setlist editor gives a song a note for that gig."
+        },
+        "phoneStage": {
+          "title": "A roomier stage bar on phones",
+          "desc": "Tap the song's title for its tools: key, tempo, transpose, scroll speed. Swipe or drag between songs, the ‹ › arrows are gone."
+        },
         "stageFirst": {
           "title": "Songs open on stage",
           "desc": "Tap a song to read it, ✎ to edit it. On stage, ⋮ → Edit this song comes back to the same song after Save."
@@ -884,14 +892,6 @@
         "songEditor": {
           "title": "A song editor that shows the chart",
           "desc": "The chart reads as on stage while you type, Verse, Chorus and Chord buttons write the braces. Leaving unsaved asks first, Cmd/Ctrl+S saves."
-        },
-        "tidyCatalog": {
-          "title": "A tidier catalog",
-          "desc": "Tools → Quality unifies names written several ways and cleans Setlist Helper leftovers. Import files sums up what came in and asks before replacing a song you have."
-        },
-        "bulkEdit": {
-          "title": "Songs page shortcuts",
-          "desc": "Select sets the status or adds a tag to many songs together. Tap an artist or a tag to filter on it, / jumps to the search."
         }
       }
     }

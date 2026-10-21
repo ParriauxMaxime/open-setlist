@@ -39,4 +39,4 @@ Last update: 2026-10-09. Health: `yarn lint`, `typecheck`, `test` (800+ tests), 
 1. **Validate with a real band** — import the real catalog, one rehearsal, one gig; collect friction.
 2. **Inline `{chord}` diagrams** and finger numbers on diagrams (`{define}` and bass/ukulele shapes are done).
 3. **Per-line sync merge** for charts edited by two members at once.
-4. **Setlist sharing for non-members** (sound engineer): read-only link or PDF.
+4. ~~**Setlist sharing for non-members** (sound engineer)~~ — done differently: the crew joins through sync, picks the Régie part, and ▶ opens a crew view (tech notes, follow the leader, countdown), see `src/modules/crew/`.

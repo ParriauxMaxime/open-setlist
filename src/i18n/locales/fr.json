@@ -873,6 +873,14 @@
       "tryIt": "Essayer",
       "close": "Fermer les nouveaut\u00e9s",
       "items": {
+        "crewView": {
+          "title": "Une vue pour la régie",
+          "desc": "Choisissez Régie comme partie (sur scène, ⋮ → Ma partie) : ▶ sur une setlist liste alors les morceaux avec leurs notes techniques, suit le groupe et décompte jusqu’à la fin. 🔧 dans l’éditeur de setlist donne à un morceau une note pour cette date."
+        },
+        "phoneStage": {
+          "title": "Une barre de scène plus aérée sur téléphone",
+          "desc": "Touchez le titre du morceau pour ses outils : tonalité, tempo, transposition, vitesse de défilement. Glissez au doigt ou à la souris d’un morceau à l’autre, les flèches ‹ › disparaissent."
+        },
         "stageFirst": {
           "title": "Les chansons s\u2019ouvrent sur sc\u00e8ne",
           "desc": "Touchez une chanson pour la lire, \u270e pour la modifier. Sur sc\u00e8ne, \u22ee \u2192 Modifier cette chanson revient au m\u00eame morceau apr\u00e8s Enregistrer."
@@ -884,14 +892,6 @@
         "songEditor": {
           "title": "Un \u00e9diteur qui montre la grille",
           "desc": "La grille s\u2019affiche comme sur sc\u00e8ne pendant la saisie, les boutons Couplet, Refrain et Accord \u00e9crivent les accolades. Quitter sans enregistrer demande d\u2019abord, Cmd/Ctrl+S enregistre."
-        },
-        "tidyCatalog": {
-          "title": "Un catalogue plus propre",
-          "desc": "Outils \u2192 Qualit\u00e9 unifie les noms \u00e9crits de plusieurs fa\u00e7ons et nettoie les restes de Setlist Helper. Importer des fichiers résume ce qui est entré et demande avant de remplacer une chanson que vous avez."
-        },
-        "bulkEdit": {
-          "title": "Raccourcis de la page Chansons",
-          "desc": "S\u00e9lectionner change le statut ou ajoute un tag \u00e0 plusieurs chansons ensemble. Touchez un artiste ou un tag pour filtrer dessus, / va \u00e0 la recherche."
         }
       }
     }
