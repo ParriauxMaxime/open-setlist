@@ -16,7 +16,7 @@
 
 ### MIDI on stage
 - When the song changes on stage, each musician's device can tell their gear to change sound: Ableton on the stage computer, a drum pad, a pedalboard. Off by default, set up per device in Settings → Stage: MIDI.
-- The keyboard's sound code is read from the first line of the chart (`17A`); other instruments get a code per song in the editor (Sounds).
+- Each instrument gets a code per song in the editor (Sounds). The keyboard's number goes to Ableton as one note on channel 15, which Live maps to anything; the chart's `17A` code is shown as a reminder, never sent.
 - Two ways out, neither through the internet: the companion program on the stage computer over the band's Wi-Fi router, or Bluetooth MIDI.
 - Follow the leader is back as an option, relayed by the companion program on the local network.
 - Over Wi-Fi, the MIDI chip turns green once Ableton has echoed the sound change: the companion program listens on a second `Open Setlist` port, turn it on in Live as an output with Remote. Its status page shows the answers.

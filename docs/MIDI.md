@@ -13,24 +13,23 @@ A device sends only the code of its own instrument (Settings → Stage: MIDI →
 
 | Instrument | Default channel | Default message |
 |---|---|---|
-| Keys | 1 | One Control Change: CC 20 = the song's number, 0 to 127 |
+| Keys | 15 | One short note: pitch = the song's number, 0 (C-2) to 127 (G8), velocity 100, Note Off right after |
 | Guitar, bass, vocals | 2, 3, 4 | Program Change (preset 1 = program 0), preceded by Bank Select (CC 0) when the code has a letter |
 | Drums | 10 | same |
 | Others | 5 | same |
 
-Channel, message type and controller numbers can be changed per device (MIDI details).
+Channel, message type and controller numbers can be changed per device (MIDI details). A third type, one Control Change (CC 20 by default) whose value is the song's number, stays available for gear that maps CC values.
 
-A song whose keyboard number is `111`, on channel 16, sends exactly `[0xBF, 20, 111]`. Over Control Change only a number from 0 to 127 is sent: a lettered code or `128` sends nothing, and the song editor flags it.
+A song whose keyboard number is `111`, on channel 15, sends exactly `[0x9E, 111, 100]` then `[0x8E, 111, 0]`. As a note or over Control Change only a number from 0 to 127 is sent: a lettered code or `128` sends nothing, and the song editor flags it. The editor and the Try it field show the note name next to the number (`60` → `C3`).
 
-One Control Change for the keyboard because Ableton Live maps notes and CC but not Program Change, and a Live mapping listens to one controller only. CC 20 is one of the undefined controllers (20 to 31): Bank Select (CC 0 and 32) could clash with other gear on the chain. 256 sounds would need two controllers and logic in Live; the band does not need more than 128 for now.
+Notes for the keyboard because Ableton Live maps a note to anything (a clip, a scene, a button, a chain selector) while a CC value only moves the parameter it is mapped to, and the band wants Live to switch sounds, not one parameter. With 128 pitches, 128 songs. Channel 15 so the keyboard's own notes, on channel 1, never trigger a song; channel 16 is spare for a second bank. The chart's `17A` code is never sent.
 
 ### In Ableton Live
 
 1. Preferences → Link, Tempo & MIDI → MIDI Ports. On the input `Open Setlist` (on Windows, the loopMIDI port), turn **Remote** on. On the keyboard's own input, turn **Remote** off, keep **Track** on: Live maps the last message it receives on any Remote input, and the keyboard's pitch wheel would win.
-2. One Instrument Rack on the keyboard track, one chain per sound. Show the chain list and its **Chain** zone editor; give each chain a zone of one value: the sound's number (chain for song number 111: zone 111 to 111).
-3. Press **MIDI** (Cmd+M / Ctrl+M) for MIDI Map mode and click the rack's chain selector (or a Macro mapped to it, range 0 to 127).
-4. In Open Setlist, Settings → Stage: MIDI → Try it: type a number and press **Send**. Live's status bar must read `MIDI Ch1 #20` (or the device's channel), not `Pitch Bend`. Leave MIDI Map mode.
-5. In MIDI Map mode, the mapping list on the left shows each mapping: delete any `Pitch Bend` one made by mistake.
+2. Press **MIDI** (Cmd+M / Ctrl+M) for MIDI Map mode and click what the song must trigger: a clip or scene launch button, or a rack chain selector.
+3. In Open Setlist, Settings → Stage: MIDI → Try it: type the song's number and press **Send**. Live's status bar must read the note on the device's channel (`C3 Ch15` for `60`), not `Pitch Bend`. Leave MIDI Map mode.
+4. Repeat per song. In MIDI Map mode, the mapping list on the left shows each mapping: delete any `Pitch Bend` one made by mistake.
 
 Layers inside a sound (strings on top of the piano) are not Open Setlist's job: the synth sends those to Ableton itself.
 
@@ -70,5 +69,5 @@ The QR code opens `…/settings?companion=<address>`: the app stores the address
 - Chrome on Android asking for and honouring the local network permission.
 - The Bluetooth transport end to end: no tablet has connected to the companion yet.
 - The companion program at run time on Windows (never started on a real one) and on Linux with a real ALSA sequencer and BlueZ.
-- Ableton Live mapping CC 20 to a chain selector and switching chains, and echoing it on the `Open Setlist` output. On 2026-10-19 Live reported a pitch bend instead; the companion writes exactly the Control Change it receives (`cargo test --test loopback -- --ignored`, macOS), so the pitch bend most likely came from another Remote input, such as the keyboard's wheel. The Ableton steps above are not tried on Live yet.
+- Ableton Live mapping a note per song and echoing anything on the `Open Setlist` output. Tried on 2026-10-20 by the keyboard player with CC 20: Live would not map CC values to anything but one instrument parameter, from the app and from the keyboard alike, hence the switch to notes on 2026-10-21. On 2026-10-19 Live had reported a pitch bend; the companion writes exactly what it receives (`cargo test --test loopback -- --ignored`, macOS), so the pitch bend most likely came from another Remote input, such as the keyboard's wheel. With notes, Live likely echoes nothing on the output, so the MIDI chip would stay blue.
 - Whether the drum pad and the pedalboard accept Program Change, and on which channel.

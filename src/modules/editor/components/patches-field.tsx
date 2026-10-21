@@ -1,4 +1,11 @@
-import { extractPatchCode, MIDI_ENCODING, parsePatchCode, patchMessages } from "@domain/midi/patch";
+import {
+  extractPatchCode,
+  fitsSevenBits,
+  MIDI_ENCODING,
+  noteName,
+  parsePatchCode,
+  patchMessages,
+} from "@domain/midi/patch";
 import { DEFAULT_MIDI_SETTINGS, patchEncoding } from "@domain/midi/settings";
 import { PART, PART_VALUES } from "@domain/parts";
 import { useTranslation } from "react-i18next";
@@ -28,11 +35,17 @@ export function PatchesField({ patches, setupLine, onChange }: PatchesFieldProps
     const parsed = parsePatchCode(patches[part]);
     const encoding = encodingOf(part);
     if (patches[part].trim() === "" || (parsed && patchMessages(parsed, encoding))) return;
+    if (encoding.encoding === MIDI_ENCODING.note) return "midi.errors.badNote";
     return encoding.encoding === MIDI_ENCODING.controlChange
       ? "midi.errors.badCc"
       : "midi.errors.badCode";
   };
   const firstError = used.map(error).find(Boolean);
+  const noteOf = (part: string): string | undefined => {
+    if (encodingOf(part).encoding !== MIDI_ENCODING.note) return;
+    const parsed = parsePatchCode(patches[part]);
+    return parsed && fitsSevenBits(parsed) ? noteName(parsed.value) : undefined;
+  };
 
   const set = (part: string, code: string) => onChange({ ...patches, [part]: code });
   const remove = (part: string) => {
@@ -63,6 +76,7 @@ export function PatchesField({ patches, setupLine, onChange }: PatchesFieldProps
               aria-invalid={Boolean(error(part))}
               className="max-w-24"
             />
+            {noteOf(part) && <span className="text-xs text-text-faint">{noteOf(part)}</span>}
             <button
               type="button"
               onClick={() => remove(part)}

@@ -1001,7 +1001,7 @@
     },
     "test": {
       "label": "Try it",
-      "desc": "Sends a sound code now. In Ableton's MIDI Map mode, click the chain selector then Send to map it.",
+      "desc": "Sends a sound code now. In Ableton's MIDI Map mode, click what the song must switch, then Send to map it.",
       "code": "Sound code",
       "send": "Send",
       "busy": "Sending…",
@@ -1013,9 +1013,11 @@
       "channel": "Channel (1 to 16)",
       "encoding": "Message type",
       "encodings": {
-        "cc": "Control Change (Ableton)",
+        "note": "Note (Ableton)",
+        "cc": "Control Change",
         "program": "Program Change (hardware)"
       },
+      "noteHint": "One short note per song: its number is the pitch, 0 is C-2 and 127 is G8. Keep a channel no instrument plays on, so the keyboard's own notes never clash.",
       "cc": "Controller (CC)",
       "ccHint": "Its value is the song's number, 0 to 127. Pick an undefined one, 20 to 31: other gear ignores them.",
       "bankSelectCc": "CC for the letter (Bank Select)",
@@ -1026,6 +1028,7 @@
       "badAddress": "This is not an address. Example: 192.168.1.20",
       "badCode": "This is not a sound code. Examples: 17A, or 12.",
       "badCc": "Over a Control Change, a sound is a number from 0 to 127.",
+      "badNote": "As a note, a sound is a number from 0 to 127.",
       "unreachable": "No answer. Check that the companion program is running, that both devices are on the same Wi-Fi, and that Chrome may reach the local network.",
       "noMidiOutput": "The companion program runs but has no MIDI output. Look at its window on the computer.",
       "rejected": "The companion program refused the message.",
@@ -1057,7 +1060,7 @@
       "add": "Add an instrument…",
       "code": "Sound code for {{part}}",
       "remove": "Remove {{part}}",
-      "hint": "The preset each instrument switches to for this song: a number, 0 to 127 for the keyboard into Ableton."
+      "hint": "The preset each instrument switches to for this song: a number, 0 to 127 for the keyboard into Ableton, sent as one note."
     }
   },
   "attachments": {

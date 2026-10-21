@@ -1,8 +1,10 @@
 import { BLE_STATE, connectBleMidi, disconnectBleMidi } from "@domain/midi/bluetooth";
 import { COMPANION_ERROR, CompanionError, probeCompanion } from "@domain/midi/companion";
 import {
+  fitsSevenBits,
   MIDI_ENCODING,
   MIDI_ENCODING_VALUES,
+  noteName,
   parsePatchCode,
   patchMessages,
 } from "@domain/midi/patch";
@@ -50,6 +52,10 @@ export function StageMidiSettings() {
   const [testCode, setTestCode] = useState("");
   const overWifi = settings.transport === MIDI_TRANSPORT.wifi;
   const overCc = encoding.encoding === MIDI_ENCODING.controlChange;
+  const overNotes = encoding.encoding === MIDI_ENCODING.note;
+  const testParsed = parsePatchCode(testCode);
+  const testNote =
+    overNotes && testParsed && fitsSevenBits(testParsed) ? noteName(testParsed.value) : undefined;
 
   const describe = (err: unknown): string => {
     const kind = err instanceof CompanionError ? err.kind : COMPANION_ERROR.unreachable;
@@ -214,6 +220,7 @@ export function StageMidiSettings() {
               aria-label={t("midi.test.code")}
               className="max-w-28"
             />
+            {testNote && <span className="text-xs text-text-faint">{testNote}</span>}
             <button type="button" onClick={sendTest} className="btn btn-outline">
               {t("midi.test.send")}
             </button>
@@ -248,7 +255,9 @@ export function StageMidiSettings() {
             ))}
           </Select>
         </CardRow>
-        {overCc ? (
+        {overNotes ? (
+          <p className="px-4 py-3 text-xs text-text-faint">{t("midi.advanced.noteHint")}</p>
+        ) : overCc ? (
           <CardRow label={t("midi.advanced.cc")} description={t("midi.advanced.ccHint")}>
             <Input
               type="number"

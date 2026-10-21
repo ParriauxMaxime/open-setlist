@@ -4,6 +4,7 @@ import {
   defaultMidiEncoding,
   extractPatchCode,
   MIDI_ENCODING,
+  noteName,
   type PatchEncoding,
   parsePatchCode,
   patchMessages,
@@ -18,6 +19,7 @@ const ABLETON: PatchEncoding = {
   programFromOne: true,
 };
 const HARDWARE: PatchEncoding = { ...ABLETON, channel: 10, encoding: MIDI_ENCODING.program };
+const LIVE_NOTES: PatchEncoding = { ...ABLETON, channel: 15, encoding: MIDI_ENCODING.note };
 
 function messages(code: string, encoding: PatchEncoding): number[][] | null {
   const parsed = parsePatchCode(code);
@@ -74,6 +76,22 @@ describe("songPatch", () => {
 });
 
 describe("patchMessages", () => {
+  it("plays the song's number as one short note on the keyboard's spare channel", () => {
+    expect(messages("0", LIVE_NOTES)).toEqual([
+      [0x9e, 0, 100],
+      [0x8e, 0, 0],
+    ]);
+    expect(messages("127", { ...LIVE_NOTES, channel: 16 })).toEqual([
+      [0x9f, 127, 100],
+      [0x8f, 127, 0],
+    ]);
+  });
+
+  it("sends nothing as a note that one pitch cannot carry", () => {
+    expect(messages("128", LIVE_NOTES)).toBeNull();
+    expect(messages("17A", LIVE_NOTES)).toBeNull();
+  });
+
   it("sends the song's number to Ableton as one Control Change, CC 20 by default", () => {
     expect(messages("0", ABLETON)).toEqual([[0xb0, 20, 0]]);
     expect(messages("111", { ...ABLETON, channel: 16 })).toEqual([[0xbf, 20, 111]]);
@@ -117,16 +135,25 @@ describe("patchMessages", () => {
 });
 
 describe("role defaults", () => {
-  it("gives each role its own channel, drums on 10", () => {
-    expect(defaultMidiChannel("keys")).toBe(1);
+  it("gives each role its own channel, drums on 10, the keyboard off its own keys", () => {
+    expect(defaultMidiChannel("keys")).toBe(15);
     expect(defaultMidiChannel("guitar")).toBe(2);
     expect(defaultMidiChannel("drums")).toBe(10);
     expect(defaultMidiChannel("trumpet")).toBe(5);
   });
 
-  it("talks CC to Ableton for the keyboard, Program Change to the rest", () => {
-    expect(defaultMidiEncoding("keys")).toBe(MIDI_ENCODING.controlChange);
+  it("plays notes to Ableton for the keyboard, Program Change to the rest", () => {
+    expect(defaultMidiEncoding("keys")).toBe(MIDI_ENCODING.note);
     expect(defaultMidiEncoding("drums")).toBe(MIDI_ENCODING.program);
+  });
+});
+
+describe("noteName", () => {
+  it("names notes the way Live shows them", () => {
+    expect(noteName(0)).toBe("C-2");
+    expect(noteName(60)).toBe("C3");
+    expect(noteName(61)).toBe("C#3");
+    expect(noteName(127)).toBe("G8");
   });
 });
 

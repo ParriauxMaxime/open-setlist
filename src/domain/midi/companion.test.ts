@@ -334,13 +334,13 @@ describe("MIDI settings", () => {
     );
     const settings = loadMidiSettings();
     expect(settings).toMatchObject({ enabled: true, channel: 16, cc: 20 });
-    expect(patchEncoding(settings).encoding).toBe(MIDI_ENCODING.controlChange);
+    expect(patchEncoding(settings).encoding).toBe(MIDI_ENCODING.note);
   });
 
   it("derives channel and message type from the role unless set", () => {
     expect(patchEncoding({ ...DEFAULT_MIDI_SETTINGS, role: "keys" })).toMatchObject({
-      channel: 1,
-      encoding: MIDI_ENCODING.controlChange,
+      channel: 15,
+      encoding: MIDI_ENCODING.note,
     });
     expect(patchEncoding({ ...DEFAULT_MIDI_SETTINGS, role: "drums" })).toMatchObject({
       channel: 10,
