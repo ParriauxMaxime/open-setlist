@@ -34,6 +34,8 @@ interface ChordProViewProps {
   note?: ReactNode;
   /** Lets the empty state link to the editor. */
   songId?: string;
+  /** Called when leaving for the editor from the empty state. */
+  onEditSong?: () => void;
 }
 
 /** Song key (for key-aware transposed spelling) and device notation, read by every chord. */
@@ -73,6 +75,7 @@ function ChordProBody({
   partView,
   note,
   songId,
+  onEditSong,
 }: ChordProViewProps) {
   const { t } = useTranslation();
   const song = useMemo(() => parse(content), [content]);
@@ -84,7 +87,7 @@ function ChordProBody({
         {note}
         <p className="text-text-faint italic">{t("perform.noChart")}</p>
         {songId && (
-          <Link to={Router.SongEdit({ songId })} className="btn btn-primary">
+          <Link to={Router.SongEdit({ songId })} onClick={onEditSong} className="btn btn-primary">
             {t("perform.addChart")}
           </Link>
         )}

@@ -362,6 +362,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         partView={myPart.view}
         renderNote={renderNote}
         scoreFor={scoreFor}
+        onEditSong={storeEditReturn}
       />
       {activeChord && (
         <ChordPopover

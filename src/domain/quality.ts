@@ -9,6 +9,9 @@ export interface QualityFlag {
   category: "metadata" | "structure" | "chords";
 }
 
+/** From this score a song is in good shape; below it, it needs attention. */
+export const QUALITY_GOOD_SCORE = 80;
+
 export interface QualityReport {
   score: number;
   flags: QualityFlag[];

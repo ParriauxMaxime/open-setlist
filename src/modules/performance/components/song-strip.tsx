@@ -25,6 +25,8 @@ interface SongStripProps {
   renderNote?: (song: Song) => ReactNode;
   /** The sheet music to show instead of the chart, if any. */
   scoreFor?: (song: Song) => SongAttachment | undefined;
+  /** Leaving for the song's editor, whose Save comes back here. */
+  onEditSong?: () => void;
 }
 
 export function SongStrip({
@@ -45,6 +47,7 @@ export function SongStrip({
   partView,
   renderNote,
   scoreFor,
+  onEditSong,
 }: SongStripProps) {
   const { t } = useTranslation();
 
@@ -59,6 +62,7 @@ export function SongStrip({
         note={renderNote?.(song)}
         onChordTap={onChordTap}
         partView={partView}
+        onEditSong={onEditSong}
       />
     );
   };

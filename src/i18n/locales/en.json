@@ -527,7 +527,7 @@
     "title": "Song quality",
     "average": "average score",
     "empty": "No songs in catalog.",
-    "allGood": "All good: every song is complete and nothing needs tidying.",
+    "allGood": "All good: every song is in good shape and nothing needs tidying.",
     "points": "{{earned}}/{{total}} pts",
     "weight_one": "{{count}} pt",
     "weight_other": "{{count}} pts",

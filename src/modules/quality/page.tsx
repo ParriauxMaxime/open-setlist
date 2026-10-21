@@ -2,7 +2,12 @@ import { useDb } from "@db/provider";
 import type { Song } from "@db/song";
 import { findSpellingIssues } from "@domain/catalog-checks";
 import { needsCleanup } from "@domain/chordpro/cleanup";
-import { analyzeSong, type QualityFlag, type QualityReport } from "@domain/quality";
+import {
+  analyzeSong,
+  QUALITY_GOOD_SCORE,
+  type QualityFlag,
+  type QualityReport,
+} from "@domain/quality";
 import { Link } from "@swan-io/chicane";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo, useState } from "react";
@@ -23,13 +28,13 @@ interface ScoredSong {
 const CATEGORIES: QualityFlag["category"][] = ["metadata", "structure", "chords"];
 
 function scoreTone(score: number) {
-  if (score >= 80) return "success" as const;
+  if (score >= QUALITY_GOOD_SCORE) return "success" as const;
   if (score >= 50) return "warning" as const;
   return "danger" as const;
 }
 
 function scoreColor(score: number): string {
-  if (score >= 80) return "text-success";
+  if (score >= QUALITY_GOOD_SCORE) return "text-success";
   if (score >= 50) return "text-warning";
   return "text-danger";
 }
@@ -82,7 +87,7 @@ export function QualityPage() {
   const allGood = useMemo(
     () =>
       scored.length > 0 &&
-      scored.every((s) => s.report.score === 100) &&
+      scored.every((s) => s.report.score >= QUALITY_GOOD_SCORE) &&
       findSpellingIssues(songs).length === 0 &&
       !songs.some(needsCleanup),
     [scored, songs],

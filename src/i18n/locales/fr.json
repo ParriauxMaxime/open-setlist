@@ -527,7 +527,7 @@
     "title": "Qualité des chansons",
     "average": "score moyen",
     "empty": "Aucune chanson dans le catalogue.",
-    "allGood": "Tout est en ordre : chaque chanson est complète et rien n’est à nettoyer.",
+    "allGood": "Tout est en ordre : chaque chanson est en bon état et rien n’est à nettoyer.",
     "points": "{{earned}}/{{total}} pts",
     "weight_one": "{{count}} pt",
     "weight_other": "{{count}} pts",
