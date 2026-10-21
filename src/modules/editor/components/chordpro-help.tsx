@@ -9,7 +9,7 @@ export function ChordProHelp() {
   const [open, setOpen] = useStoredFlag(OPEN_KEY);
 
   return (
-    <Disclosure summary={t("editor.chordproHelp")} defaultOpen={open} onOpenChange={setOpen}>
+    <Disclosure summary={t("editor.chordproHelp")} defaultOpen={open} onOpenChange={setOpen} flat>
       <div className="text-sm text-text-muted">
         <Section title={t("editor.help.metadata")}>
           <Code>{`{title: Song Name}`}</Code>

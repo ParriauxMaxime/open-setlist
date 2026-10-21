@@ -62,7 +62,7 @@ export function AttachmentsPanel({ attachments, onChange }: AttachmentsPanelProp
         </>
       }
       defaultOpen={attachments.length > 0}
-      className="mb-3"
+      flat
     >
       <div className="flex flex-col gap-2">
         {attachments.map((attachment) => (

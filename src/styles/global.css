@@ -491,7 +491,9 @@ body {
   display: none;
 }
 
-.accordion > summary::after {
+/* `.accordion-toggle`: the same chevron on a button that folds a block by hand */
+.accordion > summary::after,
+.accordion-toggle::after {
   content: "";
   display: inline-block;
   width: 0.5rem;
@@ -503,7 +505,8 @@ body {
   transition: transform 0.2s ease-out;
 }
 
-.accordion[open] > summary::after {
+.accordion[open] > summary::after,
+.accordion-toggle[aria-expanded="true"]::after {
   transform: rotate(45deg);
 }
 

@@ -119,6 +119,8 @@ interface DisclosureProps {
   defaultOpen?: boolean;
   /** `note`: the yellow of personal notes. */
   tone?: "default" | "note";
+  /** No card: a heading row over a rule, for a stack of sections on a narrow screen. */
+  flat?: boolean;
   className?: string;
   onOpenChange?: (open: boolean) => void;
   children: ReactNode;
@@ -129,24 +131,28 @@ export function Disclosure({
   summary,
   defaultOpen,
   tone = "default",
+  flat = false,
   className = "",
   onOpenChange,
   children,
 }: DisclosureProps) {
   const border = tone === "note" ? "border-note-border" : "border-border";
   const background = tone === "note" ? "bg-note-bg" : "bg-bg-surface";
+  const frame = flat ? "border-t border-border" : `rounded-lg border ${border} ${background}`;
   return (
     <details
       open={defaultOpen || undefined}
       onToggle={onOpenChange ? (e) => onOpenChange(e.currentTarget.open) : undefined}
-      className={`accordion group rounded-lg border ${border} ${background} ${className}`}
+      className={`accordion group ${frame} ${className}`}
     >
-      <summary className="flex cursor-pointer select-none items-center gap-2 px-4 py-3 text-sm font-medium">
+      <summary
+        className={`flex cursor-pointer select-none items-center gap-2 py-3 text-sm font-medium ${flat ? "" : "px-4"}`}
+      >
         {summary}
       </summary>
       <div className="accordion-content">
         <div className="accordion-inner">
-          <div className={`border-t px-4 py-3 ${border}`}>{children}</div>
+          <div className={flat ? "pb-4" : `border-t px-4 py-3 ${border}`}>{children}</div>
         </div>
       </div>
     </details>

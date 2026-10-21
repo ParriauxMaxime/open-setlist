@@ -319,6 +319,7 @@ export function MetadataPanel({
 
   const filingSection = (
     <Disclosure
+      flat={stacked}
       summary={
         <>
           {t("editor.filingSection")}
@@ -404,12 +405,12 @@ export function MetadataPanel({
 
   if (stacked) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col">
         {part !== "filing" && (
           <>
             {songSection}
             {afterSong}
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-bg-surface px-4 py-3">
+            <div className="flex items-center justify-between gap-3 border-t border-border py-2">
               <span className="flex items-center gap-2 text-sm font-medium">
                 {t("editor.transpositionLabel")}
                 {transposition ? (
@@ -430,6 +431,7 @@ export function MetadataPanel({
               </div>
             </div>
             <Disclosure
+              flat
               summary={
                 <>
                   {t("editor.autoScrollSection")}
@@ -472,6 +474,7 @@ export function MetadataPanel({
             </Disclosure>
             {!isNew && (
               <Disclosure
+                flat
                 summary={
                   <>
                     {t("editor.displayOverrides")}
@@ -529,7 +532,7 @@ interface SectionProps {
   children: ReactNode;
 }
 
-/** A card in the side drawer; on narrow screens an accordion that opens when it holds something. */
+/** A card in the side drawer; on narrow screens a flat fold that opens when it holds something. */
 function Section({ stacked, summary, count, open, children }: SectionProps) {
   if (!stacked) {
     return (
@@ -540,6 +543,7 @@ function Section({ stacked, summary, count, open, children }: SectionProps) {
   }
   return (
     <Disclosure
+      flat
       summary={
         <>
           {summary}

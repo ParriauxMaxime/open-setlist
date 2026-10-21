@@ -7,13 +7,15 @@ import { Textarea } from "../../design-system/components/form";
 interface MyNotePanelProps {
   profileId: string;
   songId: string;
+  /** Narrow screens: a section among the others, not a card. */
+  flat?: boolean;
 }
 
 /**
  * The musician's private note for this song, saved on this device as they type. Rendered
  * outside the song form on purpose: it never dirties the form nor ends up in the synced song.
  */
-export function MyNotePanel({ profileId, songId }: MyNotePanelProps) {
+export function MyNotePanel({ profileId, songId, flat }: MyNotePanelProps) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState(() => getMyNote(profileId, songId));
   // Open on load only when there is a note to read; then the user decides
@@ -24,7 +26,8 @@ export function MyNotePanel({ profileId, songId }: MyNotePanelProps) {
       summary={<span className="text-note-text">📌 {t("myNotes.panelTitle")}</span>}
       defaultOpen={openOnLoad}
       tone="note"
-      className="mb-3"
+      flat={flat}
+      className={flat ? "" : "mb-3"}
     >
       <div className="flex flex-col gap-1.5">
         <Textarea

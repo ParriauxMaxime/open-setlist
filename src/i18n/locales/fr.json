@@ -71,6 +71,7 @@
     "edit": "Modifier",
     "insert": {
       "label": "Insérer dans la grille",
+      "menu": "Insérer",
       "verse": "Couplet",
       "chorus": "Refrain",
       "bridge": "Pont",

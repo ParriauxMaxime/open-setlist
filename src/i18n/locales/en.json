@@ -71,6 +71,7 @@
     "edit": "Edit",
     "insert": {
       "label": "Insert in the chart",
+      "menu": "Insert",
       "verse": "Verse",
       "chorus": "Chorus",
       "bridge": "Bridge",

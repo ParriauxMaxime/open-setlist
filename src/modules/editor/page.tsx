@@ -368,11 +368,11 @@ export function EditSongPage({ songId }: EditSongPageProps) {
       <form
         id="song-form"
         onSubmit={handleSubmit(onSubmit)}
-        className="grid flex-1 content-start gap-4 transition-[grid-template-columns] duration-200 ease-in-out xl:min-h-0 xl:grid-cols-[1fr_var(--panel-w)] xl:content-stretch"
+        className="grid flex-1 content-start transition-[grid-template-columns] duration-200 ease-in-out xl:min-h-0 xl:grid-cols-[1fr_var(--panel-w)] xl:gap-4 xl:content-stretch"
         style={{ "--panel-w": panelOpen ? "22rem" : "0fr" } as React.CSSProperties}
       >
         {/* Left: ChordPro editor (order-2 on mobile so metadata comes first) */}
-        <div className="relative order-2 flex min-h-0 flex-col gap-4 xl:order-none">
+        <div className="relative order-2 flex min-h-0 flex-col xl:order-none xl:gap-4">
           {/* Floating re-open button when drawer is collapsed (desktop only) */}
           {!panelOpen && (
             <button
@@ -385,19 +385,18 @@ export function EditSongPage({ songId }: EditSongPageProps) {
               {t("editor.metadata")} ◂
             </button>
           )}
-          {/* Narrow screens: the chart folds like the other blocks, and shows whole */}
-          <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-border bg-bg-surface xl:border-0 xl:bg-transparent">
+          {/* Narrow screens: the chart folds like the other sections, and shows whole */}
+          <div className="flex min-h-0 flex-1 flex-col border-t border-border xl:border-0">
             <button
               type="button"
               onClick={() => setChartOpen((o) => !o)}
               aria-expanded={chartOpen}
-              className="flex w-full cursor-pointer items-center gap-2 px-4 py-3 text-left text-sm font-medium xl:hidden"
+              className="accordion-toggle flex w-full cursor-pointer items-center gap-2 py-3 text-left text-sm font-medium xl:hidden"
             >
-              <span className="flex-1">{t("editor.chartSection")}</span>
-              <span className="text-xs text-text-faint">{chartOpen ? "▾" : "▸"}</span>
+              {t("editor.chartSection")}
             </button>
             <div
-              className={`${chartOpen ? "flex" : "hidden xl:flex"} min-h-0 flex-1 flex-col gap-4 border-t border-border p-4 xl:grid xl:grid-cols-2 xl:border-0 xl:p-0`}
+              className={`${chartOpen ? "flex" : "hidden xl:flex"} min-h-0 flex-1 flex-col gap-4 pb-4 xl:grid xl:grid-cols-2 xl:pb-0`}
             >
               <div className={`${previewing ? "hidden" : "flex"} min-h-0 flex-1 flex-col xl:flex`}>
                 <ChordProEditor
@@ -437,7 +436,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
             {...panelProps}
             stacked
             part="top"
-            afterSong={!isNew && <MyNotePanel profileId={profileId} songId={songDbId} />}
+            afterSong={!isNew && <MyNotePanel profileId={profileId} songId={songDbId} flat />}
           />
         </div>
         {/* ...and the filing after it */}
