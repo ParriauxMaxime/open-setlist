@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { defineConfig } from "@rspack/cli";
@@ -11,6 +12,18 @@ import {
 } from "./src/domain/pwa/precache";
 
 loadEnv();
+
+/** The commit the app is built from, so the companion's page can tell a device left behind. */
+function appVersion(): string {
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7);
+  try {
+    return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] })
+      .toString()
+      .trim();
+  } catch {
+    return "dev";
+  }
+}
 
 /**
  * Prepends the precache manifest (every emitted asset + a per-build version) to sw.js.
@@ -126,6 +139,7 @@ export default defineConfig((_env, argv) => {
       new rspack.DefinePlugin({
         __BASE_PATH__: JSON.stringify(process.env.BASE_PATH || "/"),
         __GOOGLE_CLIENT_ID__: JSON.stringify(process.env.GOOGLE_CLIENT_ID || ""),
+        __APP_VERSION__: JSON.stringify(appVersion()),
       }),
       isDev && new RefreshPlugin(),
       !isDev && new PrecacheManifestPlugin(),

@@ -8,7 +8,8 @@
     "chords": "Chords",
     "tuner": "Tuner",
     "tools": "Tools",
-    "quality": "Quality"
+    "quality": "Quality",
+    "companion": "Companion"
   },
   "common": {
     "loading": "Loading...",
@@ -1111,5 +1112,30 @@
     "unreadable": "This PDF cannot be read.",
     "viewTitle": "View",
     "chartView": "Chart"
+  },
+  "companion": {
+    "title": "Companion",
+    "subtitle": "The program on the stage computer: who is connected, and the MIDI that goes through it.",
+    "notPaired": "No companion program paired with this device yet. Pair it in",
+    "link": {
+      "off": "Not paired",
+      "paused": "Disconnected",
+      "connecting": "Connecting…",
+      "connected": "Connected",
+      "lost": "Connection lost"
+    },
+    "connection": {
+      "heading": "Connection",
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "forget": "Forget",
+      "hint": {
+        "off": "",
+        "paused": "This device no longer reports to the companion. MIDI and follow the leader still use it.",
+        "connecting": "Looking for the companion on the Wi-Fi.",
+        "connected": "This device reports to the companion every 5 seconds.",
+        "lost": "No answer. Trying again: check that the program runs and that this device is on the band's Wi-Fi."
+      }
+    }
   }
 }

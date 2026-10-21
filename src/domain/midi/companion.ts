@@ -11,11 +11,11 @@
  */
 
 import { z } from "zod";
-import { otherScheme } from "./settings";
+import { FOLLOW_MODE, type FollowMode, MIDI_TRANSPORT, otherScheme } from "./settings";
 
 const REQUEST_TIMEOUT_MS = 4000;
-/** Seconds the companion holds a position request open before answering "nothing new". */
-const POSITION_WAIT_SECONDS = 25;
+/** Seconds the companion holds a position, devices or log request open before answering "nothing new". */
+export const LONG_POLL_SECONDS = 25;
 /** How long a sound change may take to be echoed by the gear before it counts as not taken. */
 export const FEEDBACK_WAIT_SECONDS = 5;
 
@@ -41,7 +41,11 @@ const statusSchema = z.object({
   version: z.string(),
   name: z.string(),
   midiOut: z.string().nullable(),
+  /** The input the gear answers on. */
+  midiIn: z.string().nullable().optional(),
   bluetooth: z.string().optional(),
+  /** Seconds since the program started. */
+  uptime: z.number().optional(),
 });
 
 export type CompanionStatus = z.infer<typeof statusSchema>;
@@ -65,6 +69,109 @@ const feedbackSchema = z.object({
 });
 
 export type CompanionFeedback = z.infer<typeof feedbackSchema>;
+
+export const MIDI_LAST_SEND = {
+  ok: "ok",
+  failed: "failed",
+  /** Nothing sent since the app started. */
+  none: "none",
+} as const;
+
+export type MidiLastSend = (typeof MIDI_LAST_SEND)[keyof typeof MIDI_LAST_SEND];
+
+export const MIDI_LAST_SEND_VALUES: MidiLastSend[] = Object.values(MIDI_LAST_SEND);
+
+/** The transport a device reports: `off` when it sends no MIDI. */
+export const PRESENCE_TRANSPORT = { ...MIDI_TRANSPORT, off: "off" } as const;
+
+export type PresenceTransport = (typeof PRESENCE_TRANSPORT)[keyof typeof PRESENCE_TRANSPORT];
+
+export const PRESENCE_TRANSPORT_VALUES: PresenceTransport[] = Object.values(PRESENCE_TRANSPORT);
+
+/** What a device tells the companion every few seconds, for the Companion page. */
+export interface DevicePresence {
+  id: string;
+  /** "My name", else its part and platform. */
+  name: string;
+  part: string;
+  platform: string;
+  appVersion: string;
+  /** Route name: `Catalog`, `Perform`... */
+  page: string;
+  /** On stage: the setlist, the song and its slot. */
+  setlistId?: string;
+  songId?: string;
+  index?: number;
+  follow: FollowMode;
+  midi: { transport: PresenceTransport; lastSend: MidiLastSend; channel?: number };
+}
+
+const presenceReplySchema = z.object({ seq: z.number().int() });
+
+// Lenient: a device on another version of the app may report more, or less
+const deviceSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  part: z.string().catch(""),
+  platform: z.string().catch(""),
+  appVersion: z.string().catch(""),
+  page: z.string().catch(""),
+  setlistId: z.string().optional().catch(undefined),
+  songId: z.string().optional().catch(undefined),
+  index: z.number().int().nonnegative().optional().catch(undefined),
+  follow: z.string().catch(FOLLOW_MODE.off),
+  midi: z
+    .object({
+      transport: z.string().catch(PRESENCE_TRANSPORT.off),
+      lastSend: z.string().catch(MIDI_LAST_SEND.none),
+      channel: z.number().int().optional().catch(undefined),
+    })
+    .catch({ transport: PRESENCE_TRANSPORT.off, lastSend: MIDI_LAST_SEND.none }),
+  /** The device's address on the band's network, as the companion saw it. */
+  address: z.string().nullable().catch(null),
+  /** Companion clock, ms. */
+  lastSeen: z.number().catch(0),
+});
+
+/** A device the companion has heard from in the last 15 s. */
+export type CompanionDevice = z.infer<typeof deviceSchema>;
+
+const devicesReplySchema = z.object({
+  seq: z.number().int(),
+  /** Companion clock, ms: `lastSeen` is compared with it, not with this device's clock. */
+  now: z.number(),
+  devices: z.array(z.unknown()).transform((devices) =>
+    devices.flatMap((device) => {
+      const parsed = deviceSchema.safeParse(device);
+      return parsed.success ? [parsed.data] : [];
+    }),
+  ),
+});
+
+export type CompanionDevices = z.infer<typeof devicesReplySchema>;
+
+const logEntrySchema = z.object({
+  seq: z.number().int(),
+  /** Companion clock, ms. */
+  at: z.number(),
+  /** The label the device gave (its part), else its address. */
+  from: z.string(),
+  /** The device's id, from versions of the app that send it. */
+  device: z.string().optional(),
+  via: z.string(),
+  messages: z.array(z.array(z.number().int())),
+});
+
+export type CompanionLogEntry = z.infer<typeof logEntrySchema>;
+
+const logReplySchema = z.object({
+  seq: z.number().int(),
+  now: z.number(),
+  /** Newest first. */
+  entries: z.array(logEntrySchema),
+});
+
+export type CompanionLog = z.infer<typeof logReplySchema>;
 
 export interface CompanionOptions {
   fetch?: typeof fetch;
@@ -128,10 +235,10 @@ export async function probeCompanion(
 export async function sendToCompanion(
   base: string,
   messages: number[][],
-  from: string,
+  sender: { from: string; device?: string },
   options: CompanionOptions = {},
 ): Promise<void> {
-  const res = await request(`${base}/midi`, post({ messages, from }), options);
+  const res = await request(`${base}/midi`, post({ messages, ...sender }), options);
   if (res.status === 503) throw new CompanionError(COMPANION_ERROR.noMidiOutput);
   if (!res.ok) throw new CompanionError(COMPANION_ERROR.rejected);
 }
@@ -146,37 +253,79 @@ export async function postPosition(
 }
 
 /**
- * The leader's position once it is newer than `after`; null when nothing changed during
- * the wait. Call it in a loop with the returned `seq`.
+ * The reply to a request the companion holds until it has something newer than `after`;
+ * null when nothing changed during the wait. Call it in a loop with the returned `seq`.
  */
-export async function waitPosition(
+async function waitNewer<T>(
+  url: string,
+  after: number,
+  waitSeconds: number,
+  schema: z.ZodType<T>,
+  options: CompanionOptions,
+): Promise<T | null> {
+  const res = await request(
+    `${url}?after=${after}&wait=${waitSeconds}`,
+    {},
+    options,
+    (waitSeconds + 5) * 1000,
+  );
+  if (res.status === 204) return null;
+  const reply = schema.safeParse(await res.json().catch(() => null));
+  if (!res.ok || !reply.success) throw new CompanionError(COMPANION_ERROR.rejected);
+  return reply.data;
+}
+
+/** The leader's position once it is newer than `after`; null when nothing changed. */
+export function waitPosition(
   base: string,
   after: number,
   options: CompanionOptions = {},
 ): Promise<{ seq: number; position: StagePosition } | null> {
-  const url = `${base}/position?after=${after}&wait=${POSITION_WAIT_SECONDS}`;
-  const res = await request(url, {}, options, (POSITION_WAIT_SECONDS + 5) * 1000);
-  if (res.status === 204) return null;
-  const reply = positionReplySchema.safeParse(await res.json().catch(() => null));
-  if (!res.ok || !reply.success) throw new CompanionError(COMPANION_ERROR.rejected);
-  return reply.data;
+  return waitNewer(`${base}/position`, after, LONG_POLL_SECONDS, positionReplySchema, options);
 }
 
 /**
  * What the gear has answered on the companion's MIDI input once it is newer than `after`;
  * null when nothing came during the wait. Ableton echoes the value of each mapped control.
  */
-export async function waitFeedback(
+export function waitFeedback(
   base: string,
   after: number,
   options: CompanionOptions = {},
 ): Promise<CompanionFeedback | null> {
-  const url = `${base}/feedback?after=${after}&wait=${FEEDBACK_WAIT_SECONDS}`;
-  const res = await request(url, {}, options, (FEEDBACK_WAIT_SECONDS + 5) * 1000);
-  if (res.status === 204) return null;
-  const reply = feedbackSchema.safeParse(await res.json().catch(() => null));
+  return waitNewer(`${base}/feedback`, after, FEEDBACK_WAIT_SECONDS, feedbackSchema, options);
+}
+
+/** Tells the companion this device is on, and what it shows. Returns the devices' new `seq`. */
+export async function postPresence(
+  base: string,
+  presence: DevicePresence,
+  options: CompanionOptions = {},
+): Promise<number> {
+  const res = await request(`${base}/presence`, post(presence), options);
+  const reply = presenceReplySchema.safeParse(await res.json().catch(() => null));
   if (!res.ok || !reply.success) throw new CompanionError(COMPANION_ERROR.rejected);
-  return reply.data;
+  return reply.data.seq;
+}
+
+/** The devices once one reported, came or left after `after`; null when nothing changed. */
+export function waitDevices(
+  base: string,
+  after: number,
+  options: CompanionOptions = {},
+  waitSeconds = LONG_POLL_SECONDS,
+): Promise<CompanionDevices | null> {
+  return waitNewer(`${base}/devices`, after, waitSeconds, devicesReplySchema, options);
+}
+
+/** The last 50 batches played, once one is newer than `after`; null when none came. */
+export function waitLog(
+  base: string,
+  after: number,
+  options: CompanionOptions = {},
+  waitSeconds = LONG_POLL_SECONDS,
+): Promise<CompanionLog | null> {
+  return waitNewer(`${base}/log`, after, waitSeconds, logReplySchema, options);
 }
 
 /** Whether the gear's last known values include every message that was sent. */

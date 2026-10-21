@@ -63,7 +63,7 @@ export function StageMidiSettings() {
   const testCompanion = async () => {
     const typed = normalizeCompanionAddress(address);
     if (!typed) return setCheck({ type: "error", message: t("midi.errors.badAddress") });
-    saveMidiSettings({ companion: typed });
+    saveMidiSettings({ companion: typed, companionPaused: false });
     setCheck({ type: "busy" });
     try {
       const { base, status } = await probeCompanion(typed);

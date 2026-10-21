@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { CatalogPage } from "./modules/catalog/page";
 import { ChordsPage } from "./modules/chords/page";
+import { CompanionPage } from "./modules/companion/page";
 import { CrewPage } from "./modules/crew/page";
 import { EditSongPage } from "./modules/editor/page";
 import { PerformPage } from "./modules/performance/page";
@@ -11,6 +12,7 @@ import { SettingsPage } from "./modules/settings/page";
 import { AdminLayout } from "./modules/shared/components/admin-layout";
 import { FirstRunSetup } from "./modules/shared/components/first-run-setup";
 import { JoinPrompt } from "./modules/shared/components/join-prompt";
+import { useCompanionLinkRunner } from "./modules/shared/hooks/use-companion-link";
 
 import { SyncPage } from "./modules/sync/page";
 import { TechSheetPage } from "./modules/tech-sheet/page";
@@ -33,10 +35,13 @@ export function App() {
     "Chords",
     "Tuner",
     "Sync",
+    "Companion",
     "Settings",
     "SettingsSection",
     "Quality",
   ]);
+
+  useCompanionLinkRunner(route?.name ?? "");
 
   // Remounts the pages after the first-run setup: they read notation once per mount
   const [layoutKey, setLayoutKey] = useState(0);
@@ -95,6 +100,7 @@ function AdminRoutes({
         | "Chords"
         | "Tuner"
         | "Sync"
+        | "Companion"
         | "Settings"
         | "SettingsSection"
         | "Quality"
@@ -125,6 +131,8 @@ function AdminRoutes({
       return <TunerPage />;
     case "Sync":
       return <SyncPage />;
+    case "Companion":
+      return <CompanionPage />;
     case "Settings":
       return <SettingsPage companion={route.params.companion} />;
     case "SettingsSection":

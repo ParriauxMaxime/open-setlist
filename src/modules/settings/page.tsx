@@ -28,7 +28,9 @@ export function SettingsPage({ section, companion }: SettingsPageProps) {
   // Scanned from the companion program's screen: remember it, then open the MIDI page
   useEffect(() => {
     const base = companion ? normalizeCompanionAddress(companion) : null;
-    if (base) saveMidiSettings({ companion: base, transport: MIDI_TRANSPORT.wifi });
+    if (base) {
+      saveMidiSettings({ companion: base, companionPaused: false, transport: MIDI_TRANSPORT.wifi });
+    }
     if (!active) {
       Router.replace("SettingsSection", {
         section: base ? SETTINGS_SECTION.midi : SETTINGS_SECTION.preferences,

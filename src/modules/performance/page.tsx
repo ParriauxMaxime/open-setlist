@@ -17,6 +17,7 @@ import type { CSSProperties } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
+import { useReportStage } from "../shared/hooks/use-companion-link";
 import { useMyNotes } from "../shared/hooks/use-my-notes";
 import { ChordPopover } from "./components/chord-popover";
 import type { ChordTapInfo } from "./components/chordpro-view";
@@ -173,6 +174,12 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
     flatSongs: nav.flatSongs,
     currentIndex: nav.currentIndex,
     setCurrentIndex: nav.setCurrentIndex,
+  });
+  useReportStage({
+    setlistId,
+    songId: nav.currentSong?.id,
+    index: setlistId ? nav.currentIndex : undefined,
+    follow: follow.mode,
   });
 
   useWakeLock();

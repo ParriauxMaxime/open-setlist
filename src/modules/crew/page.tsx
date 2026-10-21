@@ -11,6 +11,7 @@ import { Router } from "../../router";
 import { useFollowLeader } from "../performance/hooks/use-follow-leader";
 import { useSetlistNavigation } from "../performance/hooks/use-setlist-navigation";
 import { useWakeLock } from "../performance/hooks/use-wake-lock";
+import { useReportStage } from "../shared/hooks/use-companion-link";
 import { CrewFooter } from "./components/crew-footer";
 import { CrewHeader } from "./components/crew-header";
 import { CrewSongRow } from "./components/crew-song-row";
@@ -35,6 +36,12 @@ export function CrewPage({ setlistId }: CrewPageProps) {
     currentIndex,
     setCurrentIndex,
     forceMode: FOLLOW_MODE.follow,
+  });
+  useReportStage({
+    setlistId,
+    songId: flatSongs[currentIndex]?.songId,
+    index: currentIndex,
+    follow: follow.mode,
   });
   const clock = useCrewClock(currentIndex);
 

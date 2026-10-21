@@ -7,9 +7,12 @@ import {
   confirms,
   followIndex,
   postPosition,
+  postPresence,
   probeCompanion,
   sendToCompanion,
+  waitDevices,
   waitFeedback,
+  waitLog,
   waitPosition,
 } from "./companion";
 import { MIDI_ENCODING } from "./patch";
@@ -88,7 +91,7 @@ describe("companion client", () => {
       throw new TypeError("Failed to fetch");
     });
     expect(await errorKind(companionStatus(BASE, { fetch }))).toBe(COMPANION_ERROR.unreachable);
-    expect(await errorKind(sendToCompanion(BASE, [[0xc0, 1]], "keys", { fetch }))).toBe(
+    expect(await errorKind(sendToCompanion(BASE, [[0xc0, 1]], { from: "keys" }, { fetch }))).toBe(
       COMPANION_ERROR.unreachable,
     );
   });
@@ -101,7 +104,7 @@ describe("companion client", () => {
         [0xb0, 21, 0],
         [0xb0, 20, 6],
       ],
-      "keys",
+      { from: "keys", device: "tablet-1" },
       { fetch },
     );
     expect(calls[0].url).toBe(`${BASE}/midi`);
@@ -113,16 +116,18 @@ describe("companion client", () => {
         [0xb0, 20, 6],
       ],
       from: "keys",
+      device: "tablet-1",
     });
   });
 
   it("tells a missing MIDI output from a refused message", async () => {
     const noOutput = fakeFetch(() => json({ error: "no-midi-output" }, 503));
-    expect(await errorKind(sendToCompanion(BASE, [[0xc0, 1]], "", { fetch: noOutput.fetch }))).toBe(
-      COMPANION_ERROR.noMidiOutput,
-    );
+    const sender = { from: "" };
+    expect(
+      await errorKind(sendToCompanion(BASE, [[0xc0, 1]], sender, { fetch: noOutput.fetch })),
+    ).toBe(COMPANION_ERROR.noMidiOutput);
     const bad = fakeFetch(() => json({ error: "bad-request" }, 400));
-    expect(await errorKind(sendToCompanion(BASE, [[0xc0, 1]], "", { fetch: bad.fetch }))).toBe(
+    expect(await errorKind(sendToCompanion(BASE, [[0xc0, 1]], sender, { fetch: bad.fetch }))).toBe(
       COMPANION_ERROR.rejected,
     );
   });
@@ -138,6 +143,85 @@ describe("companion client", () => {
     expect(await waitPosition(BASE, 0, { fetch })).toEqual({ seq: 4, position });
     expect(calls[1].url).toBe(`${BASE}/position?after=0&wait=25`);
     expect(await waitPosition(BASE, 4, { fetch })).toBeNull();
+  });
+
+  it("reports this device and reads the devices the companion knows", async () => {
+    const presence = {
+      id: "tablet-1",
+      name: "Keys · iPad",
+      part: "keys",
+      platform: "iPad",
+      appVersion: "abc1234",
+      page: "Perform",
+      setlistId: "gig",
+      songId: "s3",
+      index: 2,
+      follow: "lead",
+      midi: { transport: "wifi", lastSend: "ok", channel: 15 },
+    } as const;
+    const seen = { ...presence, address: "192.168.1.31", lastSeen: 1000 };
+    const { calls, fetch } = fakeFetch(({ url }) =>
+      url.endsWith("/presence")
+        ? json({ seq: 7 })
+        : json({ seq: 7, now: 1500, devices: [seen, { id: "old", name: "Bass" }, { name: "?" }] }),
+    );
+    expect(await postPresence(BASE, presence, { fetch })).toBe(7);
+    expect(calls[0].init.headers).toEqual({ "Content-Type": "text/plain" });
+    expect(JSON.parse(String(calls[0].init.body))).toEqual(presence);
+
+    const reply = await waitDevices(BASE, 0, { fetch }, 0);
+    expect(calls[1].url).toBe(`${BASE}/devices?after=0&wait=0`);
+    expect(reply?.now).toBe(1500);
+    // A device from an older app is kept with blanks; one without an id is dropped
+    expect(reply?.devices).toEqual([
+      seen,
+      {
+        id: "old",
+        name: "Bass",
+        part: "",
+        platform: "",
+        appVersion: "",
+        page: "",
+        follow: "off",
+        midi: { transport: "off", lastSend: "none" },
+        address: null,
+        lastSeen: 0,
+      },
+    ]);
+  });
+
+  it("reads the MIDI log, newest first, and nothing when it did not change", async () => {
+    const entry = {
+      seq: 2,
+      at: 1000,
+      from: "keys",
+      device: "tablet-1",
+      via: "wifi",
+      messages: [[0x9e, 111, 100]],
+    };
+    const { calls, fetch } = fakeFetch(({ url }) =>
+      url.includes("after=2")
+        ? new Response(null, { status: 204 })
+        : json({ seq: 2, now: 1200, entries: [entry] }),
+    );
+    expect(await waitLog(BASE, 0, { fetch })).toEqual({ seq: 2, now: 1200, entries: [entry] });
+    expect(calls[0].url).toBe(`${BASE}/log?after=0&wait=25`);
+    expect(await waitLog(BASE, 2, { fetch })).toBeNull();
+  });
+
+  it("tells an older companion without presence apart", async () => {
+    const { fetch } = fakeFetch(() => json({ error: "not-found" }, 404));
+    const presence = {
+      id: "t",
+      name: "n",
+      part: "",
+      platform: "Mac",
+      appVersion: "",
+      page: "Catalog",
+      follow: "off",
+      midi: { transport: "off", lastSend: "none" },
+    } as const;
+    expect(await errorKind(postPresence(BASE, presence, { fetch }))).toBe(COMPANION_ERROR.rejected);
   });
 
   it("waits for the gear's answers and checks the sent messages are among them", async () => {

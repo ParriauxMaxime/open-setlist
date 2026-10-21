@@ -48,6 +48,8 @@ const midiSettingsSchema = z.object({
   transport: z.enum(MIDI_TRANSPORT_VALUES as [MidiTransport, ...MidiTransport[]]).default("wifi"),
   /** Base URL of the companion program, e.g. `http://192.168.1.20:7777`. */
   companion: z.string().default(""),
+  /** Disconnected by hand: no link to the companion until Connect, the address is kept. */
+  companionPaused: z.boolean().default(false),
   follow: z.enum(FOLLOW_MODE_VALUES as [FollowMode, ...FollowMode[]]).default(FOLLOW_MODE.off),
   // Unset: the role's default
   channel: z.number().int().min(1).max(16).optional(),

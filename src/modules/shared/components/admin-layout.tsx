@@ -6,6 +6,7 @@ import { Badge } from "../../design-system/components/card";
 import { getPerformReturn, performReturnHref } from "../../performance/components/perform-sidebar";
 import { useOnline } from "../hooks/use-online";
 import { usePendingChanges } from "../hooks/use-pending-changes";
+import { CompanionStatusDot } from "./companion-status-dot";
 import { GettingStartedBanner } from "./getting-started-banner";
 import { NavLink } from "./nav-link";
 import { ProfileSwitcher } from "./profile-switcher";
@@ -35,6 +36,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     "Tuner",
     "Quality",
     "Sync",
+    "Companion",
     "Settings",
     "SettingsSection",
   ]);
@@ -44,11 +46,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       ? "setlists"
       : route.name === "Sync"
         ? "sync"
-        : route.name === "Settings" || route.name === "SettingsSection"
-          ? "settings"
-          : (TOOLS_ROUTES as readonly string[]).includes(route.name)
-            ? "tools"
-            : "songs"
+        : route.name === "Companion"
+          ? "companion"
+          : route.name === "Settings" || route.name === "SettingsSection"
+            ? "settings"
+            : (TOOLS_ROUTES as readonly string[]).includes(route.name)
+              ? "tools"
+              : "songs"
     : "songs";
 
   const performReturn = getPerformReturn();
@@ -95,6 +99,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const toolsFooter = (
     <div className="mt-3 border-t border-border pt-3">
+      <NavLink
+        to="Companion"
+        label={t("nav.companion")}
+        icon="🎛"
+        active={section === "companion"}
+        badge={<CompanionStatusDot />}
+      />
       <button
         type="button"
         onClick={() => setToolsOpen((o) => !o)}

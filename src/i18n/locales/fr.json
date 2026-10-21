@@ -8,7 +8,8 @@
     "chords": "Accords",
     "tuner": "Accordeur",
     "tools": "Outils",
-    "quality": "Qualité"
+    "quality": "Qualité",
+    "companion": "Compagnon"
   },
   "common": {
     "loading": "Chargement...",
@@ -1111,5 +1112,30 @@
     "unreadable": "Impossible de lire ce PDF.",
     "viewTitle": "Affichage",
     "chartView": "Grille"
+  },
+  "companion": {
+    "title": "Compagnon",
+    "subtitle": "Le programme du PC de scène : qui y est connecté, et le MIDI qui passe par lui.",
+    "notPaired": "Aucun programme compagnon associé à cet appareil. Associez-le dans",
+    "link": {
+      "off": "Non associé",
+      "paused": "Déconnecté",
+      "connecting": "Connexion…",
+      "connected": "Connecté",
+      "lost": "Connexion perdue"
+    },
+    "connection": {
+      "heading": "Connexion",
+      "connect": "Connecter",
+      "disconnect": "Déconnecter",
+      "forget": "Oublier",
+      "hint": {
+        "off": "",
+        "paused": "Cet appareil ne se signale plus au compagnon. Le MIDI et Suivre le meneur l'utilisent toujours.",
+        "connecting": "Recherche du compagnon sur le Wi-Fi.",
+        "connected": "Cet appareil se signale au compagnon toutes les 5 secondes.",
+        "lost": "Pas de réponse. Nouvel essai en cours : vérifiez que le programme tourne et que cet appareil est sur le Wi-Fi du groupe."
+      }
+    }
   }
 }
