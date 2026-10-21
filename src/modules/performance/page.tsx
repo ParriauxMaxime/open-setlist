@@ -303,6 +303,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
       <PerformHeader
         visible={chromeVisible}
         song={nav.currentSong}
+        songKey={nav.currentIndex}
         setlistId={setlistId}
         transposition={nav.currentSong?.transposition ?? 0}
         transposeOpen={transposeOpen}

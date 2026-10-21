@@ -264,7 +264,11 @@
     "enterFullscreen": "Full screen",
     "exitFullscreen": "Exit full screen",
     "hintPedal": "Pedal or keyboard: Page Down, Space or ↓ to scroll forward, Page Up or ↑ to scroll back, ← → to change song",
-    "hintAutoScroll": "S starts or pauses auto-scroll"
+    "hintAutoScroll": "S starts or pauses auto-scroll",
+    "songTools": "Song tools",
+    "toolsTempo": "Tempo",
+    "toolsMidi": "MIDI",
+    "toolsAlert": "MIDI or Follow needs a look"
   },
   "myPart": {
     "title": "My part",

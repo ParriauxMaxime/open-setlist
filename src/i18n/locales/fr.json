@@ -264,7 +264,11 @@
     "enterFullscreen": "Plein écran",
     "exitFullscreen": "Quitter le plein écran",
     "hintPedal": "Pédale ou clavier : Page suiv., Espace ou ↓ pour avancer, Page préc. ou ↑ pour reculer, ← → pour changer de chanson",
-    "hintAutoScroll": "S lance ou met en pause le défilement auto"
+    "hintAutoScroll": "S lance ou met en pause le défilement auto",
+    "songTools": "Outils du morceau",
+    "toolsTempo": "Tempo",
+    "toolsMidi": "MIDI",
+    "toolsAlert": "MIDI ou Suivre le meneur à vérifier"
   },
   "myPart": {
     "title": "Ma partie",
