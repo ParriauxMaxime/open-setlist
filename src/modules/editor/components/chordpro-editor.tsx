@@ -1,6 +1,8 @@
+import { applyChartInsert, type ChartInsert } from "@domain/chordpro/insert";
 import type { SongFormValues } from "@domain/schemas/song";
 import { type ReactNode, type RefCallback, useCallback, useEffect, useRef } from "react";
 import type { UseFormRegister } from "react-hook-form";
+import { ChartInsertBar } from "./chart-insert-bar";
 
 /**
  * Tokenize a line of ChordPro into spans for syntax highlighting.
@@ -83,9 +85,17 @@ interface ChordProEditorProps {
   error?: string;
   /** Actions shown above the editor (e.g. "Paste chart"). */
   toolbar?: ReactNode;
+  /** Sets the content through the form, as a programmatic change (insert buttons). */
+  onContentChange: (content: string) => void;
 }
 
-export function ChordProEditor({ register, value, error, toolbar }: ChordProEditorProps) {
+export function ChordProEditor({
+  register,
+  value,
+  error,
+  toolbar,
+  onContentChange,
+}: ChordProEditorProps) {
   const highlightRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -122,9 +132,27 @@ export function ChordProEditor({ register, value, error, toolbar }: ChordProEdit
     hl.scrollLeft = ta.scrollLeft;
   }, []);
 
+  const insert = useCallback(
+    (kind: ChartInsert) => {
+      const ta = textareaRef.current;
+      if (!ta) return;
+      const next = applyChartInsert(
+        { text: ta.value, start: ta.selectionStart, end: ta.selectionEnd },
+        kind,
+      );
+      onContentChange(next.text);
+      ta.focus();
+      ta.setSelectionRange(next.start, next.end);
+    },
+    [onContentChange],
+  );
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-1">
-      {toolbar && <div className="flex items-center justify-end gap-2">{toolbar}</div>}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <ChartInsertBar onInsert={insert} />
+        {toolbar && <div className="flex items-center gap-2">{toolbar}</div>}
+      </div>
       <div className="chordpro-highlight-wrap relative min-h-[24rem] flex-1 lg:min-h-0">
         {/* Highlight layer (behind) */}
         <div

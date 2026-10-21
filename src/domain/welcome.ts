@@ -118,7 +118,7 @@ export interface WhatsNewItem {
 export const WHATS_NEW_ITEMS: readonly WhatsNewItem[] = [
   { id: "stageFirst", target: WHATS_NEW_TARGET.perform },
   { id: "setlistsAtAGlance" },
-  { id: "noLostEdits" },
+  { id: "songEditor", target: WHATS_NEW_TARGET.newSong },
   { id: "tidyCatalog" },
   { id: "bulkEdit" },
 ];

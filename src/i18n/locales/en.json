@@ -66,6 +66,14 @@
     "findOnline": "Find online",
     "preview": "Preview",
     "edit": "Edit",
+    "insert": {
+      "label": "Insert in the chart",
+      "verse": "Verse",
+      "chorus": "Chorus",
+      "bridge": "Bridge",
+      "comment": "Comment",
+      "chord": "Chord"
+    },
     "backToCatalog": "Back to catalog",
     "notFound": "Song not found.",
     "titleLabel": "Title",
@@ -814,9 +822,9 @@
           "title": "Setlists at a glance",
           "desc": "Songs, sets and length (1h42) in the list, ⧉ duplicates. The editor's catalog shows what is already in a set."
         },
-        "noLostEdits": {
-          "title": "No lost edits",
-          "desc": "Editors ask before leaving unsaved changes, Back button included. Cmd/Ctrl+S saves, a removed song can be put back."
+        "songEditor": {
+          "title": "A song editor that shows the chart",
+          "desc": "The chart reads as on stage while you type, Verse, Chorus and Chord buttons write the braces. Leaving unsaved asks first, Cmd/Ctrl+S saves."
         },
         "tidyCatalog": {
           "title": "A tidier catalog",

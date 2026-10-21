@@ -66,6 +66,14 @@
     "findOnline": "Chercher en ligne",
     "preview": "Aperçu",
     "edit": "Modifier",
+    "insert": {
+      "label": "Insérer dans la grille",
+      "verse": "Couplet",
+      "chorus": "Refrain",
+      "bridge": "Pont",
+      "comment": "Commentaire",
+      "chord": "Accord"
+    },
     "backToCatalog": "Retour au catalogue",
     "notFound": "Chanson introuvable.",
     "titleLabel": "Titre",
@@ -814,9 +822,9 @@
           "title": "Les setlists d\u2019un coup d\u2019\u0153il",
           "desc": "Chansons, sets et dur\u00e9e (1h42) dans la liste, \u29c9 duplique. Le catalogue de l\u2019\u00e9diteur montre ce qui est d\u00e9j\u00e0 dans un set."
         },
-        "noLostEdits": {
-          "title": "Plus de modifications perdues",
-          "desc": "Les \u00e9diteurs demandent avant de quitter sans enregistrer, bouton Retour compris. Cmd/Ctrl+S enregistre, une chanson retir\u00e9e peut \u00eatre remise."
+        "songEditor": {
+          "title": "Un \u00e9diteur qui montre la grille",
+          "desc": "La grille s\u2019affiche comme sur sc\u00e8ne pendant la saisie, les boutons Couplet, Refrain et Accord \u00e9crivent les accolades. Quitter sans enregistrer demande d\u2019abord, Cmd/Ctrl+S enregistre."
         },
         "tidyCatalog": {
           "title": "Un catalogue plus propre",

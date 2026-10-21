@@ -407,6 +407,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
                 register={register}
                 value={watch("content")}
                 error={errors.content?.message}
+                onContentChange={(content) => setValue("content", content, { shouldDirty: true })}
                 toolbar={
                   <button
                     type="button"
