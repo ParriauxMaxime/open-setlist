@@ -8,6 +8,8 @@ interface ConfirmModalProps {
   cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Escape, when it should not mean the cancel button (both buttons go ahead). */
+  onDismiss?: () => void;
   variant?: "danger" | "default";
 }
 
@@ -18,17 +20,19 @@ export function ConfirmModal({
   cancelLabel = "Cancel",
   onConfirm,
   onCancel,
+  onDismiss,
   variant = "default",
 }: ConfirmModalProps) {
   const trapRef = useFocusTrap(true);
+  const dismiss = onDismiss ?? onCancel;
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
+      if (e.key === "Escape") dismiss();
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [onCancel]);
+  }, [dismiss]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

@@ -452,8 +452,6 @@
     "failed": "L'import des setlists a échoué."
   },
   "chartImport": {
-    "fillCount_one": "{{count}} chanson de votre catalogue sans grille : elle la reçoit",
-    "fillCount_other": "{{count}} chansons de votre catalogue sans grille : elles reçoivent la leur",
     "pasteButton": "Coller une grille",
     "emptyHint": "Vous avez déjà la grille quelque part ? Collez-la, elle est mise en forme toute seule.",
     "pasteTitle": "Coller une grille",
@@ -478,20 +476,28 @@
     "cancel": "Annuler",
     "importButton": "Importer des fichiers",
     "reading": "Lecture...",
-    "previewTitle": "Importer des grilles",
-    "newCount_one": "{{count}} nouvelle chanson",
-    "newCount_other": "{{count}} nouvelles chansons",
-    "matchCount_one": "{{count}} chanson déjà dans votre catalogue",
-    "matchCount_other": "{{count}} chansons déjà dans votre catalogue",
-    "warningCount_one": "{{count}} avertissement",
-    "warningCount_other": "{{count}} avertissements",
-    "statusNew": "Nouvelle",
-    "statusMatch": "Déjà au catalogue",
-    "convertedBadge": "convertie depuis du texte",
-    "matchLegend": "Chansons déjà dans votre catalogue",
-    "strategy": {
-      "skip": "Les ignorer (garder ma version)",
-      "update": "Les mettre à jour depuis les fichiers"
+    "existingTitle_one": "{{count}} chanson existe déjà",
+    "existingTitle_other": "{{count}} chansons existent déjà",
+    "existingMessage_one": "{{titles}} : remplacer sa grille et ses infos par celles du fichier, ou la passer ? Son statut, ses codes de son, sa vitesse de défilement et ses liens restent.",
+    "existingMessage_other": "{{titles}} : remplacer leur grille et leurs infos par celles des fichiers, ou les passer ? Leur statut, leurs codes de son, leur vitesse de défilement et leurs liens restent.",
+    "replaceExisting": "Remplacer la grille",
+    "skipExisting": "Passer",
+    "summary": {
+      "added_one": "{{count}} chanson importée",
+      "added_other": "{{count}} chansons importées",
+      "updated_one": "{{count}} mise à jour",
+      "updated_other": "{{count}} mises à jour",
+      "skipped_one": "{{count}} passée",
+      "skipped_other": "{{count}} passées",
+      "notes_one": "{{count}} détail à vérifier",
+      "notes_other": "{{count}} détails à vérifier"
+    },
+    "skipReason": {
+      "noTitle": "pas de titre",
+      "notAChart": "pas un fichier de grille",
+      "emptyFile": "fichier vide",
+      "sameSongTwice": "même chanson que dans un autre fichier",
+      "alreadyInCatalog": "déjà au catalogue, gardée telle quelle"
     },
     "warning": {
       "missingTitle": "pas de titre, ignorée.",
@@ -505,9 +511,6 @@
       "titleFromFileName": "pas de titre dans le fichier, nommée d'après le fichier."
     },
     "safeNote": "Rien n'est supprimé. Formats acceptés : ChordPro (.cho, .chopro, .chordpro, .crd, .pro) et texte (.txt), plusieurs fichiers à la fois.",
-    "confirm": "Importer",
-    "importing": "Import en cours...",
-    "success": "Import de grilles : {{added}} ajoutée(s), {{updated}} mise(s) à jour.",
     "nothingFound": "Aucune chanson trouvée dans ces fichiers.",
     "failed": "L'import de grilles a échoué."
   },
@@ -831,7 +834,7 @@
         },
         "tidyCatalog": {
           "title": "Un catalogue plus propre",
-          "desc": "Outils \u2192 Qualit\u00e9 unifie les noms \u00e9crits de plusieurs fa\u00e7ons et nettoie les restes de Setlist Helper."
+          "desc": "Outils \u2192 Qualit\u00e9 unifie les noms \u00e9crits de plusieurs fa\u00e7ons et nettoie les restes de Setlist Helper. Importer des fichiers résume ce qui est entré et demande avant de remplacer une chanson que vous avez."
         },
         "bulkEdit": {
           "title": "Raccourcis de la page Chansons",

@@ -1,6 +1,7 @@
 import type { Song } from "@db";
 import { useDb } from "@db/provider";
 import { formatKey } from "@domain/chords/notation";
+import type { ChartImportSummary as ImportSummary } from "@domain/import/chart-import";
 import { MUSICAL_KEY_LIST } from "@domain/music";
 import { useActiveProfileId } from "@domain/profiles";
 import {
@@ -29,6 +30,7 @@ import { useMyNotes } from "../shared/hooks/use-my-notes";
 import { useNotation } from "../shared/hooks/use-notation";
 import { BulkEditBar } from "./components/bulk-edit-bar";
 import { ChartFileImport } from "./components/chart-file-import";
+import { ChartImportSummary } from "./components/chart-import-summary";
 import { useSongUpdates } from "./hooks/use-song-updates";
 
 const col = createColumnHelper<Song>();
@@ -57,7 +59,8 @@ export function CatalogPage() {
   const notation = useNotation();
   const songs = useLiveQuery(() => db.songs.orderBy("title").toArray(), [db]);
   const myNotes = useMyNotes(useActiveProfileId());
-  const [importStatus, setImportStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
   const welcome = useWelcome();
   const { setStatus, addTag } = useSongUpdates();
   const [selecting, setSelecting] = useState(false);
@@ -297,8 +300,14 @@ export function CatalogPage() {
             </button>
           )}
           <ChartFileImport
-            onSuccess={(message) => setImportStatus({ ok: true, message })}
-            onError={(message) => setImportStatus({ ok: false, message })}
+            onDone={(summary) => {
+              setImportError(null);
+              setImportSummary(summary);
+            }}
+            onError={(message) => {
+              setImportSummary(null);
+              setImportError(message);
+            }}
           />
           <Link to={Router.SongNew()} className="btn btn-primary">
             {t("catalog.addSong")}
@@ -306,10 +315,9 @@ export function CatalogPage() {
         </div>
       </div>
 
-      {importStatus && (
-        <output className={`mb-4 block text-sm ${importStatus.ok ? "text-accent" : "text-danger"}`}>
-          {importStatus.message}
-        </output>
+      {importError && <output className="mb-4 block text-sm text-danger">{importError}</output>}
+      {importSummary && (
+        <ChartImportSummary summary={importSummary} onDismiss={() => setImportSummary(null)} />
       )}
 
       {welcome === WELCOME.whatsNew && (

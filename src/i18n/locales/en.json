@@ -452,8 +452,6 @@
     "failed": "Setlist import failed."
   },
   "chartImport": {
-    "fillCount_one": "{{count}} song in your catalog without a chart: it gets this one",
-    "fillCount_other": "{{count}} songs in your catalog without a chart: they get theirs",
     "pasteButton": "Paste chart",
     "emptyHint": "Already have the chart somewhere? Paste it: it is put in shape for you.",
     "pasteTitle": "Paste a chart",
@@ -478,20 +476,28 @@
     "cancel": "Cancel",
     "importButton": "Import files",
     "reading": "Reading...",
-    "previewTitle": "Import chart files",
-    "newCount_one": "{{count}} new song",
-    "newCount_other": "{{count}} new songs",
-    "matchCount_one": "{{count}} song already in your catalog",
-    "matchCount_other": "{{count}} songs already in your catalog",
-    "warningCount_one": "{{count}} warning",
-    "warningCount_other": "{{count}} warnings",
-    "statusNew": "New",
-    "statusMatch": "In catalog",
-    "convertedBadge": "converted from text",
-    "matchLegend": "Songs already in your catalog",
-    "strategy": {
-      "skip": "Skip them (keep my version)",
-      "update": "Update them from the files"
+    "existingTitle_one": "{{count}} song already exists",
+    "existingTitle_other": "{{count}} songs already exist",
+    "existingMessage_one": "{{titles}}: replace its chart and details with the file's, or skip it? Its status, sound codes, scroll speed and links stay.",
+    "existingMessage_other": "{{titles}}: replace their charts and details with the files', or skip them? Their status, sound codes, scroll speed and links stay.",
+    "replaceExisting": "Replace chart",
+    "skipExisting": "Skip",
+    "summary": {
+      "added_one": "{{count}} song imported",
+      "added_other": "{{count}} songs imported",
+      "updated_one": "{{count}} updated",
+      "updated_other": "{{count}} updated",
+      "skipped_one": "{{count}} skipped",
+      "skipped_other": "{{count}} skipped",
+      "notes_one": "{{count}} detail to check",
+      "notes_other": "{{count}} details to check"
+    },
+    "skipReason": {
+      "noTitle": "no title",
+      "notAChart": "not a chart file",
+      "emptyFile": "empty file",
+      "sameSongTwice": "same song as in another file",
+      "alreadyInCatalog": "already in the catalog, kept as it was"
     },
     "warning": {
       "missingTitle": "no title, skipped.",
@@ -505,9 +511,6 @@
       "titleFromFileName": "no title in the file, named after the file."
     },
     "safeNote": "Nothing is deleted. Accepted: ChordPro (.cho, .chopro, .chordpro, .crd, .pro) and plain text (.txt), several files at once.",
-    "confirm": "Import",
-    "importing": "Importing...",
-    "success": "Chart import: {{added}} added, {{updated}} updated.",
     "nothingFound": "No song found in these files.",
     "failed": "Chart import failed."
   },
@@ -831,7 +834,7 @@
         },
         "tidyCatalog": {
           "title": "A tidier catalog",
-          "desc": "Tools → Quality unifies names written several ways and cleans Setlist Helper leftovers."
+          "desc": "Tools → Quality unifies names written several ways and cleans Setlist Helper leftovers. Import files sums up what came in and asks before replacing a song you have."
         },
         "bulkEdit": {
           "title": "Songs page shortcuts",
