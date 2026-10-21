@@ -1003,6 +1003,10 @@
       "label": "My instrument",
       "hint": "This device sends the sound codes of this instrument only."
     },
+    "deviceName": {
+      "label": "My name",
+      "hint": "How the companion's page names this device. Empty: your instrument and the device."
+    },
     "transport": {
       "label": "Through",
       "wifi": "Wi-Fi (companion program)",

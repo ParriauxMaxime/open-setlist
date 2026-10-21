@@ -1003,6 +1003,10 @@
       "label": "Mon instrument",
       "hint": "Cet appareil n'envoie que les codes de son de cet instrument."
     },
+    "deviceName": {
+      "label": "Mon nom",
+      "hint": "Le nom de cet appareil sur la page du programme compagnon. Vide : votre instrument et l'appareil."
+    },
     "transport": {
       "label": "Par",
       "wifi": "Wi-Fi (programme compagnon)",

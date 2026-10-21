@@ -1,4 +1,4 @@
-import { createId } from "@domain/id";
+import { deviceId as thisDeviceId } from "@domain/device";
 import { followIndex, postPosition, waitPosition } from "@domain/midi/companion";
 import { FOLLOW_MODE, type FollowMode, saveMidiSettings } from "@domain/midi/settings";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -37,7 +37,7 @@ export function useFollowLeader(options: UseFollowLeaderOptions): FollowLeader {
   const mode = available ? (forceMode ?? settings.follow) : FOLLOW_MODE.off;
 
   const [connected, setConnected] = useState(false);
-  const [deviceId] = useState(createId);
+  const [deviceId] = useState(thisDeviceId);
   const latest = useRef(options);
   latest.current = options;
 

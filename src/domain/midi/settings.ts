@@ -36,11 +36,15 @@ export const FOLLOW_MODE_VALUES: FollowMode[] = Object.values(FOLLOW_MODE);
 
 export const COMPANION_DEFAULT_PORT = 7777;
 
+export const DEVICE_NAME_MAX_LENGTH = 40;
+
 const midiSettingsSchema = z.object({
   /** Send this musician's sound change when the song changes on stage. */
   enabled: z.boolean().default(false),
   /** The part whose patch codes this device sends (`keys`, `drums`...). */
   role: z.string().optional(),
+  /** How the companion's page names this device; empty: its part and platform. */
+  deviceName: z.string().max(DEVICE_NAME_MAX_LENGTH).default(""),
   transport: z.enum(MIDI_TRANSPORT_VALUES as [MidiTransport, ...MidiTransport[]]).default("wifi"),
   /** Base URL of the companion program, e.g. `http://192.168.1.20:7777`. */
   companion: z.string().default(""),

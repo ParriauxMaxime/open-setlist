@@ -1,3 +1,4 @@
+import { currentPlatform, deviceDisplayName } from "@domain/device";
 import { BLE_STATE, connectBleMidi, disconnectBleMidi } from "@domain/midi/bluetooth";
 import { COMPANION_ERROR, CompanionError, probeCompanion } from "@domain/midi/companion";
 import {
@@ -8,6 +9,7 @@ import {
 } from "@domain/midi/patch";
 import { sendMidi } from "@domain/midi/send";
 import {
+  DEVICE_NAME_MAX_LENGTH,
   displayCompanionAddress,
   MIDI_TRANSPORT,
   MIDI_TRANSPORT_VALUES,
@@ -125,6 +127,20 @@ export function StageMidiSettings() {
               </option>
             ))}
           </Select>
+        </CardRow>
+        <CardRow label={t("midi.deviceName.label")} description={t("midi.deviceName.hint")}>
+          <Input
+            value={settings.deviceName}
+            onChange={(e) => saveMidiSettings({ deviceName: e.target.value })}
+            placeholder={deviceDisplayName(
+              "",
+              settings.role ? partLabel(settings.role, t, false) : "",
+              currentPlatform(),
+            )}
+            maxLength={DEVICE_NAME_MAX_LENGTH}
+            autoComplete="off"
+            aria-label={t("midi.deviceName.label")}
+          />
         </CardRow>
         <ToggleRow
           label={t("midi.enabled")}
