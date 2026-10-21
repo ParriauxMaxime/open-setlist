@@ -2,13 +2,16 @@ import { Link } from "@swan-io/chicane";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
+import { Badge } from "../../design-system/components/card";
 import { getPerformReturn, performReturnHref } from "../../performance/components/perform-sidebar";
+import { useOnline } from "../hooks/use-online";
 import { usePendingChanges } from "../hooks/use-pending-changes";
 import { GettingStartedBanner } from "./getting-started-banner";
 import { NavLink } from "./nav-link";
 import { ProfileSwitcher } from "./profile-switcher";
 import { MAIN_SECTIONS, PendingChangesBadge, SidebarNav } from "./sidebar-nav";
 import { SidebarPanel } from "./sidebar-panel";
+import { UpdateBar } from "./update-bar";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -50,6 +53,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const performReturn = getPerformReturn();
   const pending = usePendingChanges();
+  const online = useOnline();
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeMobile = useCallback(() => setMobileOpen(false), []);
   const [toolsOpen, setToolsOpen] = useState(section === "tools");
@@ -148,8 +152,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     </div>
   ) : null;
 
+  const offlineChip = online ? null : (
+    <span title={t("offline.hint")}>
+      <Badge tone="warning">{t("offline.chip")}</Badge>
+    </span>
+  );
+
   const sidebarContent = (
     <>
+      {offlineChip && <div className="mb-1 px-3">{offlineChip}</div>}
       {header}
       <SidebarNav
         activeSection={section}
@@ -188,6 +199,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           ☰
         </button>
         <span className="text-sm font-bold text-text">Open Setlist</span>
+        {offlineChip && <span className="ml-auto">{offlineChip}</span>}
       </div>
 
       {/* Mobile sidebar overlay */}
@@ -197,6 +209,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Content */}
       <main id="main-content" className="flex-1 overflow-y-auto">
+        <UpdateBar />
         {children}
       </main>
 

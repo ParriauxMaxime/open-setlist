@@ -1,6 +1,7 @@
 import "@i18n";
 import { migrateAndInit } from "@db/migration";
 import { applyPreferences, loadPreferences } from "@domain/preferences";
+import { watchAppUpdates } from "@domain/pwa/sw-update";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./app";
@@ -16,7 +17,10 @@ applyPreferences(loadPreferences());
 // Service worker: register in production, unregister + clear caches in dev
 if ("serviceWorker" in navigator) {
   if (process.env.NODE_ENV === "production") {
-    navigator.serviceWorker.register(`${__BASE_PATH__}sw.js`);
+    navigator.serviceWorker
+      .register(`${__BASE_PATH__}sw.js`)
+      .then(watchAppUpdates)
+      .catch(() => {});
   } else {
     navigator.serviceWorker.getRegistrations().then((regs) => {
       for (const reg of regs) reg.unregister();

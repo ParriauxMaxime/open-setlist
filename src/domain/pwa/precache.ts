@@ -4,6 +4,9 @@ export const CACHE_PREFIX = "open-setlist-";
 
 export const SW_FILENAME = "sw.js";
 
+/** Posted by the page to the waiting service worker when the musician asks for the update. */
+export const SKIP_WAITING_MESSAGE = "open-setlist-skip-waiting";
+
 /** Navigations wait this long for the network before falling back to the cached app shell. */
 export const NAVIGATION_TIMEOUT_MS = 3000;
 

@@ -8,6 +8,7 @@ import { describeSyncError, type SyncProblem } from "@domain/sync/sync-error";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SyncErrorMessage } from "../../shared/components/sync-error-message";
+import { useOnline } from "../../shared/hooks/use-online";
 
 type Status =
   | { type: "idle" }
@@ -29,6 +30,7 @@ export function GoogleDriveConfigForm({
   onChange,
 }: GoogleDriveConfigFormProps) {
   const { t } = useTranslation();
+  const online = useOnline();
   const available = isGoogleDriveAvailable();
 
   const existing = loadSyncConfig(profileId);
@@ -137,7 +139,10 @@ export function GoogleDriveConfigForm({
             <p className="text-sm text-text-muted">{t("settings.googleDrive.desc")}</p>
 
             <div className="flex flex-wrap items-center gap-3">
-              {status.type !== "connected" && (
+              {status.type !== "connected" && !online && (
+                <span className="text-xs text-text-faint">{t("offline.connectHint")}</span>
+              )}
+              {status.type !== "connected" && online && (
                 <button
                   type="button"
                   onClick={handleConnect}

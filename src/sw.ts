@@ -12,6 +12,7 @@ import {
   NAVIGATION_TIMEOUT_MS,
   type PrecacheManifest,
   routeRequest,
+  SKIP_WAITING_MESSAGE,
 } from "@domain/pwa/precache";
 
 // The DOM lib has no service worker types, and adding the WebWorker lib conflicts with it.
@@ -22,6 +23,9 @@ interface FetchEvent extends ExtendableEvent {
   request: Request;
   respondWith(response: Response | Promise<Response>): void;
 }
+interface ExtendableMessageEvent extends ExtendableEvent {
+  data: unknown;
+}
 interface ServiceWorkerScope {
   __PRECACHE_MANIFEST__: PrecacheManifest;
   registration: ServiceWorkerRegistration;
@@ -29,6 +33,7 @@ interface ServiceWorkerScope {
   skipWaiting(): Promise<void>;
   addEventListener(type: "install" | "activate", listener: (event: ExtendableEvent) => void): void;
   addEventListener(type: "fetch", listener: (event: FetchEvent) => void): void;
+  addEventListener(type: "message", listener: (event: ExtendableMessageEvent) => void): void;
 }
 
 const sw = self as unknown as ServiceWorkerScope;
@@ -39,17 +44,19 @@ const indexUrl = new URL("index.html", scope).href;
 
 sw.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) =>
-        // `reload` bypasses the HTTP cache so index.html and assets come from the same deploy.
-        cache.addAll(
-          manifest.urls.map((url) => new Request(new URL(url, scope), { cache: "reload" })),
-        ),
-      )
-      // The app is a single JS chunk, so an open page never fetches old assets after the swap.
-      .then(() => sw.skipWaiting()),
+    caches.open(CACHE_NAME).then((cache) =>
+      // `reload` bypasses the HTTP cache so index.html and assets come from the same deploy.
+      cache.addAll(
+        manifest.urls.map((url) => new Request(new URL(url, scope), { cache: "reload" })),
+      ),
+    ),
   );
+});
+
+// An update waits for the musician's "Reload" (never mid-song): the open pages keep the old
+// version, served from its own cache, until then or until every tab is closed.
+sw.addEventListener("message", (event) => {
+  if (event.data === SKIP_WAITING_MESSAGE) event.waitUntil(sw.skipWaiting());
 });
 
 sw.addEventListener("activate", (event) => {

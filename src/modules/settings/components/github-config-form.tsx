@@ -9,6 +9,7 @@ import { describeSyncError, type SyncProblem } from "@domain/sync/sync-error";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SyncErrorMessage } from "../../shared/components/sync-error-message";
+import { useOnline } from "../../shared/hooks/use-online";
 import { GitHubInvitePanel } from "./github-invite-panel";
 
 type Status =
@@ -32,6 +33,7 @@ export function GitHubConfigForm({
   onChange,
 }: GitHubConfigFormProps) {
   const { t } = useTranslation();
+  const online = useOnline();
   const existing = loadSyncConfig(profileId);
   const isConnected = existing?.adapter === "github";
 
@@ -137,16 +139,20 @@ export function GitHubConfigForm({
             </label>
 
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={handleTest}
-                disabled={status.type === "testing"}
-                className="btn btn-outline"
-              >
-                {status.type === "testing"
-                  ? t("settings.github.testing")
-                  : t("settings.github.testConnection")}
-              </button>
+              {online ? (
+                <button
+                  type="button"
+                  onClick={handleTest}
+                  disabled={status.type === "testing"}
+                  className="btn btn-outline"
+                >
+                  {status.type === "testing"
+                    ? t("settings.github.testing")
+                    : t("settings.github.testConnection")}
+                </button>
+              ) : (
+                <span className="text-xs text-text-faint">{t("offline.connectHint")}</span>
+              )}
             </div>
 
             <div aria-live="polite">

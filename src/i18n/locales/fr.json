@@ -380,6 +380,16 @@
       "lastSync": "Dernière synchro\u00a0: {{time}}"
     }
   },
+  "appUpdate": {
+    "ready": "Une nouvelle version est prête",
+    "reload": "Recharger"
+  },
+  "offline": {
+    "chip": "Hors ligne",
+    "hint": "Cet appareil est hors ligne. Chansons et setlists marchent comme d’habitude ; la synchro attend le réseau.",
+    "syncHint": "Hors ligne : synchronisez une fois la connexion revenue.",
+    "connectHint": "Hors ligne : connectez-vous une fois la connexion revenue."
+  },
   "syncError": {
     "syncFailed": "La synchro n’a pas abouti.",
     "connectionFailed": "Connexion impossible.",

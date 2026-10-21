@@ -380,6 +380,16 @@
       "lastSync": "Last synced: {{time}}"
     }
   },
+  "appUpdate": {
+    "ready": "A new version is ready",
+    "reload": "Reload"
+  },
+  "offline": {
+    "chip": "Offline",
+    "hint": "This device is offline. Songs and setlists work as usual; syncing waits for the network.",
+    "syncHint": "Offline: sync once the device is back online.",
+    "connectHint": "Offline: connect once the device is back online."
+  },
   "syncError": {
     "syncFailed": "Sync did not go through.",
     "connectionFailed": "Could not connect.",

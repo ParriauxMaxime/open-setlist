@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge, Card, CardRow } from "../../design-system/components/card";
 import { SyncErrorMessage } from "../../shared/components/sync-error-message";
+import { useOnline } from "../../shared/hooks/use-online";
 import type { useRemoteSync } from "../hooks/use-remote-sync";
 import { FileSyncSummary } from "./file-sync-summary";
 import { SyncReview } from "./sync-review";
@@ -33,6 +34,7 @@ export function ProviderCard({
   const { t } = useTranslation();
   const { status } = sync;
   const connected = connectedLabel !== undefined;
+  const online = useOnline();
 
   const buttonLabel =
     status.type === "authenticating"
@@ -83,14 +85,18 @@ export function ProviderCard({
               : undefined
           }
         >
-          <button
-            type="button"
-            onClick={sync.start}
-            disabled={sync.busy}
-            className="btn btn-primary btn-sm"
-          >
-            {buttonLabel}
-          </button>
+          {online || sync.busy ? (
+            <button
+              type="button"
+              onClick={sync.start}
+              disabled={sync.busy}
+              className="btn btn-primary btn-sm"
+            >
+              {buttonLabel}
+            </button>
+          ) : (
+            <span className="text-xs text-text-faint">{t("offline.syncHint")}</span>
+          )}
         </CardRow>
       )}
 
