@@ -5,8 +5,10 @@ import {
   loadSyncConfig,
   saveSyncConfig,
 } from "@domain/sync/config";
+import { describeSyncError, type SyncProblem } from "@domain/sync/sync-error";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { SyncErrorMessage } from "../../shared/components/sync-error-message";
 import { GitHubInvitePanel } from "./github-invite-panel";
 
 type Status =
@@ -14,6 +16,7 @@ type Status =
   | { type: "testing" }
   | { type: "connected"; repo: string }
   | { type: "error"; message: string }
+  | { type: "failed"; problem: SyncProblem }
   | { type: "disconnected" };
 
 interface GitHubConfigFormProps {
@@ -46,13 +49,13 @@ export function GitHubConfigForm({
   const handleTest = useCallback(async () => {
     const parts = repoInput.trim().split("/");
     if (parts.length !== 2 || !parts[0] || !parts[1]) {
-      setStatus({ type: "error", message: "Invalid repository format. Use owner/repo." });
+      setStatus({ type: "error", message: t("settings.github.repoFormat") });
       return;
     }
     const [owner, repo] = parts;
     const token = tokenInput.trim();
     if (!token) {
-      setStatus({ type: "error", message: "Token is required." });
+      setStatus({ type: "error", message: t("settings.github.tokenRequired") });
       return;
     }
 
@@ -75,10 +78,9 @@ export function GitHubConfigForm({
       onChange?.();
       setStatus({ type: "connected", repo: fullName });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      setStatus({ type: "error", message });
+      setStatus({ type: "failed", problem: describeSyncError(err, navigator.onLine) });
     }
-  }, [repoInput, tokenInput, profileId, onChange]);
+  }, [repoInput, tokenInput, profileId, onChange, t]);
 
   const handleDisconnect = useCallback(() => {
     clearSyncConfig(profileId);
@@ -163,10 +165,9 @@ export function GitHubConfigForm({
                   </button>
                 </div>
               )}
-              {status.type === "error" && (
-                <p className="text-sm text-danger">
-                  {t("settings.github.connectionFailed", { error: status.message })}
-                </p>
+              {status.type === "error" && <p className="text-sm text-danger">{status.message}</p>}
+              {status.type === "failed" && (
+                <SyncErrorMessage lead={t("syncError.connectionFailed")} problem={status.problem} />
               )}
               {status.type === "disconnected" && (
                 <p className="text-sm text-text-muted">{t("settings.github.disconnected")}</p>

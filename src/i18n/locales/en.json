@@ -341,6 +341,15 @@
     "upToDate": "Everything is up to date.",
     "setlistHelper": "Setlist Helper",
     "setlistHelperDesc": "Bring your catalog and setlists over from the Setlist Helper app.",
+    "status": {
+      "notConnected": "Not connected to the band yet: connect GitHub or Google Drive below.",
+      "lastSynced": "last synced {{time}} ago",
+      "neverSynced": "never synced",
+      "pending_one": "{{count}} local change",
+      "pending_other": "{{count}} local changes",
+      "nothingPending": "nothing waiting to go out",
+      "failed": "the last sync did not go through"
+    },
     "files": {
       "synced": "Sheet music: {{sent}} sent, {{received}} received.",
       "failed": "Songs are in sync, but the sheet music could not be transferred. Sync again later.",
@@ -355,7 +364,6 @@
       "syncing": "Syncing...",
       "syncSuccess": "Synced {{songs}} songs and {{setlists}} setlists.",
       "syncCreated": "First sync: pushed {{songs}} songs and {{setlists}} setlists.",
-      "syncFailed": "Sync failed: {{error}}",
       "notConfigured": "GitHub sync not configured.",
       "goToSettings": "Go to Settings",
       "lastSync": "Last synced: {{time}}"
@@ -366,12 +374,24 @@
       "authenticating": "Authenticating...",
       "syncSuccess": "Synced {{songs}} songs and {{setlists}} setlists.",
       "syncCreated": "First sync: pushed {{songs}} songs and {{setlists}} setlists.",
-      "syncFailed": "Sync failed: {{error}}",
       "upToDate": "Everything is up to date.",
       "notConfigured": "Google Drive sync not configured.",
       "goToSettings": "Go to Settings",
       "lastSync": "Last synced: {{time}}"
     }
+  },
+  "syncError": {
+    "syncFailed": "Sync did not go through.",
+    "connectionFailed": "Could not connect.",
+    "details": "Details",
+    "offline": "This device is offline: try again once it is back online.",
+    "signIn": "The sign-in was refused or has expired: check the token, or sign in again.",
+    "noAccess": "This account may not read or write the band's file: check the token's permissions or the file's sharing.",
+    "notFound": "The band's repository or file was not found: check its name in the connection below.",
+    "busy": "The service has had too many requests: try again in a few minutes.",
+    "serviceDown": "The service is having trouble: try again later.",
+    "badData": "The file could not be read: it is not an Open Setlist file, or it was changed by hand.",
+    "unknown": "Something unexpected happened: try again, and keep the details below if it goes on."
   },
   "syncConflicts": {
     "title": "Conflicts ({{count}})",
@@ -744,9 +764,10 @@
       "testConnection": "Test connection",
       "testing": "Testing...",
       "connected": "Connected to {{repo}}",
-      "connectionFailed": "Connection failed: {{error}}",
       "disconnect": "Disconnect",
       "disconnected": "Disconnected.",
+      "repoFormat": "Write the repository as owner/repo.",
+      "tokenRequired": "Paste the token.",
       "tokenHelp": "Create a fine-grained token at GitHub > Settings > Developer settings with Contents read/write permission."
     },
     "googleDrive": {
@@ -757,7 +778,6 @@
       "testConnection": "Test connection",
       "connected": "Connected",
       "connectedFile": "Connected to {{file}}",
-      "connectionFailed": "Connection failed: {{error}}",
       "disconnect": "Disconnect",
       "disconnected": "Disconnected.",
       "help": "Your data is stored as open-setlist.json in your Google Drive. Share the file with band members via Google Drive, then use the invite button."

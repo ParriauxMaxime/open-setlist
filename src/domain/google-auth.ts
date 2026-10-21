@@ -5,6 +5,11 @@ const SCOPE = "https://www.googleapis.com/auth/drive";
 let accessToken: string | null = null;
 let tokenExpiresAt = 0;
 
+/** Google turned the sign-in down or the musician closed it. */
+export class GoogleSignInError extends Error {
+  name = "GoogleSignInError";
+}
+
 export function isGoogleDriveAvailable(): boolean {
   return Boolean(__GOOGLE_CLIENT_ID__);
 }
@@ -44,7 +49,7 @@ export async function requestAccessToken(): Promise<string> {
         if (response.error) {
           accessToken = null;
           tokenExpiresAt = 0;
-          reject(new Error(response.error_description || response.error));
+          reject(new GoogleSignInError(response.error_description || response.error));
           return;
         }
         accessToken = response.access_token;

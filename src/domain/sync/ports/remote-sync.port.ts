@@ -23,6 +23,17 @@ export interface RemoteSyncPort {
   push(snapshot: Snapshot, versionToken: string | null): Promise<string>;
 }
 
+/** A refused request: the message is the service's own, the status says what kind. */
+export class RemoteHttpError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "RemoteHttpError";
+  }
+}
+
 export class ConflictError extends Error {
   constructor(message = "Remote file changed since last pull") {
     super(message);

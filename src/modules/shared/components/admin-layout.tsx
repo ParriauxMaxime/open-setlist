@@ -3,10 +3,11 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
 import { getPerformReturn, performReturnHref } from "../../performance/components/perform-sidebar";
+import { usePendingChanges } from "../hooks/use-pending-changes";
 import { GettingStartedBanner } from "./getting-started-banner";
 import { NavLink } from "./nav-link";
 import { ProfileSwitcher } from "./profile-switcher";
-import { MAIN_SECTIONS, SidebarNav } from "./sidebar-nav";
+import { MAIN_SECTIONS, PendingChangesBadge, SidebarNav } from "./sidebar-nav";
 import { SidebarPanel } from "./sidebar-panel";
 
 const isDev = process.env.NODE_ENV !== "production";
@@ -48,6 +49,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     : "songs";
 
   const performReturn = getPerformReturn();
+  const pending = usePendingChanges();
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeMobile = useCallback(() => setMobileOpen(false), []);
   const [toolsOpen, setToolsOpen] = useState(section === "tools");
@@ -216,7 +218,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <span className="text-xl leading-none" aria-hidden="true">
               {icon}
             </span>
-            {t(labelKey)}
+            <span className="flex items-center gap-1">
+              {t(labelKey)}
+              {to === "Sync" && pending ? <PendingChangesBadge count={pending} /> : null}
+            </span>
           </Link>
         ))}
       </nav>

@@ -4,14 +4,16 @@ import { buildInviteUrl, encodeOpenInvite, type InvitePayload } from "@domain/in
 import { loadProfiles } from "@domain/profiles";
 import { createDriveFile, createGoogleDriveAdapter } from "@domain/sync/adapters/google-drive";
 import { clearSyncConfig, loadSyncConfig, saveSyncConfig } from "@domain/sync/config";
+import { describeSyncError, type SyncProblem } from "@domain/sync/sync-error";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { SyncErrorMessage } from "../../shared/components/sync-error-message";
 
 type Status =
   | { type: "idle" }
   | { type: "connecting" }
   | { type: "connected"; file: string }
-  | { type: "error"; message: string }
+  | { type: "error"; problem: SyncProblem }
   | { type: "disconnected" };
 
 interface GoogleDriveConfigFormProps {
@@ -79,8 +81,7 @@ export function GoogleDriveConfigForm({
       onChange?.();
       setStatus({ type: "connected", file: fileName });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      setStatus({ type: "error", message });
+      setStatus({ type: "error", problem: describeSyncError(err, navigator.onLine) });
     }
   }, [profileId, onChange]);
 
@@ -167,9 +168,7 @@ export function GoogleDriveConfigForm({
                 </div>
               )}
               {status.type === "error" && (
-                <p className="text-sm text-danger">
-                  {t("settings.googleDrive.connectionFailed", { error: status.message })}
-                </p>
+                <SyncErrorMessage lead={t("syncError.connectionFailed")} problem={status.problem} />
               )}
               {status.type === "disconnected" && (
                 <p className="text-sm text-text-muted">{t("settings.googleDrive.disconnected")}</p>

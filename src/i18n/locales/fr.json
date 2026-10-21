@@ -341,6 +341,15 @@
     "upToDate": "Tout est à jour.",
     "setlistHelper": "Setlist Helper",
     "setlistHelperDesc": "Récupérez votre catalogue et vos setlists depuis l’appli Setlist Helper.",
+    "status": {
+      "notConnected": "Pas encore relié au groupe : connectez GitHub ou Google Drive ci-dessous.",
+      "lastSynced": "dernière synchro il y a {{time}}",
+      "neverSynced": "jamais synchronisé",
+      "pending_one": "{{count}} modification locale",
+      "pending_other": "{{count}} modifications locales",
+      "nothingPending": "rien en attente d’envoi",
+      "failed": "la dernière synchro n’a pas abouti"
+    },
     "files": {
       "synced": "Partitions\u00a0: {{sent}} envoyées, {{received}} reçues.",
       "failed": "Les chansons sont synchronisées, mais les partitions n’ont pas pu être transférées. Relancez la synchro plus tard.",
@@ -355,7 +364,6 @@
       "syncing": "Synchronisation...",
       "syncSuccess": "Synchronisé {{songs}} chansons et {{setlists}} setlists.",
       "syncCreated": "Première synchro\u00a0: envoyé {{songs}} chansons et {{setlists}} setlists.",
-      "syncFailed": "Échec de la synchro\u00a0: {{error}}",
       "notConfigured": "Synchronisation GitHub non configurée.",
       "goToSettings": "Aller aux paramètres",
       "lastSync": "Dernière synchro\u00a0: {{time}}"
@@ -366,12 +374,24 @@
       "authenticating": "Authentification...",
       "syncSuccess": "Synchronisé {{songs}} chansons et {{setlists}} setlists.",
       "syncCreated": "Première synchro\u00a0: envoyé {{songs}} chansons et {{setlists}} setlists.",
-      "syncFailed": "Échec de la synchro\u00a0: {{error}}",
       "upToDate": "Tout est à jour.",
       "notConfigured": "Synchronisation Google Drive non configurée.",
       "goToSettings": "Aller aux paramètres",
       "lastSync": "Dernière synchro\u00a0: {{time}}"
     }
+  },
+  "syncError": {
+    "syncFailed": "La synchro n’a pas abouti.",
+    "connectionFailed": "Connexion impossible.",
+    "details": "Détails",
+    "offline": "Cet appareil est hors ligne : réessayez une fois la connexion revenue.",
+    "signIn": "La connexion a été refusée ou a expiré : vérifiez le jeton, ou reconnectez-vous.",
+    "noAccess": "Ce compte n’a pas le droit de lire ou d’écrire le fichier du groupe : vérifiez les permissions du jeton ou le partage du fichier.",
+    "notFound": "Le dépôt ou le fichier du groupe est introuvable : vérifiez son nom dans la connexion ci-dessous.",
+    "busy": "Le service a reçu trop de demandes : réessayez dans quelques minutes.",
+    "serviceDown": "Le service a un souci : réessayez plus tard.",
+    "badData": "Le fichier n’a pas pu être lu : ce n’est pas un fichier Open Setlist, ou il a été modifié à la main.",
+    "unknown": "Un problème inattendu est survenu : réessayez, et gardez les détails ci-dessous si cela continue."
   },
   "syncConflicts": {
     "title": "Conflits ({{count}})",
@@ -744,9 +764,10 @@
       "testConnection": "Tester la connexion",
       "testing": "Test en cours...",
       "connected": "Connecté à {{repo}}",
-      "connectionFailed": "Échec de connexion\u00a0: {{error}}",
       "disconnect": "Déconnecter",
       "disconnected": "Déconnecté.",
+      "repoFormat": "Écrivez le dépôt sous la forme propriétaire/dépôt.",
+      "tokenRequired": "Collez le jeton.",
       "tokenHelp": "Créez un jeton à portée limitée dans GitHub > Settings > Developer settings avec la permission Contents en lecture/écriture."
     },
     "googleDrive": {
@@ -757,7 +778,6 @@
       "testConnection": "Tester la connexion",
       "connected": "Connecté",
       "connectedFile": "Connecté à {{file}}",
-      "connectionFailed": "Échec de connexion\u00a0: {{error}}",
       "disconnect": "Déconnecter",
       "disconnected": "Déconnecté.",
       "help": "Vos données sont stockées dans le fichier open-setlist.json de votre Google Drive. Partagez le fichier avec les membres du groupe via Google Drive, puis utilisez le bouton d'invitation."

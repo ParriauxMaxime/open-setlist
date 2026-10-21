@@ -1,6 +1,6 @@
 import { snapshotSchema } from "@domain/schemas/snapshot";
 import type { GitHubConfig } from "../config";
-import { ConflictError, type RemoteSyncPort } from "../ports/remote-sync.port";
+import { ConflictError, RemoteHttpError, type RemoteSyncPort } from "../ports/remote-sync.port";
 
 /** Sheet music files sit in this folder, next to the snapshot file. */
 const FILES_DIR = "open-setlist-files";
@@ -25,7 +25,7 @@ function fromBase64(b64: string): string {
 
 async function apiError(res: Response): Promise<Error> {
   const body = await res.json().catch(() => ({}));
-  return new Error(body.message || `GitHub API error: ${res.status}`);
+  return new RemoteHttpError(body.message || `GitHub API error: ${res.status}`, res.status);
 }
 
 export function createGitHubAdapter(config: GitHubConfig): RemoteSyncPort {

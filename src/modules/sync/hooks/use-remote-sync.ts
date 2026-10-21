@@ -11,6 +11,7 @@ import {
   SyncReviewRequiredError,
 } from "@domain/sync/orchestrator";
 import type { RemoteSyncPort } from "@domain/sync/ports/remote-sync.port";
+import { describeSyncError, type SyncProblem } from "@domain/sync/sync-error";
 import {
   detectTranspositionMismatches,
   type TranspositionMismatch,
@@ -24,26 +25,24 @@ export type RemoteSyncStatus =
   | { type: "review"; ctx: SyncReviewContext; refreshed?: boolean }
   | { type: "pushing" }
   | { type: "success"; result: SyncResult; files?: FileSyncResult | "failed" }
-  | { type: "error"; message: string };
+  | { type: "error"; problem: SyncProblem };
 
 interface RemoteSyncOptions {
   /** Adapter of the active profile, or null when it syncs with something else. */
   createAdapter: () => RemoteSyncPort | null;
   /** Runs before the pull, e.g. a sign-in. */
   prepare?: () => Promise<unknown>;
-  describeError?: (err: unknown) => string;
   onTranspositionMismatches: (mismatches: TranspositionMismatch[]) => void;
 }
 
-function defaultMessage(err: unknown): string {
-  return err instanceof Error ? err.message : "Unknown error";
+function problemOf(err: unknown): SyncProblem {
+  return describeSyncError(err, navigator.onLine);
 }
 
 /** The pull → review → push flow of the Sync page, for one remote. */
 export function useRemoteSync({
   createAdapter,
   prepare,
-  describeError = defaultMessage,
   onTranspositionMismatches,
 }: RemoteSyncOptions) {
   const db = useDb();
@@ -74,7 +73,7 @@ export function useRemoteSync({
       if ("status" in result) await finish(adapter, result);
       else setStatus({ type: "review", ctx: result });
     } catch (err) {
-      setStatus({ type: "error", message: describeError(err) });
+      setStatus({ type: "error", problem: problemOf(err) });
     }
   };
 
@@ -95,7 +94,7 @@ export function useRemoteSync({
         setStatus({ type: "review", ctx: err.ctx, refreshed: true });
         return;
       }
-      setStatus({ type: "error", message: describeError(err) });
+      setStatus({ type: "error", problem: problemOf(err) });
     }
   };
 

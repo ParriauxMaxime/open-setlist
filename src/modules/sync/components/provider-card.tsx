@@ -2,6 +2,7 @@ import { formatTimeAgo } from "@domain/format";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge, Card, CardRow } from "../../design-system/components/card";
+import { SyncErrorMessage } from "../../shared/components/sync-error-message";
 import type { useRemoteSync } from "../hooks/use-remote-sync";
 import { FileSyncSummary } from "./file-sync-summary";
 import { SyncReview } from "./sync-review";
@@ -112,9 +113,7 @@ export function ProviderCard({
           )}
           {status.type === "success" && <FileSyncSummary files={status.files} />}
           {status.type === "error" && (
-            <p className="text-sm text-danger">
-              {t(`${i18nKey}.syncFailed`, { error: status.message })}
-            </p>
+            <SyncErrorMessage lead={t("syncError.syncFailed")} problem={status.problem} />
           )}
         </div>
       )}

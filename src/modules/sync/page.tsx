@@ -6,6 +6,7 @@ import { fileAdapter } from "@domain/sync/adapters/file";
 import { createGitHubAdapter } from "@domain/sync/adapters/github";
 import { createGoogleDriveAdapter } from "@domain/sync/adapters/google-drive";
 import { loadSyncConfig } from "@domain/sync/config";
+import { describeSyncError, type SyncProblem } from "@domain/sync/sync-error";
 import type { TranspositionMismatch } from "@domain/sync/transposition-mismatch";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useState } from "react";
@@ -15,9 +16,12 @@ import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { GitHubIcon, GoogleDriveIcon } from "../design-system/components/icons";
 import { GitHubConfigForm } from "../settings/components/github-config-form";
 import { GoogleDriveConfigForm } from "../settings/components/google-drive-config-form";
+import { SyncErrorMessage } from "../shared/components/sync-error-message";
+import { usePendingChanges } from "../shared/hooks/use-pending-changes";
 import { ProviderCard } from "./components/provider-card";
 import { SetlistHelperImport } from "./components/setlist-helper-import";
 import { SetlistHelperSetlistImport } from "./components/setlist-helper-setlist-import";
+import { SyncStatusLine } from "./components/sync-status-line";
 import { TranspositionAlert } from "./components/transposition-alert";
 import { useRemoteSync } from "./hooks/use-remote-sync";
 
@@ -26,7 +30,7 @@ type Status =
   | { type: "exporting" }
   | { type: "importing" }
   | { type: "success"; message: string }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string; problem?: SyncProblem };
 
 export function SyncPage() {
   const { t } = useTranslation();
@@ -34,6 +38,7 @@ export function SyncPage() {
   const profileId = useActiveProfileId();
   const songCount = useLiveQuery(() => db.songs.count(), [db]) ?? 0;
   const setlistCount = useLiveQuery(() => db.setlists.count(), [db]) ?? 0;
+  const pending = usePendingChanges();
   const [status, setStatus] = useState<Status>({ type: "idle" });
   const [confirmImport, setConfirmImport] = useState(false);
   const [transpositionMismatches, setTranspositionMismatches] = useState<TranspositionMismatch[]>(
@@ -92,8 +97,11 @@ export function SyncPage() {
         setStatus({ type: "idle" });
         return;
       }
-      const message = err instanceof Error ? err.message : t("sync.importFailed");
-      setStatus({ type: "error", message });
+      setStatus({
+        type: "error",
+        message: t("sync.importFailed"),
+        problem: describeSyncError(err),
+      });
     }
   }, [t, db]);
 
@@ -106,10 +114,17 @@ export function SyncPage() {
         onDismiss={() => setTranspositionMismatches([])}
       />
       <h1 className="text-2xl font-bold">{t("sync.title")}</h1>
-      <p className="mb-6 text-sm text-text-muted">
-        {t("sync.songCount", { count: songCount })},{" "}
-        {t("sync.setlistCount", { count: setlistCount })}
-      </p>
+      <div className="mb-6">
+        <SyncStatusLine
+          config={syncConfig}
+          pending={pending}
+          failed={(gdConfigured ? googleDrive : github).status.type === "error"}
+        />
+        <p className="text-xs text-text-faint">
+          {t("sync.songCount", { count: songCount })},{" "}
+          {t("sync.setlistCount", { count: setlistCount })}
+        </p>
+      </div>
 
       <div className="max-w-2xl">
         <ProviderCard
@@ -186,7 +201,12 @@ export function SyncPage() {
           {(status.type === "success" || status.type === "error") && (
             <div aria-live="polite" className="px-4 py-3">
               {status.type === "success" && <p className="text-sm text-accent">{status.message}</p>}
-              {status.type === "error" && <p className="text-sm text-danger">{status.message}</p>}
+              {status.type === "error" &&
+                (status.problem ? (
+                  <SyncErrorMessage lead={status.message} problem={status.problem} />
+                ) : (
+                  <p className="text-sm text-danger">{status.message}</p>
+                ))}
             </div>
           )}
         </Card>

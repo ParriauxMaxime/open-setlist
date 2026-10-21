@@ -1,4 +1,20 @@
-import { formatDuration, formatLongDuration, parseDuration } from "./format";
+import { formatDuration, formatLongDuration, formatTimeAgo, parseDuration } from "./format";
+
+describe("formatTimeAgo", () => {
+  const now = Date.UTC(2026, 9, 21, 12);
+  beforeEach(() => jest.spyOn(Date, "now").mockReturnValue(now));
+  afterEach(() => jest.restoreAllMocks());
+
+  it("reads under a minute as such", () => {
+    expect(formatTimeAgo(now - 30_000)).toBe("< 1 min");
+  });
+
+  it("counts minutes, then hours, then days", () => {
+    expect(formatTimeAgo(now - 3 * 60_000)).toBe("3 min");
+    expect(formatTimeAgo(now - 5 * 3_600_000)).toBe("5h");
+    expect(formatTimeAgo(now - 2 * 86_400_000)).toBe("2d");
+  });
+});
 
 describe("formatLongDuration", () => {
   it("keeps minutes and seconds under an hour", () => {

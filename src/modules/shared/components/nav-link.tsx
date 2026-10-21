@@ -1,4 +1,5 @@
 import { Link } from "@swan-io/chicane";
+import type { ReactNode } from "react";
 import { Router } from "../../../router";
 
 type RouteName = Parameters<typeof Router.useRoute>[0][number];
@@ -10,9 +11,11 @@ interface NavLinkProps {
   icon?: string;
   active?: boolean;
   onClick?: () => void;
+  /** Small count or state at the end of the line. */
+  badge?: ReactNode;
 }
 
-export function NavLink({ to, params, label, icon, active, onClick }: NavLinkProps) {
+export function NavLink({ to, params, label, icon, active, onClick, badge }: NavLinkProps) {
   return (
     <Link
       to={(Router[to] as (params?: Record<string, string>) => string)(params)}
@@ -31,6 +34,7 @@ export function NavLink({ to, params, label, icon, active, onClick }: NavLinkPro
         </span>
       )}
       <span>{label}</span>
+      {badge && <span className="ml-auto">{badge}</span>}
     </Link>
   );
 }

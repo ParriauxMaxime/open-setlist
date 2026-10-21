@@ -1,10 +1,15 @@
 import { requestAccessToken } from "@domain/google-auth";
 import { snapshotSchema } from "@domain/schemas/snapshot";
 import type { GoogleDriveConfig } from "../config";
-import { ConflictError, type RemoteSyncPort } from "../ports/remote-sync.port";
+import { ConflictError, RemoteHttpError, type RemoteSyncPort } from "../ports/remote-sync.port";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3/files";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3/files";
+
+async function driveError(res: Response): Promise<Error> {
+  const body = await res.json().catch(() => ({}));
+  return new RemoteHttpError(body.error?.message || `Drive API error: ${res.status}`, res.status);
+}
 
 async function driveHeaders(): Promise<Record<string, string>> {
   const token = await requestAccessToken();
@@ -24,10 +29,7 @@ export function createGoogleDriveAdapter(config: GoogleDriveConfig): RemoteSyncP
     async testConnection() {
       const headers = await driveHeaders();
       const res = await fetch(`${DRIVE_API}/${fileId}?fields=name`, { headers });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error?.message || `Drive API error: ${res.status}`);
-      }
+      if (!res.ok) throw await driveError(res);
       const data = await res.json();
       return data.name;
     },
@@ -39,18 +41,14 @@ export function createGoogleDriveAdapter(config: GoogleDriveConfig): RemoteSyncP
       const metaRes = await fetch(`${DRIVE_API}/${fileId}?fields=headRevisionId`, { headers });
       if (!metaRes.ok) {
         if (metaRes.status === 404) return null;
-        const body = await metaRes.json().catch(() => ({}));
-        throw new Error(body.error?.message || `Drive API error: ${metaRes.status}`);
+        throw await driveError(metaRes);
       }
       const meta = await metaRes.json();
       const versionToken: string = meta.headRevisionId;
 
       // Get file content
       const contentRes = await fetch(`${DRIVE_API}/${fileId}?alt=media`, { headers });
-      if (!contentRes.ok) {
-        const body = await contentRes.json().catch(() => ({}));
-        throw new Error(body.error?.message || `Drive API error: ${contentRes.status}`);
-      }
+      if (!contentRes.ok) throw await driveError(contentRes);
       const text = await contentRes.text();
       if (!text || text === "{}") return null;
       const snapshot = snapshotSchema.parse(JSON.parse(text));
@@ -84,10 +82,7 @@ export function createGoogleDriveAdapter(config: GoogleDriveConfig): RemoteSyncP
       if (res.status === 409) {
         throw new ConflictError();
       }
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error?.message || `Drive API error: ${res.status}`);
-      }
+      if (!res.ok) throw await driveError(res);
       const data = await res.json();
       return data.headRevisionId;
     },
@@ -124,10 +119,7 @@ export async function createDriveFile(parentFolderId?: string): Promise<string> 
     body,
   });
 
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error?.message || `Drive API error: ${res.status}`);
-  }
+  if (!res.ok) throw await driveError(res);
 
   const data = await res.json();
   return data.id;
