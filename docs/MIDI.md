@@ -55,12 +55,17 @@ HTTP on port 7777, JSON, open to any origin (it is only reachable on the band's 
 
 | Request | Result |
 |---|---|
-| `GET /status` | name, version, MIDI output and input in use, Bluetooth state, last messages, last answers from the gear |
-| `POST /midi` `{"messages":[[176,21,0],[176,20,6]],"from":"keys"}` | 200 `{"sent":2}`; 400 if malformed; 503 without a MIDI output |
+| `GET /status` | name, version, seconds since it started (`uptime`), MIDI output and input in use, Bluetooth state, last 20 batches, last answers from the gear |
+| `POST /midi` `{"messages":[[176,21,0],[176,20,6]],"from":"keys","device":"<id>"}` | 200 `{"sent":2}`; 400 if malformed; 503 without a MIDI output. `device` is optional and ties the batch to a device of `/devices` |
 | `POST /position` `{"from","setlistId","songId","index"}` | 200 `{"seq":n}` |
 | `GET /position?after=<seq>&wait=<s>` | 200 `{"seq","position"}` as soon as there is a newer one, else 204 after the wait |
 | `GET /feedback?after=<seq>&wait=<s>` | 200 `{"seq","state":[[176,20,22],[176,21,1]]}`, the last value of each control the gear sent back, as soon as newer than `after`, else 204 after the wait |
+| `POST /presence` `{"id","name","part","platform","appVersion","page","setlistId"?,"songId"?,"index"?,"follow","midi":{"transport","lastSend","channel"?}}` | 200 `{"seq":n}`; 400 without an `id` and a `name`. Each device sends it every 5 s; the companion keeps one entry per `id`, relayed as it came plus `address` and `lastSeen`, and forgets a device silent for 15 s |
+| `GET /devices?after=<seq>&wait=<s>` | 200 `{"seq","now","devices":[...]}` as soon as newer than `after`, else 204 after the wait. Every report, arrival and departure counts as newer |
+| `GET /log?after=<seq>&wait=<s>` | 200 `{"seq","now","entries":[{"seq","at","from","device"?,"via","messages"}]}`, the last 50 batches played, newest first, as soon as newer than `after`, else 204 after the wait |
 | `GET /` | status page for the person at the computer, with a QR code that sets a tablet up |
+
+Times (`at`, `lastSeen`, `now`) are milliseconds since 1970 on the companion's clock: the app compares them with `now`, not with its own clock, since a gig has no internet to set clocks by.
 
 The QR code opens `…/settings?companion=<address>`: the app stores the address and shows the MIDI settings.
 

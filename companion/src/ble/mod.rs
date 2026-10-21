@@ -10,7 +10,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::Arc;
 use std::thread;
 
-use crate::hub::{Bluetooth, Hub, Via};
+use crate::hub::{Bluetooth, Hub, Sender, Via};
 
 // The service and its only characteristic, as set by the BLE MIDI specification.
 const SERVICE: u128 = 0x03B80E5A_EDE8_4B33_A751_6CE34EC4C700;
@@ -58,7 +58,12 @@ fn received(hub: &Hub, packet: &[u8]) {
     let _ = catch_unwind(AssertUnwindSafe(|| {
         let messages = packet::parse(packet);
         if !messages.is_empty() {
-            let _ = hub.play(messages, LABEL.to_string(), Via::Bluetooth);
+            let sender = Sender {
+                from: LABEL.to_string(),
+                device: None,
+                via: Via::Bluetooth,
+            };
+            let _ = hub.play(messages, sender);
         }
     }));
 }

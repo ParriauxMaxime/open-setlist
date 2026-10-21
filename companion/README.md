@@ -65,11 +65,14 @@ JSON over HTTP, answered with the headers a web page from another origin needs.
 
 | Request | Answer |
 |---|---|
-| `GET /status` | Name, version, MIDI output, Bluetooth state, last 20 batches |
-| `POST /midi` `{"messages":[[176,20,6]],"from":"Keys"}` | `{"sent":1}`; 400 if a message is not a channel voice message, 503 without a MIDI output |
+| `GET /status` | Name, version, seconds since it started, MIDI output, Bluetooth state, last 20 batches |
+| `POST /midi` `{"messages":[[176,20,6]],"from":"Keys","device":"<id>"}` | `{"sent":1}`; 400 if a message is not a channel voice message, 503 without a MIDI output. `device` is optional |
 | `POST /position` `{"from","setlistId","songId","index"}` | `{"seq":1}` |
 | `GET /position?after=<seq>&wait=<seconds>` | The latest position once it is newer than `after`, or 204 when the wait runs out |
 | `GET /feedback?after=<seq>&wait=<seconds>` | `{"seq":3,"state":[[176,20,22],[176,21,1]]}`, the last value of each control the gear sent back, once newer than `after`; 204 when the wait runs out |
+| `POST /presence` `{"id","name","part","platform","page","follow","midi",…}` | `{"seq":4}`; 400 without an `id` and a `name`. Each tablet sends it every 5 seconds; one silent for 15 seconds is forgotten |
+| `GET /devices?after=<seq>&wait=<seconds>` | `{"seq","now","devices":[…]}`, each report as it came with `address` and `lastSeen`, once newer than `after`; 204 when the wait runs out |
+| `GET /log?after=<seq>&wait=<seconds>` | `{"seq","now","entries":[…]}`, the last 50 batches played, newest first, once newer than `after`; 204 when the wait runs out |
 | `GET /` | The status page |
 
 There is no authentication: the program is meant for a router that only the band uses.

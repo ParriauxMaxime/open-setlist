@@ -43,6 +43,16 @@ impl<T: Clone> Latest<T> {
         inner.seq
     }
 
+    /// Changes the value in place, and wakes the waiters only when `change` says it changed.
+    pub fn update_if(&self, change: impl FnOnce(&mut Option<T>) -> bool) -> u64 {
+        let mut inner = lock(&self.inner);
+        if change(&mut inner.value) {
+            inner.seq += 1;
+            self.changed.notify_all();
+        }
+        inner.seq
+    }
+
     pub fn current(&self) -> (u64, Option<T>) {
         let inner = lock(&self.inner);
         (inner.seq, inner.value.clone())
@@ -111,6 +121,15 @@ mod tests {
         latest.update(|value| value.get_or_insert_with(Vec::new).push(1));
         latest.update(|value| value.get_or_insert_with(Vec::new).push(2));
         assert_eq!(latest.current(), (2, Some(vec![1, 2])));
+    }
+
+    #[test]
+    fn counts_only_what_changed() {
+        let latest: Latest<u8> = Latest::default();
+        assert_eq!(latest.update_if(|_| false), 0);
+        assert_eq!(latest.update_if(|value| value.replace(1).is_none()), 1);
+        assert_eq!(latest.update_if(|value| value.replace(1).is_none()), 1);
+        assert_eq!(latest.current(), (1, Some(1)));
     }
 
     #[test]

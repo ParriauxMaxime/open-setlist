@@ -34,10 +34,15 @@ struct Companion {
 
 impl Companion {
     fn start() -> Self {
+        Self::forgetting_after(Duration::from_secs(15))
+    }
+
+    /// A companion that forgets a silent tablet after `silence`.
+    fn forgetting_after(silence: Duration) -> Self {
         let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
         let port = listener.local_addr().unwrap().port();
         let out = Arc::new(FakeOut::default());
-        let hub = Arc::new(Hub::new(out.clone(), Bluetooth::Off));
+        let hub = Arc::new(Hub::new(out.clone(), Bluetooth::Off).forgetting_after(silence));
         let settings = Settings {
             name: "Stage PC".to_string(),
             local_name: None,
@@ -138,14 +143,30 @@ fn position(index: u64) -> Value {
     json!({"from": "tablet-1", "setlistId": "gig", "songId": format!("song-{index}"), "index": index})
 }
 
+fn presence(id: &str, page: &str) -> Value {
+    json!({
+        "id": id,
+        "name": "Keys · iPad",
+        "part": "keys",
+        "platform": "iPad",
+        "appVersion": "0.1.0",
+        "page": page,
+        "follow": "off",
+        "midi": {"transport": "wifi", "lastSend": "none"},
+    })
+}
+
 #[test]
 fn status_describes_the_companion() {
     let companion = Companion::start();
     let answer = companion.get("/status");
     assert_eq!(answer.status, 200);
     assert_eq!(answer.header("content-type"), Some("application/json"));
+    let mut status = answer.json();
+    assert!(status["uptime"].is_u64());
+    status.as_object_mut().unwrap().remove("uptime");
     assert_eq!(
-        answer.json(),
+        status,
         json!({
             "app": "open-setlist-companion",
             "version": env!("CARGO_PKG_VERSION"),
@@ -183,6 +204,9 @@ fn every_answer_can_be_read_by_a_page_from_another_origin() {
         companion.post("/midi", &json!({"messages": [[176, 20, 6]]})),
         companion.post("/midi", &json!({"messages": [[240]]})),
         companion.post("/position", &position(0)),
+        companion.post("/presence", &presence("tablet-1", "Catalog")),
+        companion.get("/devices?after=1&wait=0"),
+        companion.get("/log?wait=0"),
         companion.request("OPTIONS", "/midi", ""),
         {
             companion.out.unplug();
@@ -190,7 +214,12 @@ fn every_answer_can_be_read_by_a_page_from_another_origin() {
         },
     ];
     let statuses: Vec<u16> = answers.iter().map(|answer| answer.status).collect();
-    assert_eq!(statuses, [200, 200, 204, 400, 404, 200, 400, 200, 204, 503]);
+    assert_eq!(
+        statuses,
+        [
+            200, 200, 204, 400, 404, 200, 400, 200, 200, 204, 200, 204, 503
+        ]
+    );
     for answer in &answers {
         for (name, value) in HEADERS {
             assert_eq!(answer.header(name), Some(value), "{name}");
@@ -452,6 +481,152 @@ fn feedback_is_held_until_the_gear_answers() {
     let status = companion.get("/status").json();
     assert_eq!(status["midiIn"], "Open Setlist");
     assert_eq!(status["feedback"]["seq"], 3);
+}
+
+#[test]
+fn presence_keeps_one_entry_per_device() {
+    let companion = Companion::start();
+    assert_eq!(companion.get("/devices?wait=0").status, 204);
+    let before = unix_ms();
+
+    let answer = companion.post("/presence", &presence("tablet-1", "Catalog"));
+    assert_eq!(answer.status, 200);
+    assert_eq!(answer.json(), json!({"seq": 1}));
+    companion.post("/presence", &presence("tablet-2", "Settings"));
+    let answer = companion.post("/presence", &presence("tablet-1", "Perform"));
+    assert_eq!(answer.json(), json!({"seq": 3}));
+
+    let answer = companion.get("/devices?after=0");
+    assert_eq!(answer.status, 200);
+    let reply = answer.json();
+    assert_eq!(reply["seq"], 3);
+    assert!(reply["now"].as_u64().unwrap() >= before);
+    let devices = reply["devices"].as_array().unwrap();
+    assert_eq!(devices.len(), 2);
+    let mut first = devices[0].clone();
+    let seen = first["lastSeen"].as_u64().unwrap();
+    assert!((before..=unix_ms()).contains(&seen));
+    first.as_object_mut().unwrap().remove("lastSeen");
+    let mut expected = presence("tablet-1", "Perform");
+    expected["address"] = json!("127.0.0.1");
+    assert_eq!(first, expected);
+    assert_eq!(devices[1]["page"], "Settings");
+}
+
+#[test]
+fn presence_refuses_what_names_no_device() {
+    let companion = Companion::start();
+    let refused = [
+        "not json".to_string(),
+        json!({"name": "Keys"}).to_string(),
+        json!({"id": "", "name": "Keys"}).to_string(),
+        json!({"id": 1, "name": "Keys"}).to_string(),
+        json!({"id": "tablet-1"}).to_string(),
+        json!(["tablet-1"]).to_string(),
+    ];
+    for body in refused {
+        let answer = companion.request("POST", "/presence", &body);
+        assert_eq!(answer.status, 400, "{body}");
+        assert_eq!(answer.json(), json!({"error": "bad-request"}));
+    }
+    for query in ["after=abc", "wait=soon"] {
+        assert_eq!(companion.get(&format!("/devices?{query}")).status, 400);
+    }
+    assert_eq!(companion.get("/devices?wait=0").status, 204);
+}
+
+#[test]
+fn devices_are_held_until_a_tablet_comes_or_goes() {
+    let companion = Companion::forgetting_after(Duration::from_millis(400));
+    let waiting = {
+        let port = companion.port;
+        thread::spawn(move || common::request(port, "GET", "/devices?after=0&wait=20", "").unwrap())
+    };
+    thread::sleep(Duration::from_millis(100));
+    let started = Instant::now();
+    companion.post("/presence", &presence("tablet-1", "Catalog"));
+    let answer = waiting.join().unwrap();
+    assert_eq!(answer.json()["seq"], 1);
+    assert_eq!(answer.json()["devices"][0]["id"], "tablet-1");
+    assert!(started.elapsed() < Duration::from_secs(2));
+
+    // Silent from now on: forgotten, and the page that waits is told
+    let answer = companion.get("/devices?after=1&wait=5");
+    assert_eq!(answer.status, 200);
+    assert_eq!(answer.json()["seq"], 2);
+    assert_eq!(answer.json()["devices"], json!([]));
+    assert!(started.elapsed() >= Duration::from_millis(400));
+    assert!(started.elapsed() < Duration::from_secs(3));
+}
+
+#[test]
+fn a_tablet_that_keeps_reporting_stays() {
+    let companion = Companion::forgetting_after(Duration::from_millis(400));
+    for _ in 0..6 {
+        companion.post("/presence", &presence("tablet-1", "Catalog"));
+        thread::sleep(Duration::from_millis(150));
+    }
+    let answer = companion.get("/devices");
+    assert_eq!(answer.json()["seq"], 6);
+    assert_eq!(answer.json()["devices"].as_array().unwrap().len(), 1);
+}
+
+#[test]
+fn log_gives_the_last_batches_newest_first() {
+    let companion = Companion::start();
+    assert_eq!(companion.get("/log?wait=0").status, 204);
+    let before = unix_ms();
+    companion.post(
+        "/midi",
+        &json!({"messages": [[158, 111, 100], [142, 111, 0]], "from": "keys", "device": "tablet-1"}),
+    );
+    companion.post("/midi", &json!({"messages": [[193, 11]], "from": "bass"}));
+
+    let reply = companion.get("/log?after=0").json();
+    assert_eq!(reply["seq"], 2);
+    assert!(reply["now"].as_u64().unwrap() >= before);
+    let entries = reply["entries"].as_array().unwrap();
+    assert_eq!(entries.len(), 2);
+    assert_eq!(entries[0]["seq"], 2);
+    assert_eq!(entries[0]["from"], "bass");
+    assert_eq!(entries[0].get("device"), None);
+    assert_eq!(entries[1]["seq"], 1);
+    assert_eq!(entries[1]["device"], "tablet-1");
+    assert_eq!(entries[1]["via"], "wifi");
+    assert_eq!(
+        entries[1]["messages"],
+        json!([[158, 111, 100], [142, 111, 0]])
+    );
+    assert!((before..=unix_ms()).contains(&entries[1]["at"].as_u64().unwrap()));
+    assert_eq!(
+        companion.get("/status").json()["recent"][1]["device"],
+        "tablet-1"
+    );
+
+    assert_eq!(companion.get("/log?after=2&wait=0").status, 204);
+    let waiting = {
+        let port = companion.port;
+        thread::spawn(move || common::request(port, "GET", "/log?after=2&wait=20", "").unwrap())
+    };
+    thread::sleep(Duration::from_millis(100));
+    companion.post("/midi", &json!({"messages": [[176, 20, 6]]}));
+    let reply = waiting.join().unwrap().json();
+    assert_eq!(reply["seq"], 3);
+    assert_eq!(reply["entries"][0]["messages"], json!([[176, 20, 6]]));
+}
+
+#[test]
+fn log_keeps_fifty_batches_and_the_status_twenty() {
+    let companion = Companion::start();
+    for program in 0..55 {
+        companion.post("/midi", &json!({"messages": [[192, program]]}));
+    }
+    let entries = companion.get("/log").json()["entries"].clone();
+    assert_eq!(entries.as_array().unwrap().len(), 50);
+    assert_eq!(entries[0]["messages"], json!([[192, 54]]));
+    assert_eq!(entries[49]["seq"], 6);
+    let status = companion.get("/status").json();
+    assert_eq!(status["recent"].as_array().unwrap().len(), 20);
 }
 
 #[test]

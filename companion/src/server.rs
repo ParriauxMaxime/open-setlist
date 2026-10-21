@@ -11,10 +11,10 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 
 use crate::http::{self, Incoming, Reply, Request};
-use crate::hub::{Hub, Via};
+use crate::hub::{Hub, Sender, Via};
 use crate::midi::{Message, NoOutput, is_channel_voice};
 use crate::tls::Connection;
-use crate::{net, page};
+use crate::{net, page, unix_ms};
 
 pub const APP: &str = "open-setlist-companion";
 pub const DEFAULT_PORT: u16 = 7777;
@@ -25,6 +25,8 @@ const MAX_LABEL: usize = 40;
 const DEFAULT_WAIT: u64 = 25;
 const MAX_WAIT: u64 = 30;
 const ACCEPT_AGAIN: Duration = Duration::from_millis(50);
+/// How often silent tablets are looked for, at most.
+const LOOK_FOR_SILENCE: Duration = Duration::from_secs(1);
 
 /// The app is a web page from another origin, served over HTTPS, calling a private address.
 const HEADERS: [(&str, &str); 6] = [
@@ -50,6 +52,9 @@ struct Play {
     messages: Vec<Message>,
     #[serde(default)]
     from: Option<String>,
+    /// The id the tablet also reports on `/presence`.
+    #[serde(default)]
+    device: Option<String>,
 }
 
 fn reply(status: u16, content_type: Option<&'static str>, body: Vec<u8>) -> Reply {
@@ -90,6 +95,16 @@ pub fn start(
     tls: Option<Arc<ServerConfig>>,
 ) -> io::Result<()> {
     let settings = Arc::new(settings);
+    let watched = hub.clone();
+    let tick = (watched.presence.silence() / 5).min(LOOK_FOR_SILENCE);
+    thread::Builder::new()
+        .name("presence".to_string())
+        .spawn(move || {
+            loop {
+                thread::sleep(tick);
+                watched.presence.forget_silent();
+            }
+        })?;
     thread::Builder::new()
         .name("http".to_string())
         .spawn(move || {
@@ -140,6 +155,9 @@ fn route(request: &Request, hub: &Hub, settings: &Settings) -> Reply {
         ("POST", "/position") => publish(request, hub),
         ("GET", "/position") => next_position(&request.query, hub),
         ("GET", "/feedback") => next_feedback(&request.query, hub),
+        ("POST", "/presence") => report(request, hub),
+        ("GET", "/devices") => next_devices(&request.query, hub),
+        ("GET", "/log") => next_log(&request.query, hub),
         _ => error(404, "not-found"),
     }
 }
@@ -149,6 +167,7 @@ fn status(hub: &Hub, settings: &Settings) -> Value {
         "app": APP,
         "version": env!("CARGO_PKG_VERSION"),
         "name": settings.name,
+        "uptime": hub.uptime().as_secs(),
         "midiOut": hub.midi_out(),
         "midiIn": hub.midi_in(),
         "bluetooth": hub.bluetooth(),
@@ -172,8 +191,15 @@ fn play(request: &Request, hub: &Hub) -> Reply {
     if !valid {
         return bad_request();
     }
-    let from = label(play.from.as_deref(), request);
-    match hub.play(play.messages, from, Via::Wifi) {
+    let sender = Sender {
+        from: label(play.from.as_deref(), request),
+        device: play
+            .device
+            .filter(|device| !device.is_empty())
+            .map(|device| device.chars().take(MAX_LABEL).collect()),
+        via: Via::Wifi,
+    };
+    match hub.play(play.messages, sender) {
         Ok(sent) => json_reply(200, json!({ "sent": sent })),
         Err(NoOutput) => error(503, "no-midi-output"),
     }
@@ -243,6 +269,44 @@ fn next_feedback(query: &str, hub: &Hub) -> Reply {
     };
     match hub.feedback.next(after, wait) {
         Some(current) => json_reply(200, feedback(current)),
+        None => empty(),
+    }
+}
+
+fn report(request: &Request, hub: &Hub) -> Reply {
+    let seq = serde_json::from_slice::<Value>(&request.body)
+        .ok()
+        .and_then(|report| hub.presence.report(report, request.from));
+    match seq {
+        Some(seq) => json_reply(200, json!({ "seq": seq })),
+        None => bad_request(),
+    }
+}
+
+/// Holds the request until a tablet came, went or reported again.
+fn next_devices(query: &str, hub: &Hub) -> Reply {
+    let Some((after, wait)) = poll(query) else {
+        return bad_request();
+    };
+    match hub.presence.next(after, wait) {
+        Some((seq, devices)) => json_reply(
+            200,
+            json!({ "seq": seq, "now": unix_ms(), "devices": devices }),
+        ),
+        None => empty(),
+    }
+}
+
+/// Holds the request until a batch newer than what the page has was played.
+fn next_log(query: &str, hub: &Hub) -> Reply {
+    let Some((after, wait)) = poll(query) else {
+        return bad_request();
+    };
+    match hub.next_log(after, wait) {
+        Some((seq, entries)) => json_reply(
+            200,
+            json!({ "seq": seq, "now": unix_ms(), "entries": entries }),
+        ),
         None => empty(),
     }
 }

@@ -1,19 +1,25 @@
 //! What the Wi-Fi server and the Bluetooth peripheral share: the MIDI output, the counters
-//! behind the status page, the leader's position and what the gear sends back.
+//! and the log behind the status page, the leader's position, the tablets that are on and
+//! what the gear sends back.
 
 use std::collections::VecDeque;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant};
 
 use serde::Serialize;
 
 use crate::feedback::Feedback;
-use crate::lock;
+use crate::latest::Latest;
 use crate::midi::{Message, MidiOut, NoOutput};
 use crate::position::Positions;
+use crate::presence::{Presence, SILENCE};
+use crate::{lock, unix_ms};
 
+/// Batches on the status page.
 const RECENT: usize = 20;
+/// Batches in the log the app's Companion page reads.
+const LOG: usize = 50;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -33,21 +39,36 @@ pub enum Bluetooth {
     Starting,
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Batch {
+    /// Numbered from 1 since the program started.
+    pub seq: u64,
     pub at: u64,
     pub from: String,
+    /// The id of the tablet, when it gave one.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub device: Option<String>,
     pub via: Via,
     pub messages: Vec<Message>,
 }
 
+/// Who a batch came from.
+pub struct Sender {
+    /// What the status page shows: the tablet's label, or its address.
+    pub from: String,
+    pub device: Option<String>,
+    pub via: Via,
+}
+
 pub struct Hub {
     out: Arc<dyn MidiOut>,
+    started: Instant,
     sent: AtomicU64,
-    recent: Mutex<VecDeque<Batch>>,
+    log: Latest<VecDeque<Batch>>,
     bluetooth: Mutex<Bluetooth>,
     midi_in: Mutex<Option<String>>,
     pub positions: Positions,
+    pub presence: Presence,
     pub feedback: Arc<Feedback>,
 }
 
@@ -55,28 +76,41 @@ impl Hub {
     pub fn new(out: Arc<dyn MidiOut>, bluetooth: Bluetooth) -> Self {
         Self {
             out,
+            started: Instant::now(),
             sent: AtomicU64::new(0),
-            recent: Mutex::new(VecDeque::with_capacity(RECENT)),
+            log: Latest::default(),
             bluetooth: Mutex::new(bluetooth),
             midi_in: Mutex::new(None),
             positions: Positions::default(),
+            presence: Presence::new(SILENCE),
             feedback: Arc::default(),
         }
     }
 
-    /// Plays a batch on the MIDI output and keeps it for the status page.
-    pub fn play(&self, messages: Vec<Message>, from: String, via: Via) -> Result<usize, NoOutput> {
+    /// Forgets a silent tablet after `silence` instead of 15 s.
+    pub fn forgetting_after(mut self, silence: Duration) -> Self {
+        self.presence = Presence::new(silence);
+        self
+    }
+
+    /// Plays a batch on the MIDI output and keeps it for the status page and the log.
+    pub fn play(&self, messages: Vec<Message>, sender: Sender) -> Result<usize, NoOutput> {
         self.out.send(&messages)?;
         let count = messages.len();
         if count > 0 {
             self.sent.fetch_add(count as u64, Ordering::Relaxed);
-            let mut recent = lock(&self.recent);
-            recent.truncate(RECENT - 1);
-            recent.push_front(Batch {
-                at: unix_ms(),
-                from,
-                via,
-                messages,
+            self.log.update(|log| {
+                let log = log.get_or_insert_with(|| VecDeque::with_capacity(LOG));
+                let seq = log.front().map_or(0, |batch| batch.seq) + 1;
+                log.truncate(LOG - 1);
+                log.push_front(Batch {
+                    seq,
+                    at: unix_ms(),
+                    from: sender.from,
+                    device: sender.device,
+                    via: sender.via,
+                    messages,
+                });
             });
         }
         Ok(count)
@@ -99,9 +133,22 @@ impl Hub {
         self.sent.load(Ordering::Relaxed)
     }
 
-    /// The last batches, newest first.
+    /// The last batches for the status page, newest first.
     pub fn recent(&self) -> Vec<Batch> {
-        lock(&self.recent).iter().cloned().collect()
+        let (_, log) = self.log.current();
+        log.unwrap_or_default().into_iter().take(RECENT).collect()
+    }
+
+    /// The whole log, newest first, once it is newer than `after`; `None` when `wait` runs
+    /// out first.
+    pub fn next_log(&self, after: u64, wait: Duration) -> Option<(u64, Vec<Batch>)> {
+        self.log
+            .next(after, wait)
+            .map(|(seq, log)| (seq, log.into()))
+    }
+
+    pub fn uptime(&self) -> Duration {
+        self.started.elapsed()
     }
 
     pub fn bluetooth(&self) -> Bluetooth {
@@ -117,23 +164,25 @@ impl Hub {
     }
 }
 
-fn unix_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map_or(0, |elapsed| elapsed.as_millis() as u64)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::fake::FakeOut;
+
+    fn sender(from: &str, via: Via) -> Sender {
+        Sender {
+            from: from.to_string(),
+            device: None,
+            via,
+        }
+    }
 
     #[test]
     fn plays_counts_and_remembers_a_batch() {
         let out = Arc::new(FakeOut::default());
         let hub = Hub::new(out.clone(), Bluetooth::Off);
         let batch = vec![vec![0xB0, 21, 0], vec![0xB0, 20, 6]];
-        assert_eq!(hub.play(batch.clone(), "Keys".into(), Via::Wifi), Ok(2));
+        assert_eq!(hub.play(batch.clone(), sender("Keys", Via::Wifi)), Ok(2));
         assert_eq!(out.played(), batch);
         assert_eq!(hub.sent(), 2);
         let recent = hub.recent();
@@ -148,7 +197,7 @@ mod tests {
     fn keeps_the_last_twenty_batches_newest_first() {
         let hub = Hub::new(Arc::new(FakeOut::default()), Bluetooth::Off);
         for program in 0..25 {
-            hub.play(vec![vec![0xC0, program]], "Drums".into(), Via::Bluetooth)
+            hub.play(vec![vec![0xC0, program]], sender("Drums", Via::Bluetooth))
                 .unwrap();
         }
         let recent = hub.recent();
@@ -159,12 +208,28 @@ mod tests {
     }
 
     #[test]
+    fn logs_the_last_fifty_batches_numbered_newest_first() {
+        let hub = Hub::new(Arc::new(FakeOut::default()), Bluetooth::Off);
+        for program in 0..60 {
+            hub.play(vec![vec![0xC0, program]], sender("Drums", Via::Wifi))
+                .unwrap();
+        }
+        hub.play(vec![], sender("Drums", Via::Wifi)).unwrap();
+        let (seq, log) = hub.next_log(0, Duration::ZERO).unwrap();
+        assert_eq!(seq, 60);
+        assert_eq!(log.len(), 50);
+        assert_eq!((log[0].seq, &log[0].messages), (60, &vec![vec![0xC0, 59]]));
+        assert_eq!(log[49].seq, 11);
+        assert_eq!(hub.next_log(60, Duration::ZERO), None);
+    }
+
+    #[test]
     fn counts_nothing_without_an_output() {
         let out = Arc::new(FakeOut::default());
         out.unplug();
         let hub = Hub::new(out, Bluetooth::Off);
         assert_eq!(
-            hub.play(vec![vec![0xC0, 1]], "Keys".into(), Via::Wifi),
+            hub.play(vec![vec![0xC0, 1]], sender("Keys", Via::Wifi)),
             Err(NoOutput)
         );
         assert_eq!(hub.sent(), 0);
