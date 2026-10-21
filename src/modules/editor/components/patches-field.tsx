@@ -1,16 +1,10 @@
-import {
-  extractPatchCode,
-  fitsSevenBits,
-  MIDI_ENCODING,
-  noteName,
-  parsePatchCode,
-  patchMessages,
-} from "@domain/midi/patch";
+import { extractPatchCode, MIDI_ENCODING, parsePatchCode, patchMessages } from "@domain/midi/patch";
 import { DEFAULT_MIDI_SETTINGS, patchEncoding } from "@domain/midi/settings";
 import { PART, PART_VALUES } from "@domain/parts";
 import { useTranslation } from "react-i18next";
 import { Field, Input, Select } from "../../design-system/components/form";
 import { partLabel } from "../../performance/components/my-part-menu";
+import { MidiNotePicker } from "../../shared/components/midi-note-picker";
 import { useMidiSettings } from "../../shared/hooks/use-midi-settings";
 
 interface PatchesFieldProps {
@@ -41,11 +35,7 @@ export function PatchesField({ patches, setupLine, onChange }: PatchesFieldProps
       : "midi.errors.badCode";
   };
   const firstError = used.map(error).find(Boolean);
-  const noteOf = (part: string): string | undefined => {
-    if (encodingOf(part).encoding !== MIDI_ENCODING.note) return;
-    const parsed = parsePatchCode(patches[part]);
-    return parsed && fitsSevenBits(parsed) ? noteName(parsed.value) : undefined;
-  };
+  const sendsNotes = (part: string) => encodingOf(part).encoding === MIDI_ENCODING.note;
 
   const set = (part: string, code: string) => onChange({ ...patches, [part]: code });
   const remove = (part: string) => {
@@ -68,15 +58,23 @@ export function PatchesField({ patches, setupLine, onChange }: PatchesFieldProps
             <span className="w-24 shrink-0 truncate text-sm text-text-muted">
               {partLabel(part, t, false)}
             </span>
-            <Input
-              value={patches[part]}
-              onChange={(e) => set(part, e.target.value)}
-              placeholder="12"
-              aria-label={t("midi.patches.code", { part: partLabel(part, t, false) })}
-              aria-invalid={Boolean(error(part))}
-              className="max-w-24"
-            />
-            {noteOf(part) && <span className="text-xs text-text-faint">{noteOf(part)}</span>}
+            {sendsNotes(part) ? (
+              <MidiNotePicker
+                value={patches[part]}
+                onChange={(code) => set(part, code)}
+                aria-label={t("midi.patches.code", { part: partLabel(part, t, false) })}
+                aria-invalid={Boolean(error(part))}
+              />
+            ) : (
+              <Input
+                value={patches[part]}
+                onChange={(e) => set(part, e.target.value)}
+                placeholder="12"
+                aria-label={t("midi.patches.code", { part: partLabel(part, t, false) })}
+                aria-invalid={Boolean(error(part))}
+                className="max-w-24"
+              />
+            )}
             <button
               type="button"
               onClick={() => remove(part)}

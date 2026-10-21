@@ -1,10 +1,8 @@
 import { BLE_STATE, connectBleMidi, disconnectBleMidi } from "@domain/midi/bluetooth";
 import { COMPANION_ERROR, CompanionError, probeCompanion } from "@domain/midi/companion";
 import {
-  fitsSevenBits,
   MIDI_ENCODING,
   MIDI_ENCODING_VALUES,
-  noteName,
   parsePatchCode,
   patchMessages,
 } from "@domain/midi/patch";
@@ -24,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { Card, CardRow, Choice, ToggleRow } from "../../design-system/components/card";
 import { Input, Select } from "../../design-system/components/form";
 import { partLabel } from "../../performance/components/my-part-menu";
+import { MidiNotePicker } from "../../shared/components/midi-note-picker";
 import { useBleMidi, useMidiSettings } from "../../shared/hooks/use-midi-settings";
 
 type Check =
@@ -53,9 +52,6 @@ export function StageMidiSettings() {
   const overWifi = settings.transport === MIDI_TRANSPORT.wifi;
   const overCc = encoding.encoding === MIDI_ENCODING.controlChange;
   const overNotes = encoding.encoding === MIDI_ENCODING.note;
-  const testParsed = parsePatchCode(testCode);
-  const testNote =
-    overNotes && testParsed && fitsSevenBits(testParsed) ? noteName(testParsed.value) : undefined;
 
   const describe = (err: unknown): string => {
     const kind = err instanceof CompanionError ? err.kind : COMPANION_ERROR.unreachable;
@@ -213,14 +209,21 @@ export function StageMidiSettings() {
       <Card title={t("midi.test.label")}>
         <CardRow label={t("midi.test.code")} description={t("midi.test.desc")} stacked>
           <div className="flex flex-wrap items-center gap-2">
-            <Input
-              value={testCode}
-              onChange={(e) => setTestCode(e.target.value)}
-              placeholder="1"
-              aria-label={t("midi.test.code")}
-              className="max-w-28"
-            />
-            {testNote && <span className="text-xs text-text-faint">{testNote}</span>}
+            {overNotes ? (
+              <MidiNotePicker
+                value={testCode}
+                onChange={setTestCode}
+                aria-label={t("midi.test.code")}
+              />
+            ) : (
+              <Input
+                value={testCode}
+                onChange={(e) => setTestCode(e.target.value)}
+                placeholder="1"
+                aria-label={t("midi.test.code")}
+                className="max-w-28"
+              />
+            )}
             <button type="button" onClick={sendTest} className="btn btn-outline">
               {t("midi.test.send")}
             </button>
