@@ -23,7 +23,10 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
   const notation = useNotation();
   const stageHref = useStageHref();
 
-  const setlist = useLiveQuery(() => db.setlists.get(setlistId), [setlistId, db]);
+  const setlist = useLiveQuery(
+    async () => (await db.setlists.get(setlistId)) ?? null,
+    [setlistId, db],
+  );
 
   const allSongIds = useMemo(
     () => (setlist ? [...new Set(setlist.sets.flatMap((s) => s.songIds))] : []),
@@ -44,6 +47,17 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
     }
     return map;
   }, [songs]);
+
+  if (setlist === null) {
+    return (
+      <div className="flex flex-col items-center gap-4 p-page">
+        <p className="text-text-muted">{t("setlist.notFound")}</p>
+        <Link to={Router.Setlists()} className="link-accent">
+          {t("setlist.backToSetlists")}
+        </Link>
+      </div>
+    );
+  }
 
   if (!setlist) {
     return (
