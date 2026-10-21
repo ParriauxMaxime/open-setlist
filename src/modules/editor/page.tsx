@@ -97,6 +97,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
   );
   // Below lg, the chart preview takes the text's place
   const [previewing, setPreviewing] = useState(false);
+  const [chartOpen, setChartOpen] = useState(true);
 
   const updateOverride = useCallback(
     (patch: Partial<SongDisplayPrefs>) => {
@@ -290,8 +291,29 @@ export function EditSongPage({ songId }: EditSongPageProps) {
     );
   }
 
+  const panelProps = {
+    register,
+    errors,
+    watch,
+    setValue,
+    tags,
+    tagInput,
+    onTagInputChange: setTagInput,
+    onAddTag: addTag,
+    onRemoveTag: removeTag,
+    isNew,
+    songId,
+    overrides,
+    overridesOpen,
+    onOverridesOpenChange: setOverridesOpen,
+    globalPrefs,
+    onUpdateOverride: updateOverride,
+    onClearOverrideKey: clearOverrideKey,
+    onClearAllOverrides: clearAllOverrides,
+  };
+
   return (
-    <div className="flex min-h-full flex-col p-page lg:h-full">
+    <div className="flex min-h-full flex-col p-page xl:h-full">
       <div className="shrink-0">
         <EditorHeader
           breadcrumbs={[
@@ -310,7 +332,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
                 </button>
               )}
               {/* `.btn` sets its own display, so the wrapper carries the breakpoint */}
-              <div className="lg:hidden">
+              <div className="xl:hidden">
                 <button
                   type="button"
                   onClick={() => setPreviewing((v) => !v)}
@@ -373,89 +395,92 @@ export function EditSongPage({ songId }: EditSongPageProps) {
             </button>
           </div>
         )}
-        <AttachmentsPanel
-          attachments={watch("attachments") ?? []}
-          onChange={(attachments) => setValue("attachments", attachments, { shouldDirty: true })}
-        />
       </div>
 
       {/* Desktop: side-by-side grid | Mobile: stacked */}
       <form
         id="song-form"
         onSubmit={handleSubmit(onSubmit)}
-        className="grid flex-1 content-start gap-4 transition-[grid-template-columns] duration-200 ease-in-out lg:min-h-0 lg:grid-cols-[1fr_var(--panel-w)] lg:content-stretch"
+        className="grid flex-1 content-start gap-4 transition-[grid-template-columns] duration-200 ease-in-out xl:min-h-0 xl:grid-cols-[1fr_var(--panel-w)] xl:content-stretch"
         style={{ "--panel-w": panelOpen ? "22rem" : "0fr" } as React.CSSProperties}
       >
         {/* Left: ChordPro editor (order-2 on mobile so metadata comes first) */}
-        <div className="relative order-2 flex min-h-0 flex-col gap-4 lg:order-none">
+        <div className="relative order-2 flex min-h-0 flex-col gap-4 xl:order-none">
           {/* Floating re-open button when drawer is collapsed (desktop only) */}
           {!panelOpen && (
             <button
               type="button"
               onClick={() => setPanelOpen(true)}
-              className="absolute right-2 top-8 z-10 hidden rounded-md border border-border bg-bg-surface/90 px-2 py-1 text-xs text-text-muted shadow-sm backdrop-blur-sm hover:bg-bg-hover hover:text-text lg:block"
+              className="absolute right-2 top-8 z-10 hidden rounded-md border border-border bg-bg-surface/90 px-2 py-1 text-xs text-text-muted shadow-sm backdrop-blur-sm hover:bg-bg-hover hover:text-text xl:block"
               aria-label={t("editor.toggleMetadata")}
               title={t("editor.toggleMetadata")}
             >
               {t("editor.metadata")} ◂
             </button>
           )}
-          <div className="flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:grid-cols-2">
-            <div className={`${previewing ? "hidden" : "flex"} min-h-0 flex-1 flex-col lg:flex`}>
-              <ChordProEditor
-                register={register}
-                value={watch("content")}
-                error={errors.content?.message}
-                onContentChange={(content) => setValue("content", content, { shouldDirty: true })}
-                toolbar={
-                  <button
-                    type="button"
-                    onClick={() => setShowPasteChart(true)}
-                    className="btn btn-ghost btn-sm"
-                  >
-                    {t("chartImport.pasteButton")}
-                  </button>
-                }
+          {/* Narrow screens: the chart folds like the other blocks, and shows whole */}
+          <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-border bg-bg-surface xl:border-0 xl:bg-transparent">
+            <button
+              type="button"
+              onClick={() => setChartOpen((o) => !o)}
+              aria-expanded={chartOpen}
+              className="flex w-full cursor-pointer items-center gap-2 px-4 py-3 text-left text-sm font-medium xl:hidden"
+            >
+              <span className="flex-1">{t("editor.chartSection")}</span>
+              <span className="text-xs text-text-faint">{chartOpen ? "▾" : "▸"}</span>
+            </button>
+            <div
+              className={`${chartOpen ? "flex" : "hidden xl:flex"} min-h-0 flex-1 flex-col gap-4 border-t border-border p-4 xl:grid xl:grid-cols-2 xl:border-0 xl:p-0`}
+            >
+              <div className={`${previewing ? "hidden" : "flex"} min-h-0 flex-1 flex-col xl:flex`}>
+                <ChordProEditor
+                  register={register}
+                  value={watch("content")}
+                  error={errors.content?.message}
+                  onContentChange={(content) => setValue("content", content, { shouldDirty: true })}
+                  toolbar={
+                    <button
+                      type="button"
+                      onClick={() => setShowPasteChart(true)}
+                      className="btn btn-ghost btn-sm"
+                    >
+                      {t("chartImport.pasteButton")}
+                    </button>
+                  }
+                />
+              </div>
+              <ChartPreview
+                content={watch("content")}
+                transposition={watch("transposition")}
+                displayPrefs={displayPrefs}
+                className={previewing ? "" : "hidden xl:block"}
               />
             </div>
-            <ChartPreview
-              content={watch("content")}
-              transposition={watch("transposition")}
-              displayPrefs={displayPrefs}
-              className={previewing ? "" : "hidden lg:block"}
-            />
           </div>
           <ChordProHelp />
+          <AttachmentsPanel
+            attachments={watch("attachments") ?? []}
+            onChange={(attachments) => setValue("attachments", attachments, { shouldDirty: true })}
+          />
         </div>
 
-        {/* Metadata — mobile: one accordion per block | desktop: side drawer */}
-        <div className="order-1 lg:order-none lg:min-h-0">
-          <div className="lg:hidden">
-            <MetadataPanel
-              stacked
-              register={register}
-              errors={errors}
-              watch={watch}
-              setValue={setValue}
-              tags={tags}
-              tagInput={tagInput}
-              onTagInputChange={setTagInput}
-              onAddTag={addTag}
-              onRemoveTag={removeTag}
-              isNew={isNew}
-              songId={songId}
-              overrides={overrides}
-              overridesOpen={overridesOpen}
-              onOverridesOpenChange={setOverridesOpen}
-              globalPrefs={globalPrefs}
-              onUpdateOverride={updateOverride}
-              onClearOverrideKey={clearOverrideKey}
-              onClearAllOverrides={clearAllOverrides}
-            />
-          </div>
+        {/* Narrow screens: song, note, stage settings and sounds come before the chart */}
+        <div className="order-1 xl:hidden">
+          <MetadataPanel
+            {...panelProps}
+            stacked
+            part="top"
+            afterSong={!isNew && <MyNotePanel profileId={profileId} songId={songDbId} />}
+          />
+        </div>
+        {/* ...and the filing after it */}
+        <div className="order-3 xl:hidden">
+          <MetadataPanel {...panelProps} stacked part="filing" />
+        </div>
 
-          {/* Desktop: collapsible drawer */}
-          <div className="hidden lg:flex lg:h-full lg:flex-col">
+        {/* Wide screens: side drawer */}
+        <div className="hidden xl:block xl:min-h-0">
+          <div className="hidden xl:flex xl:h-full xl:flex-col">
             <div
               className="grid min-h-0 flex-1 transition-[grid-template-rows,opacity] duration-200 ease-in-out"
               style={{
@@ -464,28 +489,8 @@ export function EditSongPage({ songId }: EditSongPageProps) {
               }}
             >
               <div className="overflow-hidden">
-                <div className="overflow-y-auto lg:h-full">
-                  <MetadataPanel
-                    register={register}
-                    errors={errors}
-                    watch={watch}
-                    setValue={setValue}
-                    tags={tags}
-                    tagInput={tagInput}
-                    onTagInputChange={setTagInput}
-                    onAddTag={addTag}
-                    onRemoveTag={removeTag}
-                    isNew={isNew}
-                    songId={songId}
-                    onTogglePanel={() => setPanelOpen((o) => !o)}
-                    overrides={overrides}
-                    overridesOpen={overridesOpen}
-                    onOverridesOpenChange={setOverridesOpen}
-                    globalPrefs={globalPrefs}
-                    onUpdateOverride={updateOverride}
-                    onClearOverrideKey={clearOverrideKey}
-                    onClearAllOverrides={clearAllOverrides}
-                  />
+                <div className="overflow-y-auto xl:h-full">
+                  <MetadataPanel {...panelProps} onTogglePanel={() => setPanelOpen((o) => !o)} />
                   {!isNew && (
                     <div className="mt-8">
                       <DeleteSongCard onDelete={() => setConfirmDelete(true)} />
@@ -498,15 +503,15 @@ export function EditSongPage({ songId }: EditSongPageProps) {
         </div>
       </form>
 
-      {/* Private, device-only note: kept outside the song form so it is never saved/synced */}
+      {/* Private, device-only note: not a form field, so it is never saved or synced */}
       {!isNew && (
-        <div className="mt-4 shrink-0">
+        <div className="mt-4 hidden shrink-0 xl:block">
           <MyNotePanel profileId={profileId} songId={songDbId} />
         </div>
       )}
 
       {!isNew && (
-        <div className="mt-8 lg:hidden">
+        <div className="mt-8 xl:hidden">
           <DeleteSongCard onDelete={() => setConfirmDelete(true)} />
         </div>
       )}

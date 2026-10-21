@@ -1,7 +1,7 @@
 import { parse } from "@domain/chordpro/parser";
 import { formatKeyChoice } from "@domain/chords/notation";
 import { MAJOR_KEYS, MINOR_KEYS } from "@domain/music";
-import { SCROLL_SPEED_MAX, SCROLL_SPEED_MIN } from "@domain/perform-stage";
+import { SCROLL_SPEED_DEFAULT, SCROLL_SPEED_MAX, SCROLL_SPEED_MIN } from "@domain/perform-stage";
 import type { SongDisplayPrefs } from "@domain/preferences";
 import type { SongFormValues } from "@domain/schemas/song";
 import { resolveSongStatus, SONG_STATUS_LIST } from "@domain/song-status";
@@ -27,8 +27,12 @@ interface MetadataPanelProps {
   onRemoveTag: (tag: string) => void;
   isNew: boolean;
   songId?: string;
-  /** Narrow screens: every block folds, and opens when it holds something. */
+  /** Narrow screens: one fold per block, in reading order, with what is set as a badge. */
   stacked?: boolean;
+  /** Stacked only: the page puts the chart between the song blocks and the filing. */
+  part?: "all" | "top" | "filing";
+  /** Stacked only: rendered right under the song block (the private note). */
+  afterSong?: ReactNode;
   // Panel collapse (desktop drawer only)
   onTogglePanel?: () => void;
   // Display overrides
@@ -53,6 +57,8 @@ export function MetadataPanel({
   onRemoveTag,
   isNew,
   stacked = false,
+  part = "all",
+  afterSong,
   onTogglePanel,
   overrides,
   overridesOpen,
@@ -77,6 +83,9 @@ export function MetadataPanel({
     watch("notes"),
   ].filter(Boolean).length;
   const soundCount = Object.values(patches).filter((code) => code.trim() !== "").length;
+  const transposition = watch("transposition");
+  const scrollSpeed = watch("scrollSpeed");
+  const overrideCount = Object.keys(overrides).length;
   const stageCount = [
     watch("transposition"),
     watch("scrollSpeed"),
@@ -89,96 +98,403 @@ export function MetadataPanel({
     links && Object.values(links).some(Boolean),
   ].filter(Boolean).length;
 
-  return (
-    <div className="flex flex-col gap-4">
-      {onTogglePanel && (
-        <button
-          type="button"
-          onClick={onTogglePanel}
-          className="btn btn-ghost btn-sm self-end"
-          aria-label={t("editor.toggleMetadata")}
-          title={t("editor.toggleMetadata")}
-        >
-          ▸
-        </button>
-      )}
+  const toggle = onTogglePanel && (
+    <button
+      type="button"
+      onClick={onTogglePanel}
+      className="btn btn-ghost btn-sm self-end"
+      aria-label={t("editor.toggleMetadata")}
+      title={t("editor.toggleMetadata")}
+    >
+      ▸
+    </button>
+  );
 
-      <Section
-        stacked={stacked}
-        summary={t("editor.songSection")}
-        count={songCount}
-        open={isNew || songCount > 0}
-      >
-        <Field label={t("editor.titleLabel")} error={errors.title?.message}>
-          <Input {...register("title")} placeholder={t("editor.titlePlaceholder")} />
+  // What is set once: folded when filled, so the chart comes first on narrow screens
+  const songSection = (
+    <Section
+      stacked={stacked}
+      summary={t("editor.songSection")}
+      count={songCount}
+      open={isNew || songCount === 0}
+    >
+      <Field label={t("editor.titleLabel")} error={errors.title?.message}>
+        <Input {...register("title")} placeholder={t("editor.titlePlaceholder")} />
+      </Field>
+
+      <Field label={t("editor.artistLabel")} error={errors.artist?.message}>
+        <Input {...register("artist")} placeholder={t("editor.artistPlaceholder")} />
+      </Field>
+
+      {/* Key / BPM / Duration / Transposition / Scroll speed — 2-col grid for narrow panel */}
+      <div className="grid grid-cols-2 gap-3">
+        <Field label={t("editor.keyLabel")} error={errors.key?.message}>
+          <Select {...register("key", { setValueAs: (v: string) => v || undefined })}>
+            <option value="">—</option>
+            <optgroup label={t("editor.majorGroup")}>
+              {MAJOR_KEYS.map((k) => (
+                <option key={k} value={k}>
+                  {formatKeyChoice(k, notation)}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label={t("editor.minorGroup")}>
+              {MINOR_KEYS.map((k) => (
+                <option key={k} value={k}>
+                  {formatKeyChoice(k, notation)}
+                </option>
+              ))}
+            </optgroup>
+          </Select>
         </Field>
 
-        <Field label={t("editor.artistLabel")} error={errors.artist?.message}>
-          <Input {...register("artist")} placeholder={t("editor.artistPlaceholder")} />
+        <Field label={t("editor.bpmLabel")} error={errors.bpm?.message}>
+          <Input
+            type="number"
+            {...register("bpm", {
+              setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
+            })}
+            placeholder="120"
+          />
         </Field>
 
-        {/* Key / BPM / Duration / Transposition / Scroll speed — 2-col grid for narrow panel */}
-        <div className="grid grid-cols-2 gap-3">
-          <Field label={t("editor.keyLabel")} error={errors.key?.message}>
-            <Select {...register("key", { setValueAs: (v: string) => v || undefined })}>
-              <option value="">—</option>
-              <optgroup label={t("editor.majorGroup")}>
-                {MAJOR_KEYS.map((k) => (
-                  <option key={k} value={k}>
-                    {formatKeyChoice(k, notation)}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label={t("editor.minorGroup")}>
-                {MINOR_KEYS.map((k) => (
-                  <option key={k} value={k}>
-                    {formatKeyChoice(k, notation)}
-                  </option>
-                ))}
-              </optgroup>
-            </Select>
-          </Field>
+        <DurationField
+          value={watch("duration")}
+          onChange={(seconds) => setValue("duration", seconds, { shouldDirty: true })}
+        />
+      </div>
 
-          <Field label={t("editor.bpmLabel")} error={errors.bpm?.message}>
-            <Input
-              type="number"
-              {...register("bpm", {
-                setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
-              })}
-              placeholder="120"
-            />
-          </Field>
+      <Field label={t("editor.notesLabel")} error={errors.notes?.message}>
+        <Textarea
+          {...register("notes")}
+          placeholder={t("editor.notesPlaceholder")}
+          rows={2}
+          className="resize-y"
+        />
+      </Field>
+    </Section>
+  );
 
-          <DurationField
-            value={watch("duration")}
-            onChange={(seconds) => setValue("duration", seconds, { shouldDirty: true })}
+  const soundsSection = (
+    <Section stacked={stacked} summary={t("midi.patches.label")} count={soundCount} open={false}>
+      <PatchesField
+        patches={patches}
+        setupLine={setupLine}
+        onChange={(next) => setValue("patches", next, { shouldDirty: true })}
+        bare={stacked}
+      />
+    </Section>
+  );
+
+  const stageFields = (
+    <div className="grid grid-cols-2 gap-3">
+      <Field label={t("editor.transpositionLabel")} error={errors.transposition?.message}>
+        <Input
+          type="number"
+          {...register("transposition", {
+            setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
+          })}
+          placeholder="0"
+        />
+      </Field>
+
+      <Field label={t("performStage.scrollSpeedLabel")} error={errors.scrollSpeed?.message}>
+        <Input
+          type="number"
+          min={SCROLL_SPEED_MIN}
+          max={SCROLL_SPEED_MAX}
+          {...register("scrollSpeed", {
+            setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
+          })}
+          placeholder={t("performStage.scrollSpeedAuto")}
+        />
+      </Field>
+    </div>
+  );
+
+  // Display overrides: existing songs only
+  const overridesBody = (
+    <>
+      <label className="mb-2 flex cursor-pointer items-center gap-3">
+        <input
+          type="checkbox"
+          checked={overridesOpen}
+          onChange={(e) => {
+            if (!e.target.checked) onClearAllOverrides();
+            else onOverridesOpenChange(true);
+          }}
+          className="h-4 w-4 rounded accent-[var(--color-accent)]"
+        />
+        <span className="text-sm text-text">{t("editor.enableDisplayOverrides")}</span>
+      </label>
+
+      <p className="mb-3 text-xs text-text-faint">{t("editor.displayOverridesDesc")}</p>
+
+      {overridesOpen && (
+        <div className="flex flex-col gap-4">
+          <OverrideSizeField
+            label={t("settings.display.scale")}
+            field="globalScale"
+            min={0.5}
+            max={3}
+            step={0.1}
+            suffix="x"
+            globalValue={globalPrefs.globalScale}
+            overrides={overrides}
+            onUpdate={onUpdateOverride}
+            onClear={onClearOverrideKey}
+          />
+          <OverrideSizeField
+            label={t("settings.sizes.lyrics")}
+            field="lyricsSize"
+            min={0.5}
+            max={4}
+            step={0.125}
+            suffix="rem"
+            globalValue={globalPrefs.lyricsSize}
+            overrides={overrides}
+            onUpdate={onUpdateOverride}
+            onClear={onClearOverrideKey}
+          />
+          <OverrideSizeField
+            label={t("settings.sizes.chords")}
+            field="chordSize"
+            min={0.5}
+            max={4}
+            step={0.125}
+            suffix="rem"
+            globalValue={globalPrefs.chordSize}
+            overrides={overrides}
+            onUpdate={onUpdateOverride}
+            onClear={onClearOverrideKey}
+          />
+          <OverrideSizeField
+            label={t("settings.sizes.sectionLabels")}
+            field="sectionSize"
+            min={0.5}
+            max={4}
+            step={0.125}
+            suffix="rem"
+            globalValue={globalPrefs.sectionSize}
+            overrides={overrides}
+            onUpdate={onUpdateOverride}
+            onClear={onClearOverrideKey}
+          />
+          <OverrideColorField
+            label={t("settings.colors.chords")}
+            field="chordColor"
+            globalValue={globalPrefs.chordColor}
+            overrides={overrides}
+            onUpdate={onUpdateOverride}
+            onClear={onClearOverrideKey}
+          />
+          <OverrideColorField
+            label={t("settings.colors.verse")}
+            field="verseColor"
+            globalValue={globalPrefs.verseColor}
+            overrides={overrides}
+            onUpdate={onUpdateOverride}
+            onClear={onClearOverrideKey}
+          />
+          <OverrideColorField
+            label={t("settings.colors.chorus")}
+            field="chorusColor"
+            globalValue={globalPrefs.chorusColor}
+            overrides={overrides}
+            onUpdate={onUpdateOverride}
+            onClear={onClearOverrideKey}
+          />
+          <OverrideColorField
+            label={t("settings.colors.bridge")}
+            field="bridgeColor"
+            globalValue={globalPrefs.bridgeColor}
+            overrides={overrides}
+            onUpdate={onUpdateOverride}
+            onClear={onClearOverrideKey}
           />
         </div>
+      )}
+    </>
+  );
 
-        <Field label={t("editor.notesLabel")} error={errors.notes?.message}>
+  const filingSection = (
+    <Disclosure
+      summary={
+        <>
+          {t("editor.filingSection")}
+          {filingCount > 0 && <Badge tone="muted">{filingCount}</Badge>}
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        <StatusControl
+          value={watch("status")}
+          onChange={(status) => setValue("status", status, { shouldDirty: true })}
+        />
+
+        {/* Tags */}
+        <Field label={t("editor.tagsLabel")}>
+          <div className="mb-1.5 flex flex-wrap gap-1.5">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="flex items-center gap-1 rounded-sm bg-bg-raised px-2 py-0.5 text-sm text-text-muted"
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => onRemoveTag(tag)}
+                  aria-label={t("editor.removeTag", { tag })}
+                  className="ml-0.5 text-xs text-text-faint hover:text-danger"
+                >
+                  ✕
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              value={tagInput}
+              onChange={(e) => onTagInputChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  onAddTag();
+                }
+              }}
+              placeholder={t("editor.addTagPlaceholder")}
+              className="flex-1"
+            />
+            <button type="button" onClick={onAddTag} className="btn btn-ghost">
+              {t("common.add")}
+            </button>
+          </div>
+        </Field>
+
+        {/* Tech Notes */}
+        <Field label={t("editor.techNotesLabel")} error={errors.techNotes?.message}>
           <Textarea
-            {...register("notes")}
-            placeholder={t("editor.notesPlaceholder")}
+            {...register("techNotes")}
+            placeholder={t("editor.techNotesPlaceholder")}
             rows={2}
             className="resize-y"
           />
         </Field>
-      </Section>
 
-      <Section
-        stacked={stacked}
-        summary={t("midi.patches.label")}
-        count={soundCount}
-        open={soundCount > 0}
-      >
-        <PatchesField
-          patches={patches}
-          setupLine={setupLine}
-          onChange={(next) => setValue("patches", next, { shouldDirty: true })}
-          bare={stacked}
-        />
-      </Section>
+        <Disclosure summary={t("editor.linksLabel")}>
+          <div className="flex flex-col gap-3">
+            <Field label="YouTube">
+              <Input {...register("links.youtube")} placeholder="https://youtube.com/watch?v=..." />
+            </Field>
+            <Field label="Spotify">
+              <Input
+                {...register("links.spotify")}
+                placeholder="https://open.spotify.com/track/..."
+              />
+            </Field>
+            <Field label="Deezer">
+              <Input {...register("links.deezer")} placeholder="https://deezer.com/track/..." />
+            </Field>
+          </div>
+        </Disclosure>
+      </div>
+    </Disclosure>
+  );
 
+  if (stacked) {
+    return (
+      <div className="flex flex-col gap-4">
+        {part !== "filing" && (
+          <>
+            {songSection}
+            {afterSong}
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-bg-surface px-4 py-3">
+              <span className="flex items-center gap-2 text-sm font-medium">
+                {t("editor.transpositionLabel")}
+                {transposition ? (
+                  <Badge tone="muted">
+                    {transposition > 0 ? `+${transposition}` : transposition}
+                  </Badge>
+                ) : null}
+              </span>
+              <div className="w-24">
+                <Input
+                  type="number"
+                  {...register("transposition", {
+                    setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
+                  })}
+                  placeholder="0"
+                  aria-label={t("editor.transpositionLabel")}
+                />
+              </div>
+            </div>
+            <Disclosure
+              summary={
+                <>
+                  {t("editor.autoScrollSection")}
+                  {scrollSpeed !== undefined && <Badge tone="muted">{scrollSpeed}</Badge>}
+                </>
+              }
+            >
+              <div className="flex flex-col gap-3">
+                <label className="flex cursor-pointer items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={scrollSpeed !== undefined}
+                    onChange={(e) =>
+                      setValue("scrollSpeed", e.target.checked ? SCROLL_SPEED_DEFAULT : undefined, {
+                        shouldDirty: true,
+                      })
+                    }
+                    className="h-4 w-4 rounded accent-[var(--color-accent)]"
+                  />
+                  <span className="text-sm text-text">{t("editor.autoScrollOn")}</span>
+                </label>
+                {scrollSpeed !== undefined && (
+                  <Field
+                    label={t("performStage.scrollSpeedLabel")}
+                    error={errors.scrollSpeed?.message}
+                  >
+                    <Input
+                      type="number"
+                      min={SCROLL_SPEED_MIN}
+                      max={SCROLL_SPEED_MAX}
+                      {...register("scrollSpeed", {
+                        setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
+                      })}
+                      className="w-24"
+                    />
+                  </Field>
+                )}
+                <p className="text-xs text-text-faint">{t("editor.autoScrollDesc")}</p>
+              </div>
+            </Disclosure>
+            {!isNew && (
+              <Disclosure
+                summary={
+                  <>
+                    {t("editor.displayOverrides")}
+                    {overrideCount > 0 && <Badge tone="muted">{overrideCount}</Badge>}
+                  </>
+                }
+              >
+                {overridesBody}
+              </Disclosure>
+            )}
+            {soundsSection}
+          </>
+        )}
+        {part !== "top" && filingSection}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {toggle}
+      {songSection}
+      {soundsSection}
       {/* What is set once, or rarely: folded away */}
       <Disclosure
         summary={
@@ -187,230 +503,20 @@ export function MetadataPanel({
             {stageCount > 0 && <Badge tone="muted">{stageCount}</Badge>}
           </>
         }
-        defaultOpen={stacked && stageCount > 0}
       >
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-3">
-            <Field label={t("editor.transpositionLabel")} error={errors.transposition?.message}>
-              <Input
-                type="number"
-                {...register("transposition", {
-                  setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
-                })}
-                placeholder="0"
-              />
-            </Field>
-
-            <Field label={t("performStage.scrollSpeedLabel")} error={errors.scrollSpeed?.message}>
-              <Input
-                type="number"
-                min={SCROLL_SPEED_MIN}
-                max={SCROLL_SPEED_MAX}
-                {...register("scrollSpeed", {
-                  setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
-                })}
-                placeholder={t("performStage.scrollSpeedAuto")}
-              />
-            </Field>
-          </div>
-
-          {/* Display Overrides (existing songs only) */}
+          {stageFields}
           {!isNew && (
             <fieldset className="rounded-lg border border-border p-4">
               <legend className="px-1 text-sm font-semibold text-text-muted">
                 {t("editor.displayOverrides")}
               </legend>
-
-              <label className="mb-2 flex cursor-pointer items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={overridesOpen}
-                  onChange={(e) => {
-                    if (!e.target.checked) onClearAllOverrides();
-                    else onOverridesOpenChange(true);
-                  }}
-                  className="h-4 w-4 rounded accent-[var(--color-accent)]"
-                />
-                <span className="text-sm text-text">{t("editor.enableDisplayOverrides")}</span>
-              </label>
-
-              <p className="mb-3 text-xs text-text-faint">{t("editor.displayOverridesDesc")}</p>
-
-              {overridesOpen && (
-                <div className="flex flex-col gap-4">
-                  <OverrideSizeField
-                    label={t("settings.display.scale")}
-                    field="globalScale"
-                    min={0.5}
-                    max={3}
-                    step={0.1}
-                    suffix="x"
-                    globalValue={globalPrefs.globalScale}
-                    overrides={overrides}
-                    onUpdate={onUpdateOverride}
-                    onClear={onClearOverrideKey}
-                  />
-                  <OverrideSizeField
-                    label={t("settings.sizes.lyrics")}
-                    field="lyricsSize"
-                    min={0.5}
-                    max={4}
-                    step={0.125}
-                    suffix="rem"
-                    globalValue={globalPrefs.lyricsSize}
-                    overrides={overrides}
-                    onUpdate={onUpdateOverride}
-                    onClear={onClearOverrideKey}
-                  />
-                  <OverrideSizeField
-                    label={t("settings.sizes.chords")}
-                    field="chordSize"
-                    min={0.5}
-                    max={4}
-                    step={0.125}
-                    suffix="rem"
-                    globalValue={globalPrefs.chordSize}
-                    overrides={overrides}
-                    onUpdate={onUpdateOverride}
-                    onClear={onClearOverrideKey}
-                  />
-                  <OverrideSizeField
-                    label={t("settings.sizes.sectionLabels")}
-                    field="sectionSize"
-                    min={0.5}
-                    max={4}
-                    step={0.125}
-                    suffix="rem"
-                    globalValue={globalPrefs.sectionSize}
-                    overrides={overrides}
-                    onUpdate={onUpdateOverride}
-                    onClear={onClearOverrideKey}
-                  />
-                  <OverrideColorField
-                    label={t("settings.colors.chords")}
-                    field="chordColor"
-                    globalValue={globalPrefs.chordColor}
-                    overrides={overrides}
-                    onUpdate={onUpdateOverride}
-                    onClear={onClearOverrideKey}
-                  />
-                  <OverrideColorField
-                    label={t("settings.colors.verse")}
-                    field="verseColor"
-                    globalValue={globalPrefs.verseColor}
-                    overrides={overrides}
-                    onUpdate={onUpdateOverride}
-                    onClear={onClearOverrideKey}
-                  />
-                  <OverrideColorField
-                    label={t("settings.colors.chorus")}
-                    field="chorusColor"
-                    globalValue={globalPrefs.chorusColor}
-                    overrides={overrides}
-                    onUpdate={onUpdateOverride}
-                    onClear={onClearOverrideKey}
-                  />
-                  <OverrideColorField
-                    label={t("settings.colors.bridge")}
-                    field="bridgeColor"
-                    globalValue={globalPrefs.bridgeColor}
-                    overrides={overrides}
-                    onUpdate={onUpdateOverride}
-                    onClear={onClearOverrideKey}
-                  />
-                </div>
-              )}
+              {overridesBody}
             </fieldset>
           )}
         </div>
       </Disclosure>
-
-      <Disclosure
-        summary={
-          <>
-            {t("editor.filingSection")}
-            {filingCount > 0 && <Badge tone="muted">{filingCount}</Badge>}
-          </>
-        }
-        defaultOpen={stacked && filingCount > 0}
-      >
-        <div className="flex flex-col gap-4">
-          <StatusControl
-            value={watch("status")}
-            onChange={(status) => setValue("status", status, { shouldDirty: true })}
-          />
-
-          {/* Tags */}
-          <Field label={t("editor.tagsLabel")}>
-            <div className="mb-1.5 flex flex-wrap gap-1.5">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="flex items-center gap-1 rounded-sm bg-bg-raised px-2 py-0.5 text-sm text-text-muted"
-                >
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => onRemoveTag(tag)}
-                    aria-label={t("editor.removeTag", { tag })}
-                    className="ml-0.5 text-xs text-text-faint hover:text-danger"
-                  >
-                    ✕
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={tagInput}
-                onChange={(e) => onTagInputChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    onAddTag();
-                  }
-                }}
-                placeholder={t("editor.addTagPlaceholder")}
-                className="flex-1"
-              />
-              <button type="button" onClick={onAddTag} className="btn btn-ghost">
-                {t("common.add")}
-              </button>
-            </div>
-          </Field>
-
-          {/* Tech Notes */}
-          <Field label={t("editor.techNotesLabel")} error={errors.techNotes?.message}>
-            <Textarea
-              {...register("techNotes")}
-              placeholder={t("editor.techNotesPlaceholder")}
-              rows={2}
-              className="resize-y"
-            />
-          </Field>
-
-          <Disclosure summary={t("editor.linksLabel")}>
-            <div className="flex flex-col gap-3">
-              <Field label="YouTube">
-                <Input
-                  {...register("links.youtube")}
-                  placeholder="https://youtube.com/watch?v=..."
-                />
-              </Field>
-              <Field label="Spotify">
-                <Input
-                  {...register("links.spotify")}
-                  placeholder="https://open.spotify.com/track/..."
-                />
-              </Field>
-              <Field label="Deezer">
-                <Input {...register("links.deezer")} placeholder="https://deezer.com/track/..." />
-              </Field>
-            </div>
-          </Disclosure>
-        </div>
-      </Disclosure>
+      {filingSection}
     </div>
   );
 }

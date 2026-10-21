@@ -78,6 +78,8 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+const MIN_ROWS = 16;
+
 interface ChordProEditorProps {
   register: UseFormRegister<SongFormValues>;
   /** Current content value — used to keep highlight layer in sync with programmatic changes. */
@@ -153,7 +155,8 @@ export function ChordProEditor({
         <ChartInsertBar onInsert={insert} />
         {toolbar && <div className="flex items-center gap-2">{toolbar}</div>}
       </div>
-      <div className="chordpro-highlight-wrap relative min-h-[24rem] flex-1 lg:min-h-0">
+      {/* Narrow screens: the box grows with the chart, so the page scrolls and the chart never does */}
+      <div className="chordpro-highlight-wrap relative min-h-[24rem] xl:min-h-0 xl:flex-1">
         {/* Highlight layer (behind) */}
         <div
           ref={highlightRef}
@@ -173,8 +176,8 @@ export function ChordProEditor({
           onFocus={syncHighlight}
           onInput={syncHighlight}
           placeholder={`{start_of_verse}\n[Am]Down the empty road again\n[C]Headlights cutting through\n{end_of_verse}`}
-          rows={20}
-          className="chordpro-textarea absolute inset-0 h-full w-full resize-none whitespace-pre-wrap break-words bg-transparent caret-text lg:resize-none"
+          rows={Math.max(MIN_ROWS, value.split("\n").length + 2)}
+          className="chordpro-textarea relative block w-full resize-none whitespace-pre-wrap break-words bg-transparent caret-text xl:absolute xl:inset-0 xl:h-full"
           spellCheck={false}
         />
       </div>
