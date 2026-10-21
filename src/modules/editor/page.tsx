@@ -21,13 +21,13 @@ import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
 import { ConfirmModal } from "../design-system/components/confirm-modal";
 import { EditorHeader } from "../design-system/components/editor-header";
+import { ToolbarMenu } from "../design-system/components/toolbar-menu";
 import { getPerformReturn, performReturnHref } from "../performance/components/perform-sidebar";
 import { navigateFromGuardedPage, useUnsavedGuard } from "../shared/hooks/use-unsaved-guard";
 import { AttachmentsPanel } from "./components/attachments-panel";
 import { ChartPreview } from "./components/chart-preview";
 import { ChordProEditor } from "./components/chordpro-editor";
 import { ChordProHelp } from "./components/chordpro-help";
-import { DeleteSongCard } from "./components/delete-song-card";
 import { MetadataPanel } from "./components/metadata-panel";
 import { MyNotePanel } from "./components/my-note-panel";
 import { PasteChartModal } from "./components/paste-chart-modal";
@@ -75,8 +75,6 @@ export function EditSongPage({ songId }: EditSongPageProps) {
   const [songDbId] = useState(() => songId ?? createId());
   const [tagInput, setTagInput] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const [showLookup, setShowLookup] = useState(false);
   const [showPasteChart, setShowPasteChart] = useState(false);
   const isNew = !songId;
@@ -175,25 +173,6 @@ export function EditSongPage({ songId }: EditSongPageProps) {
   useEffect(() => {
     if (isSubmitSuccessful) reset(getValues());
   }, [isSubmitSuccessful, reset, getValues]);
-
-  // Close menu on outside click or Escape
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
-    };
-    window.addEventListener("click", handleClick, true);
-    window.addEventListener("keydown", handleKey);
-    return () => {
-      window.removeEventListener("click", handleClick, true);
-      window.removeEventListener("keydown", handleKey);
-    };
-  }, [menuOpen]);
 
   const tags = watch("tags");
 
@@ -349,36 +328,24 @@ export function EditSongPage({ songId }: EditSongPageProps) {
               >
                 {isSubmitting ? t("common.saving") : t("common.save")}
               </button>
-              {!isNew && (
-                <div ref={menuRef} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setMenuOpen((v) => !v)}
-                    className="btn btn-ghost btn-responsive"
-                    aria-label={t("a11y.moreOptions")}
-                    aria-expanded={menuOpen}
-                    aria-haspopup="true"
-                  >
-                    &#8942;
-                  </button>
-                  {menuOpen && (
-                    <div className="absolute right-0 top-full z-50 mt-1 min-w-40 rounded-md border border-border bg-bg-surface py-1 shadow-lg">
-                      <button
-                        type="button"
-                        disabled={!isDirty}
-                        onClick={() => {
-                          reset();
-                          setMenuOpen(false);
-                        }}
-                        className="block w-full px-4 py-2 text-left text-sm text-text hover:bg-bg-hover disabled:opacity-50"
-                      >
-                        {t("editor.resetChanges")}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
             </>
+          }
+          menu={
+            <ToolbarMenu
+              label={t("a11y.moreOptions")}
+              items={[
+                { label: t("editor.resetChanges"), onClick: () => reset(), disabled: !isDirty },
+                ...(isNew
+                  ? []
+                  : [
+                      {
+                        label: t("editor.deleteTitle"),
+                        onClick: () => setConfirmDelete(true),
+                        danger: true,
+                      },
+                    ]),
+              ]}
+            />
           }
         />
 
@@ -491,11 +458,6 @@ export function EditSongPage({ songId }: EditSongPageProps) {
               <div className="overflow-hidden">
                 <div className="overflow-y-auto xl:h-full">
                   <MetadataPanel {...panelProps} onTogglePanel={() => setPanelOpen((o) => !o)} />
-                  {!isNew && (
-                    <div className="mt-8">
-                      <DeleteSongCard onDelete={() => setConfirmDelete(true)} />
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -507,12 +469,6 @@ export function EditSongPage({ songId }: EditSongPageProps) {
       {!isNew && (
         <div className="mt-4 hidden shrink-0 xl:block">
           <MyNotePanel profileId={profileId} songId={songDbId} />
-        </div>
-      )}
-
-      {!isNew && (
-        <div className="mt-8 xl:hidden">
-          <DeleteSongCard onDelete={() => setConfirmDelete(true)} />
         </div>
       )}
 
@@ -535,7 +491,7 @@ export function EditSongPage({ songId }: EditSongPageProps) {
       {confirmDelete && (
         <ConfirmModal
           title={t("editor.deleteConfirmTitle")}
-          message={t("editor.deleteConfirmMessage")}
+          message={`${t("editor.deleteDesc")} ${t("editor.deleteConfirmMessage")}`}
           confirmLabel={t("common.delete")}
           variant="danger"
           onConfirm={deleteSong}

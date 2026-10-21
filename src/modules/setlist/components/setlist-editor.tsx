@@ -11,14 +11,14 @@ import { addTombstone } from "@domain/sync/tombstones";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "@swan-io/chicane";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
-import { Card, CardRow } from "../../design-system/components/card";
 import { ConfirmModal } from "../../design-system/components/confirm-modal";
 import { EditorHeader } from "../../design-system/components/editor-header";
 import { Field, Input } from "../../design-system/components/form";
+import { ToolbarMenu } from "../../design-system/components/toolbar-menu";
 import { useUnsavedGuard } from "../../shared/hooks/use-unsaved-guard";
 import { useDuplicateSetlist } from "../hooks/use-duplicate-setlist";
 import { buildSetDragId, buildSongDragIds, useSetlistDnd } from "../hooks/use-setlist-dnd";
@@ -50,8 +50,6 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
     [setlistId, db],
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const {
     register,
@@ -89,25 +87,6 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
       });
     }
   }, [existing, reset]);
-
-  // Close menu on outside click or Escape
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
-    };
-    window.addEventListener("click", handleClick, true);
-    window.addEventListener("keydown", handleKey);
-    return () => {
-      window.removeEventListener("click", handleClick, true);
-      window.removeEventListener("keydown", handleKey);
-    };
-  }, [menuOpen]);
 
   const updateSet = useCallback(
     (index: number, updated: SetlistSet) => {
@@ -251,46 +230,26 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
                 {t("print.print")}
               </Link>
             )}
-            <div ref={menuRef} className="relative">
-              <button
-                type="button"
-                onClick={() => setMenuOpen((v) => !v)}
-                className="btn btn-ghost btn-responsive"
-                aria-label={t("a11y.moreOptions")}
-                aria-expanded={menuOpen}
-                aria-haspopup="true"
-              >
-                &#8942;
-              </button>
-              {menuOpen && (
-                <div className="absolute right-0 top-full z-50 mt-1 min-w-40 rounded-md border border-border bg-bg-surface py-1 shadow-lg">
-                  <button
-                    type="button"
-                    disabled={!isDirty}
-                    onClick={() => {
-                      reset();
-                      setMenuOpen(false);
-                    }}
-                    className="block w-full px-4 py-2 text-left text-sm text-text hover:bg-bg-hover disabled:opacity-50"
-                  >
-                    {t("setlist.resetChanges")}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isDirty}
-                    title={isDirty ? t("setlist.duplicateSaveFirst") : undefined}
-                    onClick={() => {
-                      setMenuOpen(false);
-                      if (existing) duplicateSetlist(existing);
-                    }}
-                    className="block w-full px-4 py-2 text-left text-sm text-text hover:bg-bg-hover disabled:opacity-50"
-                  >
-                    {t("setlist.duplicate")}
-                  </button>
-                </div>
-              )}
-            </div>
           </>
+        }
+        menu={
+          <ToolbarMenu
+            label={t("a11y.moreOptions")}
+            items={[
+              { label: t("setlist.resetChanges"), onClick: () => reset(), disabled: !isDirty },
+              {
+                label: t("setlist.duplicate"),
+                onClick: () => duplicateSetlist(existing),
+                disabled: isDirty,
+                title: isDirty ? t("setlist.duplicateSaveFirst") : undefined,
+              },
+              {
+                label: t("setlist.deleteTitle"),
+                onClick: () => setConfirmDelete(true),
+                danger: true,
+              },
+            ]}
+          />
         }
       />
 
@@ -392,24 +351,10 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
         </DndContext>
       </form>
 
-      <div className="mt-10 max-w-2xl">
-        <Card title={t("settings.danger.heading")} danger>
-          <CardRow label={t("setlist.deleteTitle")} description={t("setlist.deleteDesc")}>
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(true)}
-              className="btn btn-danger btn-sm"
-            >
-              {t("common.delete")}
-            </button>
-          </CardRow>
-        </Card>
-      </div>
-
       {confirmDelete && (
         <ConfirmModal
           title={t("setlist.deleteConfirmTitle")}
-          message={t("setlist.deleteConfirmMessage")}
+          message={`${t("setlist.deleteDesc")} ${t("setlist.deleteConfirmMessage")}`}
           confirmLabel={t("common.delete")}
           variant="danger"
           onConfirm={deleteSetlist}
