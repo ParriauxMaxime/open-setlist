@@ -18,7 +18,8 @@ Tablets -- Bluetooth, BLE MIDI -------+             \--> --also outputs: drum pa
 Run the file for your system (from the releases named `companion-v…`). It prints the
 address to enter in Open Setlist and opens a status page with that address, a QR code that
 sets a tablet up without typing, the MIDI output in use and the last messages received.
-Keep it running during the gig; close its window to stop it.
+Keep it running during the gig; close its window to stop it. In Open Setlist, the Companion
+page pairs a tablet: a scan of the network (Chrome only), the QR code, or the address.
 
 - **macOS and Linux**: a MIDI port named `Open Setlist` appears while the program runs.
   Turn it on as a MIDI input in Ableton. A downloaded file must first be made executable

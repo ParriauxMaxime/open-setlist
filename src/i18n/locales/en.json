@@ -1014,12 +1014,10 @@
       "bluetooth": "Bluetooth"
     },
     "wifi": {
-      "desc": "Run the Open Setlist companion program on the stage computer, on the same Wi-Fi as this device, and enter the address it shows.",
+      "desc": "The Open Setlist companion program on the stage computer, on the same Wi-Fi as this device. Pair it, and see who is connected, on the Companion page.",
       "address": "Address of the companion program",
-      "test": "Test",
-      "connected": "Connected to {{name}}. MIDI goes out on “{{port}}”.",
       "permission": "The first time, Chrome asks whether this site may reach devices on your local network: allow it.",
-      "trust": "Firefox and Safari: open the companion's page on this device first and accept the warning about its certificate, then test again.",
+      "trust": "Firefox and Safari: open the companion's page on this device first and accept the warning about its certificate, then connect again.",
       "openPage": "Open the companion's page"
     },
     "bluetooth": {
@@ -1116,7 +1114,26 @@
   "companion": {
     "title": "Companion",
     "subtitle": "The program on the stage computer: who is connected, and the MIDI that goes through it.",
-    "notPaired": "No companion program paired with this device yet. Pair it in",
+    "pair": {
+      "use": "Pair",
+      "scan": {
+        "heading": "Scan the network",
+        "subnet": "Network",
+        "hint": "The first three numbers of the addresses on the band's Wi-Fi, often 192.168.1 or 192.168.0. Chrome asks once to reach the local network: allow it. Safari and Firefox cannot scan: use the QR code.",
+        "start": "Scan",
+        "progress": "Looking… {{done}} of 254 addresses",
+        "none": "No companion program found. Check that it runs and that both are on the same Wi-Fi, or try another network.",
+        "badSubnet": "Three numbers, like 192.168.1"
+      },
+      "qr": {
+        "heading": "Scan the QR code",
+        "hint": "The companion's window on the stage computer shows a QR code. Point this device's camera at it: Open Setlist opens, already paired."
+      },
+      "manual": {
+        "heading": "Enter the address",
+        "busy": "Looking for it…"
+      }
+    },
     "link": {
       "off": "Not paired",
       "paused": "Disconnected",

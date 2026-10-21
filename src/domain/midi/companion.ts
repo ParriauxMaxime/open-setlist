@@ -176,13 +176,15 @@ export type CompanionLog = z.infer<typeof logReplySchema>;
 export interface CompanionOptions {
   fetch?: typeof fetch;
   signal?: AbortSignal;
+  /** Instead of the usual 4 s, for a request that does not wait on purpose. */
+  timeoutMs?: number;
 }
 
 async function request(
   url: string,
   init: RequestInit,
   options: CompanionOptions,
-  timeoutMs = REQUEST_TIMEOUT_MS,
+  timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS,
 ): Promise<Response> {
   const doFetch = options.fetch ?? fetch;
   const timeout = AbortSignal.timeout(timeoutMs);

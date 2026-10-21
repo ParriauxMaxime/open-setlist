@@ -2,6 +2,7 @@ import { COMPANION_LINK, type CompanionLink } from "@domain/midi/companion-link"
 import { displayCompanionAddress, saveMidiSettings } from "@domain/midi/settings";
 import { useTranslation } from "react-i18next";
 import { Badge, Card, CardRow } from "../../design-system/components/card";
+import { securePage } from "./pairing";
 
 const TONE = {
   [COMPANION_LINK.off]: "muted",
@@ -15,6 +16,7 @@ const TONE = {
 export function ConnectionCard({ link }: { link: CompanionLink }) {
   const { t } = useTranslation();
   const paused = link.state === COMPANION_LINK.paused;
+  const unreached = link.state === COMPANION_LINK.connecting || link.state === COMPANION_LINK.lost;
 
   return (
     <Card
@@ -50,6 +52,17 @@ export function ConnectionCard({ link }: { link: CompanionLink }) {
           {t("companion.connection.forget")}
         </button>
       </CardRow>
+      {unreached && (
+        <div className="space-y-1 px-4 py-3 text-xs text-text-faint">
+          <p>{t("midi.wifi.permission")}</p>
+          <p>
+            {t("midi.wifi.trust")}{" "}
+            <a href={securePage(link.base)} target="_blank" rel="noopener" className="link-accent">
+              {t("midi.wifi.openPage")}
+            </a>
+          </p>
+        </div>
+      )}
     </Card>
   );
 }

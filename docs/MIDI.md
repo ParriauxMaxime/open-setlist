@@ -47,6 +47,8 @@ Tablet ── Bluetooth MIDI ─────────────────
 
 **Bluetooth** (`src/domain/midi/bluetooth.ts`). The app is a standard BLE MIDI central through Web Bluetooth (Chrome and Edge, Android and desktop). It connects to the companion program, which advertises as a BLE MIDI device, or straight to BLE MIDI hardware. The browser forgets the device when the page reloads: one tap on the MIDI chip reconnects.
 
+**Pairing** (`src/modules/companion/`, `src/domain/midi/companion-link.ts`, `scan.ts`). A device pairs once on the Companion page, in the sidebar: a scan of the network, the QR code on the companion's screen, or the address typed by hand. The scan asks `/status` of the 254 addresses of one subnet over plain HTTP, 32 at a time, 1.5 s each, about 12 s in all. A web page cannot read its own address, so the musician types the subnet, `192.168.1` by default, the last one remembered: trying the common subnets in turn would take a minute or more. Only Chrome can scan, after its local network prompt; Safari and Firefox block plain HTTP from the app and do not trust the certificate yet, so there the QR code pairs. From then on the app connects at every launch, tries again after 2, 4, 8 s up to 30 s while the companion does not answer, and shows the state as a dot on the Companion entry: green connected, red lost, grey connecting or disconnected. Disconnect stops the link and keeps the address, Forget clears it.
+
 **Follow the leader** (`src/modules/performance/hooks/use-follow-leader.ts`). Optional and off by default: a leading device posts its position (setlist, song, slot) to the companion program, following devices wait on it and jump to that song. Local network only; it needs the Wi-Fi transport.
 
 ## Companion protocol
@@ -67,11 +69,12 @@ HTTP on port 7777, JSON, open to any origin (it is only reachable on the band's 
 
 Times (`at`, `lastSeen`, `now`) are milliseconds since 1970 on the companion's clock: the app compares them with `now`, not with its own clock, since a gig has no internet to set clocks by.
 
-The QR code opens `…/settings?companion=<address>`: the app stores the address and shows the MIDI settings.
+The QR code opens `…/settings?companion=<address>`: the app pairs with that address and shows the Companion page.
 
 ## Not verified yet
 
 - Chrome on Android asking for and honouring the local network permission.
+- The network scan on Chrome for Android: whether one local network prompt covers the 254 requests, and how long the addresses nobody answers take to fail there.
 - The Bluetooth transport end to end: no tablet has connected to the companion yet.
 - The companion program at run time on Windows (never started on a real one) and on Linux with a real ALSA sequencer and BlueZ.
 - Ableton Live mapping a note per song and echoing anything on the `Open Setlist` output. Tried on 2026-10-20 by the keyboard player with CC 20: Live would not map CC values to anything but one instrument parameter, from the app and from the keyboard alike, hence the switch to notes on 2026-10-21. On 2026-10-19 Live had reported a pitch bend; the companion writes exactly what it receives (`cargo test --test loopback -- --ignored`, macOS), so the pitch bend most likely came from another Remote input, such as the keyboard's wheel. With notes, Live likely echoes nothing on the output, so the MIDI chip would stay blue.

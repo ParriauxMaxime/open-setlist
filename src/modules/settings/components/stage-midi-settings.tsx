@@ -1,6 +1,6 @@
 import { currentPlatform, deviceDisplayName } from "@domain/device";
 import { BLE_STATE, connectBleMidi, disconnectBleMidi } from "@domain/midi/bluetooth";
-import { COMPANION_ERROR, CompanionError, probeCompanion } from "@domain/midi/companion";
+import { COMPANION_ERROR, CompanionError } from "@domain/midi/companion";
 import {
   MIDI_ENCODING,
   MIDI_ENCODING_VALUES,
@@ -13,18 +13,19 @@ import {
   displayCompanionAddress,
   MIDI_TRANSPORT,
   MIDI_TRANSPORT_VALUES,
-  normalizeCompanionAddress,
-  otherScheme,
   patchEncoding,
   saveMidiSettings,
 } from "@domain/midi/settings";
 import { PART_VALUES } from "@domain/parts";
+import { Link } from "@swan-io/chicane";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Router } from "../../../router";
 import { Card, CardRow, Choice, ToggleRow } from "../../design-system/components/card";
 import { Input, Select } from "../../design-system/components/form";
 import { partLabel } from "../../performance/components/my-part-menu";
 import { MidiNotePicker } from "../../shared/components/midi-note-picker";
+import { useCompanionLink } from "../../shared/hooks/use-companion-link";
 import { useBleMidi, useMidiSettings } from "../../shared/hooks/use-midi-settings";
 
 type Check =
@@ -37,18 +38,13 @@ function numberOrUndefined(value: string): number | undefined {
   return value === "" ? undefined : Number(value);
 }
 
-/** The companion's own page over HTTPS, where a browser can be told to trust its certificate. */
-function securePage(base: string): string {
-  return `${base.startsWith("https://") ? base : otherScheme(base)}/`;
-}
-
 /** Stage MIDI: what this device sends when the song changes, and through what. */
 export function StageMidiSettings() {
   const { t } = useTranslation();
   const settings = useMidiSettings();
   const ble = useBleMidi();
+  const link = useCompanionLink();
   const encoding = patchEncoding(settings);
-  const [address, setAddress] = useState(() => displayCompanionAddress(settings.companion));
   const [check, setCheck] = useState<Check>({ type: "idle" });
   const [testCode, setTestCode] = useState("");
   const overWifi = settings.transport === MIDI_TRANSPORT.wifi;
@@ -58,27 +54,6 @@ export function StageMidiSettings() {
   const describe = (err: unknown): string => {
     const kind = err instanceof CompanionError ? err.kind : COMPANION_ERROR.unreachable;
     return t(overWifi ? `midi.errors.${kind}` : "midi.errors.bluetooth");
-  };
-
-  const testCompanion = async () => {
-    const typed = normalizeCompanionAddress(address);
-    if (!typed) return setCheck({ type: "error", message: t("midi.errors.badAddress") });
-    saveMidiSettings({ companion: typed, companionPaused: false });
-    setCheck({ type: "busy" });
-    try {
-      const { base, status } = await probeCompanion(typed);
-      saveMidiSettings({ companion: base });
-      setCheck(
-        status.midiOut
-          ? {
-              type: "ok",
-              message: t("midi.wifi.connected", { name: status.name, port: status.midiOut }),
-            }
-          : { type: "error", message: t("midi.errors.noMidiOutput") },
-      );
-    } catch (err) {
-      setCheck({ type: "error", message: describe(err) });
-    }
   };
 
   const send = async (messages: number[][]) => {
@@ -166,37 +141,17 @@ export function StageMidiSettings() {
         </CardRow>
 
         {overWifi ? (
-          <CardRow label={t("midi.wifi.address")} description={t("midi.wifi.desc")} stacked>
-            <div className="flex max-w-md gap-2">
-              <Input
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="192.168.1.20"
-                inputMode="url"
-                autoCapitalize="none"
-                autoCorrect="off"
-                aria-label={t("midi.wifi.address")}
-                className="flex-1"
-              />
-              <button type="button" onClick={testCompanion} className="btn btn-outline">
-                {t("midi.wifi.test")}
-              </button>
-            </div>
-            <p className="text-xs text-text-faint">{t("midi.wifi.permission")}</p>
-            <p className="text-xs text-text-faint">
-              {t("midi.wifi.trust")}{" "}
-              {settings.companion && (
-                <a
-                  href={securePage(settings.companion)}
-                  target="_blank"
-                  rel="noopener"
-                  className="link-accent"
-                >
-                  {t("midi.wifi.openPage")}
-                </a>
-              )}
-            </p>
-            {checkMessage}
+          <CardRow
+            label={
+              settings.companion
+                ? `${link.status?.name ?? displayCompanionAddress(settings.companion)} · ${t(`companion.link.${link.state}`)}`
+                : t("companion.link.off")
+            }
+            description={t("midi.wifi.desc")}
+          >
+            <Link to={Router.Companion()} className="btn btn-outline btn-sm">
+              {t("companion.title")}
+            </Link>
           </CardRow>
         ) : ble.state === BLE_STATE.unsupported ? (
           <div className="px-4 py-3 text-sm text-warning">{t("midi.bluetooth.unsupported")}</div>
@@ -244,7 +199,7 @@ export function StageMidiSettings() {
               {t("midi.test.send")}
             </button>
           </div>
-          {!overWifi && checkMessage}
+          {checkMessage}
         </CardRow>
       </Card>
 

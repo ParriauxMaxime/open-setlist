@@ -1014,12 +1014,10 @@
       "bluetooth": "Bluetooth"
     },
     "wifi": {
-      "desc": "Lancez le programme compagnon Open Setlist sur le PC de scène, sur le même Wi-Fi que cet appareil, et entrez l'adresse qu'il affiche.",
+      "desc": "Le programme compagnon Open Setlist sur le PC de scène, sur le même Wi-Fi que cet appareil. Associez-le, et voyez qui est connecté, sur la page Compagnon.",
       "address": "Adresse du programme compagnon",
-      "test": "Tester",
-      "connected": "Connecté à {{name}}. Le MIDI sort sur « {{port}} ».",
       "permission": "La première fois, Chrome demande si ce site peut joindre les appareils de votre réseau local : autorisez.",
-      "trust": "Firefox et Safari : ouvrez d'abord la page du programme compagnon sur cet appareil et acceptez l'avertissement sur son certificat, puis testez à nouveau.",
+      "trust": "Firefox et Safari : ouvrez d'abord la page du programme compagnon sur cet appareil et acceptez l'avertissement sur son certificat, puis connectez à nouveau.",
       "openPage": "Ouvrir la page du programme compagnon"
     },
     "bluetooth": {
@@ -1116,7 +1114,26 @@
   "companion": {
     "title": "Compagnon",
     "subtitle": "Le programme du PC de scène : qui y est connecté, et le MIDI qui passe par lui.",
-    "notPaired": "Aucun programme compagnon associé à cet appareil. Associez-le dans",
+    "pair": {
+      "use": "Associer",
+      "scan": {
+        "heading": "Chercher sur le réseau",
+        "subnet": "Réseau",
+        "hint": "Les trois premiers nombres des adresses du Wi-Fi du groupe, souvent 192.168.1 ou 192.168.0. Chrome demande une fois l'accès au réseau local : autorisez. Safari et Firefox ne peuvent pas chercher : utilisez le QR code.",
+        "start": "Chercher",
+        "progress": "Recherche… {{done}} adresses sur 254",
+        "none": "Aucun programme compagnon trouvé. Vérifiez qu'il tourne et que les deux sont sur le même Wi-Fi, ou essayez un autre réseau.",
+        "badSubnet": "Trois nombres, comme 192.168.1"
+      },
+      "qr": {
+        "heading": "Scanner le QR code",
+        "hint": "La fenêtre du compagnon sur le PC de scène affiche un QR code. Visez-le avec l'appareil photo de cet appareil : Open Setlist s'ouvre, déjà associé."
+      },
+      "manual": {
+        "heading": "Saisir l'adresse",
+        "busy": "Recherche…"
+      }
+    },
     "link": {
       "off": "Non associé",
       "paused": "Déconnecté",

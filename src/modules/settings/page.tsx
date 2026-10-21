@@ -25,16 +25,14 @@ interface SettingsPageProps {
 export function SettingsPage({ section, companion }: SettingsPageProps) {
   const active = parseSettingsSection(section);
 
-  // Scanned from the companion program's screen: remember it, then open the MIDI page
+  // Scanned from the companion program's screen: pair with it, then show the Companion page
   useEffect(() => {
     const base = companion ? normalizeCompanionAddress(companion) : null;
     if (base) {
       saveMidiSettings({ companion: base, companionPaused: false, transport: MIDI_TRANSPORT.wifi });
-    }
-    if (!active) {
-      Router.replace("SettingsSection", {
-        section: base ? SETTINGS_SECTION.midi : SETTINGS_SECTION.preferences,
-      });
+      Router.replace("Companion");
+    } else if (!active) {
+      Router.replace("SettingsSection", { section: SETTINGS_SECTION.preferences });
     }
   }, [companion, active]);
 
