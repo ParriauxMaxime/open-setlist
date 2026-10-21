@@ -59,6 +59,7 @@ export function SetEditor({
 }: SetEditorProps) {
   const { t } = useTranslation();
   const [showPicker, setShowPicker] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(() => Boolean(set.notes));
   const [openTechNotes, setOpenTechNotes] = useState<ReadonlySet<string>>(() => new Set());
   const toggleTechNote = (songId: string) =>
     setOpenTechNotes((prev) => {
@@ -135,12 +136,37 @@ export function SetEditor({
             />
           </div>
         </div>
-        {canRemove && (
-          <button type="button" onClick={onRemove} className="btn btn-danger btn-sm">
-            {t("setlist.removeSet")}
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setNotesOpen((o) => !o)}
+            aria-expanded={notesOpen}
+            aria-label={t("setlist.setNotes")}
+            title={t("setlist.setNotes")}
+            className={`${ROW_BUTTON} ${set.notes ? "text-accent" : ""}`}
+          >
+            📝
           </button>
-        )}
+          {canRemove && (
+            <button type="button" onClick={onRemove} className="btn btn-danger btn-sm">
+              {t("setlist.removeSet")}
+            </button>
+          )}
+        </div>
       </div>
+
+      {notesOpen && (
+        <div className="px-4 py-2">
+          <Textarea
+            value={set.notes ?? ""}
+            onChange={(e) => onUpdate({ ...set, notes: e.target.value || undefined })}
+            aria-label={t("setlist.setNotes")}
+            placeholder={t("setlist.setNotesPlaceholder")}
+            rows={2}
+            className="resize-y"
+          />
+        </div>
+      )}
 
       {set.songIds.length === 0 ? (
         <EmptyState

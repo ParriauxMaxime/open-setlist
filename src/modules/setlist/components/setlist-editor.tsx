@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import { Router } from "../../../router";
 import { ConfirmModal } from "../../design-system/components/confirm-modal";
 import { EditorHeader } from "../../design-system/components/editor-header";
-import { Field, Input } from "../../design-system/components/form";
+import { Field, Input, Textarea } from "../../design-system/components/form";
 import { ToolbarMenu } from "../../design-system/components/toolbar-menu";
 import { useUnsavedGuard } from "../../shared/hooks/use-unsaved-guard";
 import { useDuplicateSetlist } from "../hooks/use-duplicate-setlist";
@@ -294,6 +294,16 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
               value={expectedDuration ? Math.round(expectedDuration / 60) : ""}
             />
           </Field>
+          <div className="col-span-2 sm:col-span-4">
+            <Field label={t("setlist.notesLabel")} error={errors.notes?.message}>
+              <Textarea
+                {...register("notes")}
+                placeholder={t("setlist.notesPlaceholder")}
+                rows={2}
+                className="resize-y"
+              />
+            </Field>
+          </div>
         </div>
 
         {/* Sets with DnD */}
