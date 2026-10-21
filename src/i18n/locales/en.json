@@ -938,6 +938,17 @@
   "techSheet": {
     "noSongs": "No songs in this setlist."
   },
+  "crew": {
+    "back": "Back to the setlist",
+    "openCharts": "Open the charts",
+    "followConnected": "Following · connected",
+    "followOffline": "Following · offline",
+    "setlistNotes": "Setlist notes",
+    "now": "Now · {{title}}",
+    "remaining": "{{minutes}} min left · ends ~{{time}}",
+    "unknownLength_one": "{{count}} without length",
+    "unknownLength_other": "{{count}} without length"
+  },
   "print": {
     "print": "Print",
     "modeLabel": "Print layout",

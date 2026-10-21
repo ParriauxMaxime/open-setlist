@@ -71,6 +71,7 @@ export function useSetlistNavigation(setlistId: string) {
 
   return {
     setlist,
+    songs,
     flatSongs,
     currentIndex,
     setCurrentIndex,

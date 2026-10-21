@@ -6,7 +6,11 @@ import { choiceClass } from "./my-part-menu";
 
 // The button is a full-height tap target, the chip inside it stays small
 const CHIP_TARGET = "flex h-11 shrink-0 items-center";
-const CHIP = "rounded-md border px-2 py-1 text-sm font-medium tabular-nums";
+export const CHIP = "rounded-md border px-2 py-1 text-sm font-medium tabular-nums";
+export const FOLLOW_CHIP_TONE = {
+  connected: "border-accent text-accent",
+  offline: "border-border text-text-faint",
+} as const;
 
 const MIDI_CHIP_TONE: Record<string, string> = {
   [STAGE_MIDI_STATE.sent]: "border-accent text-accent",
@@ -79,9 +83,7 @@ export function FollowChip({ follow, onClick }: { follow: FollowLeader; onClick:
       title={label}
       className={CHIP_TARGET}
     >
-      <span
-        className={`${CHIP} ${follow.connected ? "border-accent text-accent" : "border-border text-text-faint"}`}
-      >
+      <span className={`${CHIP} ${FOLLOW_CHIP_TONE[follow.connected ? "connected" : "offline"]}`}>
         {name}
       </span>
     </button>

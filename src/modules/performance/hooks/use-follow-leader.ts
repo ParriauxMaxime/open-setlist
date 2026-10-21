@@ -21,6 +21,8 @@ interface UseFollowLeaderOptions {
   flatSongs: FlatEntry[];
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
+  /** Runs in this mode whenever a companion is set, whatever the saved setting says. */
+  forceMode?: FollowMode;
 }
 
 /**
@@ -28,11 +30,11 @@ interface UseFollowLeaderOptions {
  * is on, following devices jump there. Local network only. Off by default.
  */
 export function useFollowLeader(options: UseFollowLeaderOptions): FollowLeader {
-  const { setlistId, currentIndex } = options;
+  const { setlistId, currentIndex, forceMode } = options;
   const settings = useMidiSettings();
   const base = settings.companion;
   const available = Boolean(base && setlistId);
-  const mode = available ? settings.follow : FOLLOW_MODE.off;
+  const mode = available ? (forceMode ?? settings.follow) : FOLLOW_MODE.off;
 
   const [connected, setConnected] = useState(false);
   const [deviceId] = useState(createId);

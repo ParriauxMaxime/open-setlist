@@ -11,6 +11,7 @@ import { Router } from "../../router";
 import { Card } from "../design-system/components/card";
 import { EditorHeader } from "../design-system/components/editor-header";
 import { useNotation } from "../shared/hooks/use-notation";
+import { useStageHref } from "../shared/hooks/use-stage-href";
 
 interface TechSheetPageProps {
   setlistId: string;
@@ -20,6 +21,7 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
   const { t } = useTranslation();
   const db = useDb();
   const notation = useNotation();
+  const stageHref = useStageHref();
 
   const setlist = useLiveQuery(() => db.setlists.get(setlistId), [setlistId, db]);
 
@@ -90,7 +92,7 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
                   return (
                     <Link
                       key={songId}
-                      to={`${Router.Perform({ setlistId })}?start=${flatIndex}`}
+                      to={stageHref(setlistId, flatIndex)}
                       className="flex gap-3 px-4 py-3 transition-colors first:rounded-t-lg last:rounded-b-lg hover:bg-bg-hover"
                     >
                       <span className="w-6 shrink-0 pt-0.5 text-right text-sm tabular-nums text-text-faint">

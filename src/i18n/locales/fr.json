@@ -938,6 +938,17 @@
   "techSheet": {
     "noSongs": "Aucune chanson dans cette setlist."
   },
+  "crew": {
+    "back": "Retour à la setlist",
+    "openCharts": "Ouvrir les grilles",
+    "followConnected": "Suit le groupe · connecté",
+    "followOffline": "Suit le groupe · hors ligne",
+    "setlistNotes": "Notes de la setlist",
+    "now": "En cours · {{title}}",
+    "remaining": "il reste {{minutes}} min · fin vers {{time}}",
+    "unknownLength_one": "{{count}} sans durée",
+    "unknownLength_other": "{{count}} sans durée"
+  },
   "print": {
     "print": "Imprimer",
     "modeLabel": "Mise en page",

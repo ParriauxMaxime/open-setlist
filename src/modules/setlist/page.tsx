@@ -10,6 +10,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
 import { DataTable } from "../design-system/components/data-table";
+import { useStageHref } from "../shared/hooks/use-stage-href";
 import { SetlistEditor } from "./components/setlist-editor";
 import { useDuplicateSetlist } from "./hooks/use-duplicate-setlist";
 
@@ -40,6 +41,7 @@ function SetlistListPage() {
   );
   const songs = useLiveQuery(() => db.songs.toArray(), [db]);
   const duplicateSetlist = useDuplicateSetlist();
+  const stageHref = useStageHref();
   const gigDate = (date: string | undefined) =>
     date ? formatGigDate(date, i18n.language, today) : undefined;
 
@@ -118,10 +120,7 @@ function SetlistListPage() {
               ⧉
             </button>
             {songIds(setlist).length > 0 && (
-              <Link
-                to={Router.Perform({ setlistId: setlist.id })}
-                className="btn btn-primary whitespace-nowrap"
-              >
+              <Link to={stageHref(setlist.id)} className="btn btn-primary whitespace-nowrap">
                 ▶ {t("setlist.perform")}
               </Link>
             )}

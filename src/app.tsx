@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { CatalogPage } from "./modules/catalog/page";
 import { ChordsPage } from "./modules/chords/page";
+import { CrewPage } from "./modules/crew/page";
 import { EditSongPage } from "./modules/editor/page";
 import { PerformPage } from "./modules/performance/page";
 import { PrintPage } from "./modules/print/page";
@@ -27,6 +28,7 @@ export function App() {
     "TechSheet",
     "Perform",
     "PerformSong",
+    "Crew",
     "Print",
     "Chords",
     "Tuner",
@@ -51,6 +53,9 @@ export function App() {
   }
   if (route.name === "PerformSong") {
     return <PerformPage songId={route.params.songId} />;
+  }
+  if (route.name === "Crew") {
+    return <CrewPage setlistId={route.params.setlistId} />;
   }
   if (route.name === "Print") {
     return (
