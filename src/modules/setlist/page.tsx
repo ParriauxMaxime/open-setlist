@@ -65,15 +65,19 @@ function SetlistListPage() {
       header: t("setlist.colName"),
       cell: (info) => {
         const setlist = info.row.original;
-        const details = [
-          gigDate(setlist.date),
-          setlist.venue,
-          contents(setlist, songs ?? []).summary,
-        ].filter(Boolean);
+        const { summary, hint } = contents(setlist, songs ?? []);
+        const details = [gigDate(setlist.date), setlist.venue, summary].filter(Boolean);
         return (
           <div>
             <span className="font-medium">{info.getValue()}</span>
             <div className="mt-0.5 text-xs text-text-muted md:hidden">{details.join(" · ")}</div>
+            {/* Tablets have the date and venue columns but not the songs one */}
+            <div
+              className="mt-0.5 hidden text-xs text-text-faint md:block lg:hidden"
+              title={hint || undefined}
+            >
+              {summary}
+            </div>
           </div>
         );
       },
@@ -101,7 +105,7 @@ function SetlistListPage() {
           </span>
         );
       },
-      meta: { className: "hidden md:table-cell" },
+      meta: { className: "hidden lg:table-cell" },
     }) as ColumnDef<Setlist, unknown>,
     col.display({
       id: "actions",
