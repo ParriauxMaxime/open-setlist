@@ -133,7 +133,7 @@ export function GitHubConfigForm({
                   onClick={() => setShowToken((s) => !s)}
                   className="btn btn-ghost text-xs"
                 >
-                  {showToken ? "Hide" : "Show"}
+                  {showToken ? t("common.hide") : t("common.show")}
                 </button>
               </div>
             </label>

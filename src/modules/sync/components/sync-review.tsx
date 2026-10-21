@@ -173,7 +173,7 @@ export function SyncReview({ diff, onConfirm, onCancel, busy, notice }: SyncRevi
 
       {/* No changes */}
       {diff.incoming.length === 0 && diff.outgoing.length === 0 && !hasConflicts && (
-        <p className="text-sm text-text-muted">Everything is up to date.</p>
+        <p className="text-sm text-text-muted">{t("sync.upToDate")}</p>
       )}
 
       {/* Actions */}
