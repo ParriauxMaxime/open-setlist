@@ -81,6 +81,8 @@ export function MetadataPanel({
     watch("bpm"),
     watch("duration"),
     watch("notes"),
+    watch("status"),
+    tags.length,
   ].filter(Boolean).length;
   const soundCount = Object.values(patches).filter((code) => code.trim() !== "").length;
   const transposition = watch("transposition");
@@ -91,12 +93,9 @@ export function MetadataPanel({
     watch("scrollSpeed"),
     Object.keys(overrides).length,
   ].filter(Boolean).length;
-  const filingCount = [
-    watch("status"),
-    tags.length,
-    watch("techNotes"),
-    links && Object.values(links).some(Boolean),
-  ].filter(Boolean).length;
+  const filingCount = [watch("techNotes"), links && Object.values(links).some(Boolean)].filter(
+    Boolean,
+  ).length;
 
   const toggle = onTogglePanel && (
     <button
@@ -171,6 +170,50 @@ export function MetadataPanel({
           rows={2}
           className="resize-y"
         />
+      </Field>
+
+      <StatusControl
+        value={watch("status")}
+        onChange={(status) => setValue("status", status, { shouldDirty: true })}
+      />
+
+      <Field label={t("editor.tagsLabel")}>
+        <div className="mb-1.5 flex flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className="flex items-center gap-1 rounded-sm bg-bg-raised px-2 py-0.5 text-sm text-text-muted"
+            >
+              {tag}
+              <button
+                type="button"
+                onClick={() => onRemoveTag(tag)}
+                aria-label={t("editor.removeTag", { tag })}
+                className="ml-0.5 text-xs text-text-faint hover:text-danger"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <Input
+            type="text"
+            value={tagInput}
+            onChange={(e) => onTagInputChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                onAddTag();
+              }
+            }}
+            placeholder={t("editor.addTagPlaceholder")}
+            className="flex-1"
+          />
+          <button type="button" onClick={onAddTag} className="btn btn-ghost">
+            {t("common.add")}
+          </button>
+        </div>
       </Field>
     </Section>
   );
@@ -328,51 +371,6 @@ export function MetadataPanel({
       }
     >
       <div className="flex flex-col gap-4">
-        <StatusControl
-          value={watch("status")}
-          onChange={(status) => setValue("status", status, { shouldDirty: true })}
-        />
-
-        {/* Tags */}
-        <Field label={t("editor.tagsLabel")}>
-          <div className="mb-1.5 flex flex-wrap gap-1.5">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="flex items-center gap-1 rounded-sm bg-bg-raised px-2 py-0.5 text-sm text-text-muted"
-              >
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => onRemoveTag(tag)}
-                  aria-label={t("editor.removeTag", { tag })}
-                  className="ml-0.5 text-xs text-text-faint hover:text-danger"
-                >
-                  ✕
-                </button>
-              </span>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <Input
-              type="text"
-              value={tagInput}
-              onChange={(e) => onTagInputChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  onAddTag();
-                }
-              }}
-              placeholder={t("editor.addTagPlaceholder")}
-              className="flex-1"
-            />
-            <button type="button" onClick={onAddTag} className="btn btn-ghost">
-              {t("common.add")}
-            </button>
-          </div>
-        </Field>
-
         {/* Tech Notes */}
         <Field label={t("editor.techNotesLabel")} error={errors.techNotes?.message}>
           <Textarea
