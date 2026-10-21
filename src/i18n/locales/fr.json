@@ -1153,6 +1153,50 @@
         "connected": "Cet appareil se signale au compagnon toutes les 5 secondes.",
         "lost": "Pas de réponse. Nouvel essai en cours : vérifiez que le programme tourne et que cet appareil est sur le Wi-Fi du groupe."
       }
+    },
+    "health": {
+      "heading": "PC de scène",
+      "program": "Programme",
+      "uptime": "lancé depuis {{time}}",
+      "midiOut": "Sortie MIDI",
+      "midiIn": "Entrée MIDI",
+      "bluetooth": "Bluetooth",
+      "bluetoothState": {
+        "advertising": "Ouvert aux tablettes",
+        "off": "Désactivé",
+        "unavailable": "Indisponible"
+      },
+      "address": "Adresse",
+      "none": "Aucune"
+    },
+    "devices": {
+      "heading": "Appareils",
+      "none": "Aucun appareil ne s'est signalé ces 15 dernières secondes.",
+      "me": "cet appareil",
+      "onStage": "Sur scène",
+      "inBooth": "Régie",
+      "midiOff": "MIDI désactivé",
+      "transport": {
+        "wifi": "Wi-Fi",
+        "bluetooth": "Bluetooth"
+      },
+      "lastSend": {
+        "ok": "envoyé",
+        "failed": "non envoyé",
+        "none": "rien envoyé"
+      },
+      "seenNow": "à l'instant",
+      "seen_one": "il y a {{count}} s",
+      "seen_other": "il y a {{count}} s"
+    },
+    "log": {
+      "heading": "Journal MIDI",
+      "desc": "Les 50 derniers changements de son joués par le compagnon, du plus récent au plus ancien.",
+      "none": "Rien joué depuis le lancement du compagnon.",
+      "channel": "canal {{channel}}",
+      "note": "Note {{note}} ({{name}}) · canal {{channel}}",
+      "cc": "CC {{controller}} = {{value}} · canal {{channel}}",
+      "pc": "PC {{preset}} · canal {{channel}}"
     }
   }
 }

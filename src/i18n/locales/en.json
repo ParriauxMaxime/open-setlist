@@ -1153,6 +1153,50 @@
         "connected": "This device reports to the companion every 5 seconds.",
         "lost": "No answer. Trying again: check that the program runs and that this device is on the band's Wi-Fi."
       }
+    },
+    "health": {
+      "heading": "Stage computer",
+      "program": "Program",
+      "uptime": "running for {{time}}",
+      "midiOut": "MIDI output",
+      "midiIn": "MIDI input",
+      "bluetooth": "Bluetooth",
+      "bluetoothState": {
+        "advertising": "Open to tablets",
+        "off": "Off",
+        "unavailable": "Unavailable"
+      },
+      "address": "Address",
+      "none": "None"
+    },
+    "devices": {
+      "heading": "Devices",
+      "none": "No device has reported in the last 15 seconds.",
+      "me": "this device",
+      "onStage": "On stage",
+      "inBooth": "Booth",
+      "midiOff": "MIDI off",
+      "transport": {
+        "wifi": "Wi-Fi",
+        "bluetooth": "Bluetooth"
+      },
+      "lastSend": {
+        "ok": "sent",
+        "failed": "not sent",
+        "none": "nothing sent yet"
+      },
+      "seenNow": "now",
+      "seen_one": "{{count}} s ago",
+      "seen_other": "{{count}} s ago"
+    },
+    "log": {
+      "heading": "MIDI log",
+      "desc": "The last 50 sound changes the companion played, newest first.",
+      "none": "Nothing played since the companion started.",
+      "channel": "ch {{channel}}",
+      "note": "Note {{note}} ({{name}}) · ch {{channel}}",
+      "cc": "CC {{controller}} = {{value}} · ch {{channel}}",
+      "pc": "PC {{preset}} · ch {{channel}}"
     }
   }
 }
