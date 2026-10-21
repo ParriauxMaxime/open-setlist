@@ -5,6 +5,7 @@ import {
   getSongOverrides,
   loadPreferences,
   removeSongOverrides,
+  resolveSongDisplayPrefs,
   type SongDisplayPrefs,
   setSongOverrides,
 } from "@domain/preferences";
@@ -14,7 +15,7 @@ import { addTombstone } from "@domain/sync/tombstones";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "@swan-io/chicane";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Router } from "../../router";
@@ -24,6 +25,7 @@ import { EditorHeader } from "../design-system/components/editor-header";
 import { getPerformReturn, performReturnHref } from "../performance/components/perform-sidebar";
 import { navigateFromGuardedPage, useUnsavedGuard } from "../shared/hooks/use-unsaved-guard";
 import { AttachmentsPanel } from "./components/attachments-panel";
+import { ChartPreview } from "./components/chart-preview";
 import { ChordProEditor } from "./components/chordpro-editor";
 import { ChordProHelp } from "./components/chordpro-help";
 import { DeleteSongCard } from "./components/delete-song-card";
@@ -90,6 +92,12 @@ export function EditSongPage({ songId }: EditSongPageProps) {
   const hasOverrides = Object.keys(overrides).length > 0;
   const [overridesOpen, setOverridesOpen] = useState(hasOverrides);
   const globalPrefs = useRef(loadPreferences()).current;
+  const displayPrefs = useMemo(
+    () => ({ ...resolveSongDisplayPrefs(globalPrefs, undefined), ...overrides }),
+    [globalPrefs, overrides],
+  );
+  // Below lg, the chart preview takes the text's place
+  const [previewing, setPreviewing] = useState(false);
 
   const updateOverride = useCallback(
     (patch: Partial<SongDisplayPrefs>) => {
@@ -302,14 +310,16 @@ export function EditSongPage({ songId }: EditSongPageProps) {
                   {t("editor.findOnline")}
                 </button>
               )}
-              {!isNew && (
-                <Link
-                  to={Router.PerformSong({ songId: songDbId })}
+              {/* `.btn` sets its own display, so the wrapper carries the breakpoint */}
+              <div className="lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setPreviewing((v) => !v)}
                   className="btn btn-outline btn-responsive"
                 >
-                  {t("editor.preview")}
-                </Link>
-              )}
+                  {previewing ? t("editor.edit") : t("editor.preview")}
+                </button>
+              </div>
               <button
                 type="submit"
                 form="song-form"
@@ -391,20 +401,30 @@ export function EditSongPage({ songId }: EditSongPageProps) {
               {t("editor.metadata")} ◂
             </button>
           )}
-          <ChordProEditor
-            register={register}
-            value={watch("content")}
-            error={errors.content?.message}
-            toolbar={
-              <button
-                type="button"
-                onClick={() => setShowPasteChart(true)}
-                className="btn btn-ghost btn-sm"
-              >
-                {t("chartImport.pasteButton")}
-              </button>
-            }
-          />
+          <div className="flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:grid-cols-2">
+            <div className={`${previewing ? "hidden" : "flex"} min-h-0 flex-1 flex-col lg:flex`}>
+              <ChordProEditor
+                register={register}
+                value={watch("content")}
+                error={errors.content?.message}
+                toolbar={
+                  <button
+                    type="button"
+                    onClick={() => setShowPasteChart(true)}
+                    className="btn btn-ghost btn-sm"
+                  >
+                    {t("chartImport.pasteButton")}
+                  </button>
+                }
+              />
+            </div>
+            <ChartPreview
+              content={watch("content")}
+              transposition={watch("transposition")}
+              displayPrefs={displayPrefs}
+              className={previewing ? "" : "hidden lg:block"}
+            />
+          </div>
           <ChordProHelp />
         </div>
 
