@@ -15,6 +15,7 @@ interface SortableSetProps {
   setName: string;
   set: SetlistSet;
   setIndex: number;
+  allSets: readonly SetlistSet[];
   songDragIds: string[];
   onUpdate: (set: SetlistSet) => void;
   onRemove: () => void;
@@ -29,6 +30,7 @@ export function SortableSet({
   setName,
   set,
   setIndex,
+  allSets,
   songDragIds,
   onUpdate,
   onRemove,
@@ -53,6 +55,7 @@ export function SortableSet({
       <SetEditor
         set={set}
         setIndex={setIndex}
+        allSets={allSets}
         songDragIds={songDragIds}
         onUpdate={onUpdate}
         onRemove={onRemove}

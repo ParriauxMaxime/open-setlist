@@ -206,7 +206,15 @@
     "unknownDuration_other": "{{count}} chansons sans durée",
     "noLength": "Pas de durée",
     "suggested": "Suggestions",
-    "allSongs": "Toutes les chansons"
+    "allSongs": "Toutes les chansons",
+    "picker": {
+      "title": "Ajouter à {{set}}",
+      "select": "Cocher {{title}}",
+      "hint": "Touchez une chanson pour l’ajouter, ou cochez-en plusieurs pour les ajouter ensemble.",
+      "addChecked_one": "Ajouter {{count}} chanson",
+      "addChecked_other": "Ajouter {{count}} chansons",
+      "clearChecked": "Tout décocher"
+    }
   },
   "perform": {
     "noChart": "Pas encore de grille pour ce morceau.",
@@ -856,7 +864,7 @@
         },
         "setlistsAtAGlance": {
           "title": "Les setlists d\u2019un coup d\u2019\u0153il",
-          "desc": "Chansons, sets et dur\u00e9e (1h42) dans la liste, \u29c9 duplique. Le catalogue de l\u2019\u00e9diteur montre ce qui est d\u00e9j\u00e0 dans un set."
+          "desc": "Chansons, sets et dur\u00e9e (1h42) dans la liste, \u29c9 duplique. L\u2019\u00e9diteur montre ce qui est d\u00e9j\u00e0 dans un set, + Ajouter une chanson en prend plusieurs \u00e0 la fois."
         },
         "songEditor": {
           "title": "Un \u00e9diteur qui montre la grille",

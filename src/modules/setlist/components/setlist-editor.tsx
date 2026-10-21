@@ -365,6 +365,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
                     setName={sets[i].name}
                     set={sets[i]}
                     setIndex={i}
+                    allSets={sets}
                     songDragIds={songDragIdsBySet[i]}
                     onUpdate={(updated) => updateSet(i, updated)}
                     onRemove={() => {

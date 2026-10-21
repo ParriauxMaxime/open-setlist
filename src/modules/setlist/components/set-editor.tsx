@@ -3,7 +3,7 @@ import { useDb } from "@db/provider";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "../../design-system/components/empty-state";
 import { buildSetDragId } from "../hooks/use-setlist-dnd";
@@ -15,6 +15,8 @@ import { SortableSongItem } from "./sortable-song-item";
 interface SetEditorProps {
   set: SetlistSet;
   setIndex: number;
+  /** Every set of the setlist, to show where a song already is. */
+  allSets: readonly SetlistSet[];
   songDragIds: string[];
   onUpdate: (set: SetlistSet) => void;
   onRemove: () => void;
@@ -38,6 +40,7 @@ const ROW_BUTTON =
 export function SetEditor({
   set,
   setIndex,
+  allSets,
   songDragIds,
   onUpdate,
   onRemove,
@@ -65,10 +68,12 @@ export function SetEditor({
     return all;
   }, [set.songIds, db]);
 
-  const addSong = (songId: string) => {
-    onUpdate({ ...set, songIds: [...set.songIds, songId] });
+  const addSongs = (songIds: string[]) => {
+    const fresh = songIds.filter((id) => !set.songIds.includes(id));
+    onUpdate({ ...set, songIds: [...set.songIds, ...fresh] });
     setShowPicker(false);
   };
+  const closePicker = useCallback(() => setShowPicker(false), []);
 
   const removeSong = (index: number) => {
     const songId = set.songIds[index];
@@ -195,14 +200,19 @@ export function SetEditor({
       )}
 
       <div className="px-4 py-2">
-        {showPicker ? (
-          <SongPicker excludeIds={set.songIds} onPick={addSong} contextSongs={songs} />
-        ) : (
-          <button type="button" onClick={() => setShowPicker(true)} className="link-accent text-sm">
-            {t("setlist.addSong")}
-          </button>
-        )}
+        <button type="button" onClick={() => setShowPicker(true)} className="link-accent text-sm">
+          {t("setlist.addSong")}
+        </button>
       </div>
+      {showPicker && (
+        <SongPicker
+          setName={set.name || `${t("setlist.set")} ${setIndex + 1}`}
+          sets={allSets}
+          contextSongs={songs}
+          onAdd={addSongs}
+          onClose={closePicker}
+        />
+      )}
     </div>
   );
 }
