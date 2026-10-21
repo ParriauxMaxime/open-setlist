@@ -241,6 +241,7 @@
     "transposeUp": "Transposer vers le haut",
     "help": "Gestes et raccourcis",
     "editGroup": "Modifier",
+    "tapToClose": "Touchez pour fermer",
     "hints": {
       "tap": "Touchez l'écran : affiche ou masque les boutons",
       "swipe": "Glissez sur le côté, au doigt ou à la souris : morceau suivant ou précédent",

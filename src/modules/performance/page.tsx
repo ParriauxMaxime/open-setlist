@@ -378,7 +378,7 @@ export function PerformPage({ setlistId, songId }: PerformPageProps) {
         partView={myPart.view}
       />
       <TempoOverlay beats={tempo.beats} />
-      {setlistId && <SetInterstitial current={nav.current} />}
+      {setlistId && <SetInterstitial current={nav.current} setlist={setlistNav.setlist} />}
       <PerformHints showAll={helpOpen} onClose={closeHelp} />
     </div>
   );

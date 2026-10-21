@@ -298,8 +298,20 @@ body {
   }
 }
 
+/* With notes to read, the set break card fades in and stays until tapped */
+.set-interstitial-hold {
+  animation: set-interstitial-in 0.2s ease-out;
+}
+
+@keyframes set-interstitial-in {
+  from {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .tempo-count {
+  .tempo-count,
+  .set-interstitial-hold {
     animation: none;
   }
 }

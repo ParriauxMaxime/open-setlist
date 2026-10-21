@@ -241,6 +241,7 @@
     "transposeUp": "Transpose up",
     "help": "Gestures and shortcuts",
     "editGroup": "Edit",
+    "tapToClose": "Tap to close",
     "hints": {
       "tap": "Tap the screen: show or hide the buttons",
       "swipe": "Swipe or drag sideways: next or previous song",
