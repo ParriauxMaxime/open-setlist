@@ -14,6 +14,7 @@ export const setlistSchema = z.object({
   sets: z.array(setlistSetSchema),
   notes: z.string().optional(),
   expectedDuration: z.number().int().positive().optional(),
+  techNotes: z.record(z.string(), z.string()).optional(),
   createdAt: z.number(),
   updatedAt: z.number(),
 });

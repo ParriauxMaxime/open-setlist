@@ -21,6 +21,7 @@ export function useDuplicateSetlist(): (setlist: Setlist) => Promise<void> {
         name: t("setlist.copyName", { name: setlist.name }),
         date: isoDay(new Date()),
         sets: setlist.sets.map((s) => ({ ...s, songIds: [...s.songIds] })),
+        techNotes: setlist.techNotes && { ...setlist.techNotes },
         createdAt: now,
         updatedAt: now,
       });

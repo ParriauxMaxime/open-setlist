@@ -6,6 +6,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "../../design-system/components/empty-state";
+import { Textarea } from "../../design-system/components/form";
 import { buildSetDragId } from "../hooks/use-setlist-dnd";
 import { SongPicker } from "./song-picker";
 import { SongRowContent } from "./song-row-content";
@@ -26,6 +27,9 @@ interface SetEditorProps {
   removed?: RemovedSong;
   onSongRemoved: (removed: RemovedSong) => void;
   onUndoRemove: () => void;
+  /** The setlist's tech notes, in place of the songs' own. */
+  techNotes: Record<string, string> | undefined;
+  onTechNote: (songId: string, text: string) => void;
 }
 
 export interface RemovedSong {
@@ -34,8 +38,9 @@ export interface RemovedSong {
   title: string;
 }
 
-const ROW_BUTTON =
-  "flex size-10 items-center justify-center rounded-md text-text-faint hover:bg-bg-hover hover:text-text disabled:opacity-30";
+const ROW_BUTTON_SHAPE =
+  "flex size-10 items-center justify-center rounded-md hover:bg-bg-hover hover:text-text disabled:opacity-30";
+const ROW_BUTTON = `${ROW_BUTTON_SHAPE} text-text-faint`;
 
 export function SetEditor({
   set,
@@ -49,9 +54,19 @@ export function SetEditor({
   removed,
   onSongRemoved,
   onUndoRemove,
+  techNotes,
+  onTechNote,
 }: SetEditorProps) {
   const { t } = useTranslation();
   const [showPicker, setShowPicker] = useState(false);
+  const [openTechNotes, setOpenTechNotes] = useState<ReadonlySet<string>>(() => new Set());
+  const toggleTechNote = (songId: string) =>
+    setOpenTechNotes((prev) => {
+      const next = new Set(prev);
+      if (next.has(songId)) next.delete(songId);
+      else next.add(songId);
+      return next;
+    });
 
   // Make the set container a droppable target for catalog items
   const { setNodeRef: setDroppableRef } = useDroppable({
@@ -143,13 +158,44 @@ export function SetEditor({
             {set.songIds.map((songId, i) => {
               const song = songs?.find((s) => s?.id === songId);
               const dragId = songDragIds[i];
+              const override = techNotes?.[songId];
+              const techOpen = openTechNotes.has(songId);
               return (
-                <SortableSongItem key={dragId} id={dragId} songTitle={song?.title}>
+                <SortableSongItem
+                  key={dragId}
+                  id={dragId}
+                  songTitle={song?.title}
+                  below={
+                    techOpen && (
+                      <div className="pt-1 pr-2 pb-2 pl-11">
+                        <Textarea
+                          rows={2}
+                          value={override ?? ""}
+                          onChange={(e) => onTechNote(songId, e.target.value)}
+                          placeholder={song?.techNotes?.trim() || t("setlist.techNotePlaceholder")}
+                          aria-label={t("setlist.techNoteFor", {
+                            title: song?.title ?? t("common.unknown"),
+                          })}
+                        />
+                      </div>
+                    )
+                  }
+                >
                   <span className="w-5 text-center text-xs tabular-nums text-text-faint">
                     {i + 1}
                   </span>
                   <SongRowContent song={song} statusIndicator="warning" markMissingLength />
                   <div className="flex shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => toggleTechNote(songId)}
+                      aria-label={t("setlist.techNote")}
+                      aria-expanded={techOpen}
+                      title={override ? override : t("setlist.techNote")}
+                      className={`${ROW_BUTTON_SHAPE} ${override ? "bg-accent-muted text-accent" : "text-text-faint"}`}
+                    >
+                      🔧
+                    </button>
                     <button
                       type="button"
                       onClick={() => moveSong(i, -1)}

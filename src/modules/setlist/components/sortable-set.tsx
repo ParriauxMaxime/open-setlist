@@ -23,6 +23,8 @@ interface SortableSetProps {
   removed?: RemovedSong;
   onSongRemoved: (removed: RemovedSong) => void;
   onUndoRemove: () => void;
+  techNotes: Record<string, string> | undefined;
+  onTechNote: (songId: string, text: string) => void;
 }
 
 export function SortableSet({
@@ -38,6 +40,8 @@ export function SortableSet({
   removed,
   onSongRemoved,
   onUndoRemove,
+  techNotes,
+  onTechNote,
 }: SortableSetProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
@@ -63,6 +67,8 @@ export function SortableSet({
         removed={removed}
         onSongRemoved={onSongRemoved}
         onUndoRemove={onUndoRemove}
+        techNotes={techNotes}
+        onTechNote={onTechNote}
         dragHandle={{ dragAttributes: attributes, dragListeners: listeners }}
       />
     </div>

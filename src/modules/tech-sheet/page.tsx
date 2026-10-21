@@ -2,6 +2,7 @@ import type { Song } from "@db";
 import { useDb } from "@db/provider";
 import { formatKey } from "@domain/chords/notation";
 import { formatDuration } from "@domain/format";
+import { resolveTechNote } from "@domain/tech-notes";
 import { Link } from "@swan-io/chicane";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo } from "react";
@@ -84,6 +85,7 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
                   songNumber++;
 
                   const flatIndex = songNumber - 1;
+                  const techNote = resolveTechNote(setlist, song);
 
                   return (
                     <Link
@@ -116,10 +118,10 @@ export function TechSheetPage({ setlistId }: TechSheetPageProps) {
                             {song.notes}
                           </div>
                         )}
-                        {song.techNotes && (
+                        {techNote && (
                           <div className="mt-2 text-sm text-accent">
                             <span className="mr-1">&#128295;</span>
-                            {song.techNotes}
+                            {techNote}
                           </div>
                         )}
                       </div>

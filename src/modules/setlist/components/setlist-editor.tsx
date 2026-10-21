@@ -8,6 +8,7 @@ import { type SetlistFormValues, setlistFormSchema } from "@domain/schemas/setli
 import { setlistDuration } from "@domain/setlist-duration";
 import { countNotReadySongs } from "@domain/song-status";
 import { addTombstone } from "@domain/sync/tombstones";
+import { setTechNoteOverride } from "@domain/tech-notes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "@swan-io/chicane";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -39,6 +40,7 @@ const defaultValues: SetlistFormValues = {
   venue: undefined,
   sets: [{ name: "Set 1", songIds: [] }],
   notes: undefined,
+  techNotes: undefined,
 };
 
 export function SetlistEditor({ setlistId }: SetlistEditorProps) {
@@ -57,6 +59,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
     reset,
     watch,
     getValues,
+    setValue,
     formState: { errors, isSubmitting, isDirty },
     control,
   } = useForm<SetlistFormValues>({
@@ -84,6 +87,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
         sets: existing.sets.map((s) => ({ ...s })),
         notes: existing.notes,
         expectedDuration: existing.expectedDuration,
+        techNotes: existing.techNotes && { ...existing.techNotes },
       });
     }
   }, [existing, reset]);
@@ -126,6 +130,7 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
       venue: values.venue || undefined,
       notes: values.notes || undefined,
       expectedDuration: values.expectedDuration || undefined,
+      techNotes: values.techNotes,
       id: setlistId,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
@@ -173,6 +178,16 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
   const notReadyCount = useMemo(() => countNotReadySongs(sets, songs ?? []), [sets, songs]);
 
   const expectedDuration = watch("expectedDuration");
+  const techNotes = watch("techNotes");
+  const setTechNote = useCallback(
+    (songId: string, text: string) =>
+      setValue(
+        "techNotes",
+        setTechNoteOverride({ techNotes: getValues("techNotes") }, songId, text),
+        { shouldDirty: true },
+      ),
+    [getValues, setValue],
+  );
 
   // DnD hook
   const { sensors, onDragStart, onDragOver, onDragEnd, activeDrag } = useSetlistDnd({
@@ -335,6 +350,8 @@ export function SetlistEditor({ setlistId }: SetlistEditorProps) {
                     removed={removed?.setIndex === i ? removed : undefined}
                     onSongRemoved={(song) => setRemoved({ ...song, setIndex: i })}
                     onUndoRemove={undoRemove}
+                    techNotes={techNotes}
+                    onTechNote={setTechNote}
                   />
                 ))}
               </SortableContext>

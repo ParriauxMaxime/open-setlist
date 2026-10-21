@@ -158,6 +158,9 @@
   },
   "setlist": {
     "title": "Setlists",
+    "techNote": "Note technique pour cette setlist",
+    "techNoteFor": "Note technique pour cette setlist : {{title}}",
+    "techNotePlaceholder": "Note technique pour le son et la lumière",
     "newSetlist": "+ Nouvelle setlist",
     "empty": "Aucune setlist. Créez votre première setlist.",
     "defaultName": "Nouvelle setlist",
