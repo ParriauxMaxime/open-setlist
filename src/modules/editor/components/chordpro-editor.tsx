@@ -150,10 +150,11 @@ export function ChordProEditor({
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-1">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="chordpro-frame @container flex min-h-0 flex-1 flex-col">
+      {/* The toolbar sits inside the frame: these tools act on the chart only */}
+      <div className="flex flex-wrap items-center gap-1 border-b border-border bg-bg-raised px-1.5 py-1">
         <ChartInsertBar onInsert={insert} />
-        {toolbar && <div className="flex items-center gap-2">{toolbar}</div>}
+        {toolbar && <div className="ml-auto flex items-center gap-1">{toolbar}</div>}
       </div>
       {/* Narrow screens: the box grows with the chart, so the page scrolls and the chart never does */}
       <div className="chordpro-highlight-wrap relative min-h-[24rem] xl:min-h-0 xl:flex-1">

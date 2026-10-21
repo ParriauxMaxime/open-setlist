@@ -23,11 +23,14 @@ export interface TextSelection {
   end: number;
 }
 
-const SECTION_INSERTS: readonly ChartInsert[] = [
+/** Sections wrap lines; the others go inline. The toolbar groups them apart. */
+export const SECTION_INSERTS: readonly ChartInsert[] = [
   ChartInsert.Verse,
   ChartInsert.Chorus,
   ChartInsert.Bridge,
 ];
+
+export const INLINE_INSERTS: readonly ChartInsert[] = [ChartInsert.Comment, ChartInsert.Chord];
 
 function lineStart(text: string, index: number): number {
   return text.lastIndexOf("\n", index - 1) + 1;

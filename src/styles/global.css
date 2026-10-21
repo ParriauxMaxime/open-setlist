@@ -523,14 +523,15 @@ body {
 
 /* --- ChordPro syntax highlight overlay --- */
 
-.chordpro-highlight-wrap {
+.chordpro-frame {
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--color-bg-surface);
+  overflow: hidden;
   transition: border-color 0.15s;
 }
 
-.chordpro-highlight-wrap:focus-within {
+.chordpro-frame:focus-within {
   border-color: var(--color-border-focus);
   outline: 2px solid var(--color-border-focus);
   outline-offset: -1px;
