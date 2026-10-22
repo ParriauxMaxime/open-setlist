@@ -65,7 +65,7 @@ HTTP on port 7777, JSON, open to any origin (it is only reachable on the band's 
 | `POST /presence` `{"id","name","part","platform","appVersion","page","setlistId"?,"songId"?,"index"?,"follow","midi":{"transport","lastSend","channel"?}}` | 200 `{"seq":n}`; 400 without an `id` and a `name`. Each device sends it every 5 s; the companion keeps one entry per `id`, relayed as it came plus `address` and `lastSeen`, and forgets a device silent for 15 s |
 | `GET /devices?after=<seq>&wait=<s>` | 200 `{"seq","now","devices":[...]}` as soon as newer than `after`, else 204 after the wait. Every report, arrival and departure counts as newer |
 | `GET /log?after=<seq>&wait=<s>` | 200 `{"seq","now","entries":[{"seq","at","from","device"?,"via","messages"}]}`, the last 50 batches played, newest first, as soon as newer than `after`, else 204 after the wait |
-| `GET /` | status page for the person at the computer, with a QR code that sets a tablet up |
+| `GET /` | status page for the person at the computer: the address with a QR code that sets a tablet up, then the stage computer, the devices and the MIDI log, as on the app's Companion page, followed live from `/status`, `/devices` and `/log` |
 
 Times (`at`, `lastSeen`, `now`) are milliseconds since 1970 on the companion's clock: the app compares them with `now`, not with its own clock, since a gig has no internet to set clocks by.
 

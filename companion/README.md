@@ -17,7 +17,9 @@ Tablets -- Bluetooth, BLE MIDI -------+             \--> --also outputs: drum pa
 
 Run the file for your system (from the releases named `companion-v…`). It prints the
 address to enter in Open Setlist and opens a status page with that address, a QR code that
-sets a tablet up without typing, the MIDI output in use and the last messages received.
+sets a tablet up without typing, the stage computer (version, uptime, MIDI output and input,
+Bluetooth), the devices that reported in the last 15 seconds (what each one shows, its
+follow mode and MIDI) and the MIDI log, live, like the Companion page of the app.
 Keep it running during the gig; close its window to stop it. In Open Setlist, the Companion
 page pairs a tablet: a scan of the network (Chrome only), the QR code, or the address.
 
@@ -74,7 +76,7 @@ JSON over HTTP, answered with the headers a web page from another origin needs.
 | `POST /presence` `{"id","name","part","platform","page","follow","midi",…}` | `{"seq":4}`; 400 without an `id` and a `name`. Each tablet sends it every 5 seconds; one silent for 15 seconds is forgotten |
 | `GET /devices?after=<seq>&wait=<seconds>` | `{"seq","now","devices":[…]}`, each report as it came with `address` and `lastSeen`, once newer than `after`; 204 when the wait runs out |
 | `GET /log?after=<seq>&wait=<seconds>` | `{"seq","now","entries":[…]}`, the last 50 batches played, newest first, once newer than `after`; 204 when the wait runs out |
-| `GET /` | The status page |
+| `GET /` | The status page: address and QR code, the stage computer, the devices and the MIDI log, followed live from `/status`, `/devices` and `/log` |
 
 There is no authentication: the program is meant for a router that only the band uses.
 

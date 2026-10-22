@@ -14,6 +14,8 @@
     --line: #e1ded6;
     --ok: #1b7f45;
     --warn: #b45309;
+    --bad: #b91c1c;
+    --accent: #2563eb;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -24,6 +26,8 @@
       --line: #35332f;
       --ok: #4ade80;
       --warn: #fbbf24;
+      --bad: #f87171;
+      --accent: #60a5fa;
     }
   }
   * { box-sizing: border-box; }
@@ -42,7 +46,8 @@
   }
   h1, h2, p, ol, ul, figure { margin: 0; }
   h1, h2 { font-size: 1rem; font-weight: 600; color: var(--muted); }
-  h1 small { font-weight: 400; }
+  h1 small, h2 small { font-weight: 400; }
+  .desc { margin-top: .25rem; color: var(--muted); font-size: 1rem; }
   section {
     background: var(--surface);
     border: 1px solid var(--line);
@@ -66,7 +71,7 @@
   figure svg { display: block; width: 100%; margin-bottom: .5rem; border-radius: .5rem; }
   .row { display: flex; align-items: baseline; gap: .75rem; }
   .row + .row, #fix + .row { margin-top: .75rem; }
-  .row b { min-width: 7rem; }
+  .row b { min-width: 9rem; }
   .row span::before {
     content: "";
     display: inline-block;
@@ -79,24 +84,27 @@
   .row.ok span::before { background: var(--ok); }
   .row.warn span::before { background: var(--warn); }
   #fix { margin-top: .75rem; padding-left: 1.4em; }
-  #recent { list-style: none; padding: 0; margin-top: .75rem; font-size: 1.05rem; }
-  #recent li {
-    display: grid;
-    grid-template-columns: 5.5rem minmax(4rem, 9rem) 6rem 1fr;
-    gap: .75rem;
-    padding: .4rem 0;
-    border-top: 1px solid var(--line);
-  }
-  #recent time, #recent i { color: var(--muted); font-style: normal; font-variant-numeric: tabular-nums; }
-  #recent b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #none { margin-top: .75rem; color: var(--muted); }
+  ol.list { list-style: none; padding: 0; margin-top: .75rem; font-size: 1.05rem; }
+  ol.list li { padding: .5rem 0; border-top: 1px solid var(--line); }
+  .muted, ol.list time, ol.list i { color: var(--muted); font-style: normal; font-variant-numeric: tabular-nums; }
+  #devices li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .25rem 1rem; }
+  #devices li > div { min-width: 0; }
+  #devices small { display: block; color: var(--muted); font-size: .95rem; }
+  #devices p { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font-size: .9rem; }
+  .badge { padding: .1rem .55rem; border: 1px solid currentColor; border-radius: 99rem; color: var(--muted); white-space: nowrap; }
+  .badge.ok { color: var(--ok); }
+  .badge.bad { color: var(--bad); }
+  .badge.accent { color: var(--accent); }
+  #log li { display: grid; grid-template-columns: 7.5rem minmax(4rem, 9rem) 6rem 1fr; gap: .75rem; }
+  #log b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .empty { margin-top: .75rem; color: var(--muted); }
   #closed { color: var(--warn); font-weight: 600; }
   [hidden] { display: none !important; }
   @media (max-width: 40rem) {
     .where { grid-template-columns: 1fr; }
-    #recent li { grid-template-columns: 5.5rem 1fr; }
-    #recent i { display: none; }
-    #recent span { grid-column: 1 / -1; }
+    #log li { grid-template-columns: 7.5rem 1fr; }
+    #log i { display: none; }
+    #log span { grid-column: 1 / -1; }
   }
 </style>
 </head>
@@ -106,18 +114,26 @@
   <p id="closed" data-t="closed" hidden></p>
   <div id="where">{{WHERE}}</div>
   <section>
-    <p id="midi" class="row"><b>MIDI</b><span></span></p>
+    <h2 data-t="computer"></h2>
+    <p id="program" class="row"><b data-t="program"></b><span></span></p>
+    <p id="midi" class="row"><b data-t="midiOut"></b><span></span></p>
     <ol id="fix" hidden>
       <li><a href="https://www.tobias-erichsen.de/software/loopmidi.html" target="_blank" rel="noopener">loopMIDI</a> <span data-t="fix1"></span></li>
       <li data-t="fix2"></li>
     </ol>
-    <p id="midiIn" class="row"><b data-t="answers"></b><span></span></p>
+    <p id="midiIn" class="row"><b data-t="midiIn"></b><span></span></p>
     <p id="bluetooth" class="row"><b>Bluetooth</b><span></span></p>
   </section>
   <section>
-    <h2 data-t="recent"></h2>
-    <ul id="recent"></ul>
-    <p id="none" data-t="none"></p>
+    <h2><span data-t="devices"></span> <small id="count"></small></h2>
+    <ol id="devices" class="list"></ol>
+    <p id="noDevice" class="empty" data-t="noDevice" hidden></p>
+  </section>
+  <section>
+    <h2 data-t="log"></h2>
+    <p class="desc" data-t="logDesc"></p>
+    <ol id="log" class="list"></ol>
+    <p id="noLog" class="empty" data-t="noLog" hidden></p>
   </section>
 </main>
 <script>
@@ -127,17 +143,36 @@
       or: "or",
       scan: "or point the tablet's camera here",
       offline: "Connect this computer to the band's Wi-Fi.",
+      computer: "Stage computer",
+      program: "Program",
+      uptime: "running for {time}",
+      midiOut: "MIDI output",
+      midiIn: "MIDI input",
       noMidi: "no output",
-      answers: "Answers",
       noIn: "no input",
       noAnswer: "nothing received yet (in Ableton, turn on “Open Setlist” as an output with Remote)",
       fix1: "(free): install it and add a port named “Open Setlist”. For Ableton's answers, a second one named “Open Setlist Feedback”.",
       fix2: "Leave loopMIDI open: this page finds the ports by itself.",
-      advertising: "ready",
-      off: "off",
-      unavailable: "unavailable",
-      recent: "Last messages",
-      none: "Nothing received yet.",
+      advertising: "Open to tablets",
+      off: "Off",
+      unavailable: "Unavailable",
+      devices: "Devices",
+      noDevice: "No device has reported in the last 15 seconds.",
+      onStage: "On stage",
+      inBooth: "Booth",
+      song: "song {n}",
+      follow: "Following",
+      lead: "Leading",
+      midiOff: "MIDI off",
+      ok: "sent",
+      failed: "not sent",
+      none: "nothing sent yet",
+      now: "now",
+      seconds: "{n} s ago",
+      minutes: "{n} min ago",
+      log: "MIDI log",
+      logDesc: "The last 50 sound changes the companion played, newest first.",
+      noLog: "Nothing played since the companion started.",
       wifi: "Wi-Fi",
       bluetooth: "Bluetooth",
       channel: "ch",
@@ -148,32 +183,57 @@
       or: "ou",
       scan: "ou visez ici avec l'appareil photo de la tablette",
       offline: "Connectez cet ordinateur au Wi-Fi du groupe.",
+      computer: "PC de scène",
+      program: "Programme",
+      uptime: "lancé depuis {time}",
+      midiOut: "Sortie MIDI",
+      midiIn: "Entrée MIDI",
       noMidi: "aucune sortie",
-      answers: "Réponses",
       noIn: "aucune entrée",
-      noAnswer: "rien reçu pour l'instant (dans Ableton, activez «\u00a0Open Setlist\u00a0» en sortie avec Télécommande)",
-      fix1: "(gratuit) : installez-le et ajoutez un port nommé «\u00a0Open Setlist\u00a0». Pour les réponses d'Ableton, un second nommé « Open Setlist Feedback ».",
-      fix2: "Laissez loopMIDI ouvert\u00a0: cette page trouve les ports toute seule.",
-      advertising: "prêt",
-      off: "désactivé",
-      unavailable: "indisponible",
-      recent: "Derniers messages",
-      none: "Rien reçu pour l'instant.",
+      noAnswer: "rien reçu pour l'instant (dans Ableton, activez « Open Setlist » en sortie avec Télécommande)",
+      fix1: "(gratuit) : installez-le et ajoutez un port nommé « Open Setlist ». Pour les réponses d'Ableton, un second nommé « Open Setlist Feedback ».",
+      fix2: "Laissez loopMIDI ouvert : cette page trouve les ports toute seule.",
+      advertising: "Ouvert aux tablettes",
+      off: "Désactivé",
+      unavailable: "Indisponible",
+      devices: "Appareils",
+      noDevice: "Aucun appareil ne s'est signalé ces 15 dernières secondes.",
+      onStage: "Sur scène",
+      inBooth: "Régie",
+      song: "chanson {n}",
+      follow: "Je suis",
+      lead: "Je mène",
+      midiOff: "MIDI désactivé",
+      ok: "envoyé",
+      failed: "non envoyé",
+      none: "rien envoyé",
+      now: "à l'instant",
+      seconds: "il y a {n} s",
+      minutes: "il y a {n} min",
+      log: "Journal MIDI",
+      logDesc: "Les 50 derniers changements de son joués par le compagnon, du plus récent au plus ancien.",
+      noLog: "Rien joué depuis le lancement du compagnon.",
       wifi: "Wi-Fi",
       bluetooth: "Bluetooth",
       channel: "canal",
       closed: "Le programme est fermé. Relancez-le.",
     },
   };
-  const KINDS = { 8: "Note off", 9: "Note on", 10: "Aftertouch", 11: "CC", 12: "Program", 13: "Pressure", 14: "Bend" };
+  const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const STAGE = { Perform: "onStage", PerformSong: "onStage", Crew: "inBooth" };
+  const LONG_POLL = 25;
+  const RETRY_MS = 2000;
 
   // `?lang=fr` or `?lang=en` overrides the language of the browser.
   const wanted = new URLSearchParams(location.search).get("lang") || navigator.language || "";
   const language = wanted.toLowerCase().startsWith("fr") ? "fr" : "en";
   const texts = TEXTS[language];
   const byId = (id) => document.getElementById(id);
+  const say = (key, values = {}) => texts[key].replace(/\{(\w+)\}/g, (_, name) => values[name]);
   const windows = document.querySelector("main").dataset.os === "windows";
   let where = byId("where").innerHTML;
+  let devices = null;
+  let log = null;
 
   function translate(root) {
     for (const element of root.querySelectorAll("[data-t]")) {
@@ -181,20 +241,59 @@
     }
   }
 
-  function describe([status, first, second]) {
-    const kind = status >> 4;
-    const value = second === undefined ? first : kind === 14 ? first + second * 128 - 8192 : `${first} = ${second}`;
-    return `${KINDS[kind]} ${value} (${texts.channel} ${(status & 15) + 1})`;
+  // Same wording as the app's MIDI log; the Note Off after each note says nothing more.
+  function describe(message) {
+    const [status = 0, first = 0, second = 0] = message;
+    const channel = `${texts.channel} ${(status & 15) + 1}`;
+    switch (status & 0xf0) {
+      case 0x90:
+        return `Note ${first} (${NOTES[first % 12]}${Math.floor(first / 12) - 2}) · ${channel}`;
+      case 0xb0:
+        if (first === 0) return `Bank ${second} · ${channel}`;
+        if (first === 32) return `Bank LSB ${second} · ${channel}`;
+        return `CC ${first} = ${second} · ${channel}`;
+      case 0xc0:
+        return `PC ${first + 1} · ${channel}`;
+      default:
+        return message.map((byte) => byte.toString(16).padStart(2, "0")).join(" ");
+    }
   }
 
-  function cell(tag, text) {
+  function describeBatch(messages) {
+    const off = ([status, , velocity]) => (status & 0xf0) === 0x80 || ((status & 0xf0) === 0x90 && velocity === 0);
+    return messages.filter((message) => !off(message)).map(describe).join(", ");
+  }
+
+  function uptime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return hours > 0 ? `${hours} h ${String(minutes).padStart(2, "0")}` : `${minutes} min`;
+  }
+
+  // `at` is on the companion's clock: `skew` brings this page's clock to it.
+  function ago(at, skew) {
+    const seconds = Math.max(0, Math.round((Date.now() + skew - at) / 1000));
+    if (seconds < 2) return texts.now;
+    if (seconds < 60) return say("seconds", { n: seconds });
+    if (seconds < 3600) return say("minutes", { n: Math.floor(seconds / 60) });
+    return new Date(at).toLocaleTimeString(language, { hourCycle: "h23" });
+  }
+
+  function cell(tag, text, className) {
     const element = document.createElement(tag);
     element.textContent = text;
+    if (className) element.className = className;
     return element;
   }
 
   function show(status) {
     byId("closed").hidden = true;
+    byId("program").className = "row ok";
+    byId("program").lastElementChild.textContent = [
+      status.name,
+      status.version,
+      say("uptime", { time: uptime(status.uptime) }),
+    ].join(" · ");
     byId("midi").className = status.midiOut ? "row ok" : "row warn";
     byId("midi").lastElementChild.textContent = status.midiOut ?? texts.noMidi;
     byId("fix").hidden = Boolean(status.midiOut) || !windows;
@@ -205,15 +304,67 @@
       : texts.noIn;
     byId("bluetooth").className = status.bluetooth === "advertising" ? "row ok" : "row";
     byId("bluetooth").lastElementChild.textContent = texts[status.bluetooth];
-    byId("none").hidden = status.recent.length > 0;
-    byId("recent").replaceChildren(
-      ...status.recent.map((batch) => {
+  }
+
+  function shows(device) {
+    const page = STAGE[device.page] ? texts[STAGE[device.page]] : device.page;
+    const short = (id) => (id.length > 8 ? `${id.slice(0, 8)}…` : id);
+    const stage = Number.isInteger(device.index)
+      ? [say("song", { n: device.index + 1 })]
+      : [device.setlistId, device.songId].filter(Boolean).map(short);
+    return [page, ...stage];
+  }
+
+  function midiBadge(midi = {}) {
+    if (!midi.transport || midi.transport === "off") return cell("span", texts.midiOff, "badge");
+    const tone = midi.lastSend === "ok" ? "badge ok" : midi.lastSend === "failed" ? "badge bad" : "badge";
+    const parts = [texts[midi.transport] ?? midi.transport];
+    if (midi.channel) parts.push(`${texts.channel} ${midi.channel}`);
+    parts.push(texts[midi.lastSend] ?? midi.lastSend ?? texts.none);
+    return cell("span", parts.join(" · "), tone);
+  }
+
+  function showDevices() {
+    const list = [...(devices?.devices ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+    byId("count").textContent = devices ? list.length : "";
+    byId("noDevice").hidden = !devices || list.length > 0;
+    byId("devices").replaceChildren(
+      ...list.map((device) => {
+        const part = device.part ? device.part.charAt(0).toUpperCase() + device.part.slice(1) : "";
+        const platform = device.platform === "other" ? "" : device.platform;
+        // Without "My name", the name already reads "Keys · iPad"
+        const details = [part, platform]
+          .filter((detail) => detail && !device.name.includes(detail))
+          .concat(shows(device))
+          .filter(Boolean);
+        const who = document.createElement("div");
+        who.append(cell("b", device.name), cell("small", details.join(" · ")));
+        const state = document.createElement("p");
+        if (device.follow === "lead" || device.follow === "follow") {
+          state.append(cell("span", texts[device.follow], "badge accent"));
+        }
+        state.append(midiBadge(device.midi), cell("time", ago(device.lastSeen, devices.skew)));
+        const row = document.createElement("li");
+        row.append(who, state);
+        return row;
+      }),
+    );
+  }
+
+  function showLog() {
+    const names = new Map((devices?.devices ?? []).map((device) => [device.id, device.name]));
+    const entries = (log?.entries ?? []).slice(0, 50);
+    byId("noLog").hidden = !log || entries.length > 0;
+    byId("log").replaceChildren(
+      ...entries.map((entry) => {
+        const time = cell("time", ago(entry.at, log.skew));
+        time.title = new Date(entry.at).toLocaleTimeString(language, { hourCycle: "h23" });
         const row = document.createElement("li");
         row.append(
-          cell("time", new Date(batch.at).toLocaleTimeString(language, { hourCycle: "h23" })),
-          cell("b", batch.from),
-          cell("i", texts[batch.via]),
-          cell("span", batch.messages.map(describe).join(", ")),
+          time,
+          cell("b", (entry.device && names.get(entry.device)) || entry.from),
+          cell("i", texts[entry.via] ?? entry.via),
+          cell("span", describeBatch(entry.messages)),
         );
         return row;
       }),
@@ -225,6 +376,34 @@
       show(await (await fetch("/status", { cache: "no-store" })).json());
     } catch {
       byId("closed").hidden = false;
+    }
+  }
+
+  // Answers as soon as there is something newer than `after`, else 204 after the wait. The
+  // first ask answers at once, so that an empty list shows as empty.
+  async function follow(path, receive) {
+    let after = 0;
+    let first = true;
+    for (;;) {
+      try {
+        const wait = first ? 0 : LONG_POLL;
+        const response = await fetch(`${path}?after=${after}&wait=${wait}`, { cache: "no-store" });
+        if (response.status === 200) {
+          const reply = await response.json();
+          after = reply.seq;
+          receive({ ...reply, skew: reply.now - Date.now() });
+        } else if (response.status !== 204) {
+          throw new Error(response.status);
+        } else if (first) {
+          receive({ seq: 0, skew: 0 });
+        }
+        first = false;
+      } catch {
+        // A restarted companion counts from 1 again
+        after = 0;
+        first = true;
+        await new Promise((resolve) => setTimeout(resolve, RETRY_MS));
+      }
     }
   }
 
@@ -246,6 +425,20 @@
   refresh();
   setInterval(refresh, 1500);
   setInterval(refreshWhere, 5000);
+  follow("/devices", (reply) => {
+    devices = reply;
+    showDevices();
+    showLog();
+  });
+  follow("/log", (reply) => {
+    log = reply;
+    showLog();
+  });
+  // "now" and "5 s ago" age between two replies.
+  setInterval(() => {
+    showDevices();
+    showLog();
+  }, 1000);
 </script>
 </body>
 </html>

@@ -1,5 +1,6 @@
-//! The page for the person at the computer: where the tablets connect, and what arrives.
-//! Everything that moves is refreshed by the page itself from `/status`.
+//! The page for the person at the computer: where the tablets connect, the stage computer,
+//! the devices and the MIDI log. Everything that moves is refreshed by the page itself from
+//! `/status`, `/devices` and `/log`.
 
 use std::fmt::Write;
 use std::net::Ipv4Addr;
@@ -124,6 +125,14 @@ mod tests {
             assert!(!page.contains(external), "the page contains {external}");
         }
         assert_eq!(page.matches("href=").count(), 1);
+    }
+
+    #[test]
+    fn follows_the_devices_and_the_log_like_the_app() {
+        let page = render(&settings(), &[]);
+        assert!(page.contains(r#"follow("/devices","#));
+        assert!(page.contains(r#"follow("/log","#));
+        assert!(page.contains("?after=${after}&wait=${wait}"));
     }
 
     #[test]
